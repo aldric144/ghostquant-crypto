@@ -1,6 +1,6 @@
 
 CREATE TABLE IF NOT EXISTS ecosystems (
-    id SERIAL PRIMARY KEY,
+    id SERIAL,
     chain TEXT NOT NULL,
     protocols TEXT[] DEFAULT '{}',
     tvl_usd DOUBLE PRECISION DEFAULT 0,
@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS ecosystems (
     volume_24h DOUBLE PRECISION DEFAULT 0,
     bridge_flows DOUBLE PRECISION DEFAULT 0,
     emi_score DOUBLE PRECISION DEFAULT 50.0,
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (id, updated_at)
 );
 
 SELECT create_hypertable('ecosystems', 'updated_at', if_not_exists => TRUE);
@@ -18,12 +19,13 @@ CREATE INDEX IF NOT EXISTS idx_ecosystems_emi_score ON ecosystems(emi_score DESC
 CREATE INDEX IF NOT EXISTS idx_ecosystems_updated_at ON ecosystems(updated_at DESC);
 
 CREATE TABLE IF NOT EXISTS whale_flows (
-    id SERIAL PRIMARY KEY,
+    id SERIAL,
     asset TEXT NOT NULL,
     wallet_tag TEXT DEFAULT 'Unknown',
     direction TEXT NOT NULL CHECK (direction IN ('inflow', 'outflow')),
     value_usd DOUBLE PRECISION NOT NULL,
-    timestamp TIMESTAMPTZ DEFAULT NOW()
+    timestamp TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (id, timestamp)
 );
 
 SELECT create_hypertable('whale_flows', 'timestamp', if_not_exists => TRUE);
@@ -35,12 +37,13 @@ CREATE INDEX IF NOT EXISTS idx_whale_flows_timestamp ON whale_flows(timestamp DE
 CREATE INDEX IF NOT EXISTS idx_whale_flows_wallet_tag ON whale_flows(wallet_tag);
 
 CREATE TABLE IF NOT EXISTS ecoscore_rankings (
-    id SERIAL PRIMARY KEY,
+    id SERIAL,
     asset TEXT NOT NULL,
     emi DOUBLE PRECISION DEFAULT 50.0,
     wcf DOUBLE PRECISION DEFAULT 50.0,
     ecoscore DOUBLE PRECISION NOT NULL,
-    signal_time TIMESTAMPTZ DEFAULT NOW()
+    signal_time TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (id, signal_time)
 );
 
 SELECT create_hypertable('ecoscore_rankings', 'signal_time', if_not_exists => TRUE);
