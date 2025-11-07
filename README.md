@@ -11,6 +11,8 @@ GhostQuant is a research-only platform (no trading or order execution) that prov
 - **Signal Generation**: TrendScore and Pre-Trend probability with actionable signals (BUY/TRIM/EXIT/HOLD)
 - **AlphaBrain Intelligence**: Institutional-grade quant module with macro regime detection, multi-factor Smart Beta, Kelly sizing, hedge fund playbooks, reinforcement learning, and Harvard-style analytics
 - **Ecoscan Discovery Engine**: Cross-chain ecosystem mapping with EMI scoring, whale transaction tracking (>$250k), smart money clustering, and unified Ecoscore rankings
+- **AI Insight Panel**: Natural language market interpretation combining AlphaBrain + Ecoscan signals with slide-in panel UI
+- **IQ Meter Dashboard**: Real-time visualization of GhostQuant's learning confidence, signal accuracy, and reward metrics with Institutional IQ Mode
 - **Backtesting Framework**: Historical strategy simulation with slippage modeling and performance metrics
 - **Web Dashboard**: Real-time signal monitoring, asset analysis, and backtest results
 - **Alerts**: Telegram and Email notifications for significant signals
@@ -112,10 +114,12 @@ This will start:
 - **Web Dashboard**: http://localhost:3000
 - **AlphaBrain Dashboard**: http://localhost:3000/alphabrain
 - **Ecoscan Dashboard**: http://localhost:3000/ecoscan
+- **IQ Meter Dashboard**: http://localhost:3000/iqmeter
 - **API Health**: http://localhost:8080/health
 - **API Docs**: http://localhost:8080/docs
 - **AlphaBrain API**: http://localhost:8081/alphabrain/summary
 - **Ecoscan API**: http://localhost:8082/ecoscan/summary
+- **Learning Metrics API**: http://localhost:8080/metrics/learning
 
 ### Step 4: Wait for Data
 
@@ -152,6 +156,13 @@ curl http://localhost:8080/signals/asset/ETH?limit=200
 ```bash
 curl http://localhost:8080/factors/asset/BTC?limit=1000
 ```
+
+### Get Learning Metrics
+```bash
+curl http://localhost:8080/metrics/learning
+```
+
+Returns GhostQuant's learning confidence, signal accuracy, reward rate, and training iterations.
 
 ### AlphaBrain Endpoints
 
@@ -354,6 +365,7 @@ Future enhancements:
 
 - [x] **Phase 7**: AlphaBrain institutional quant intelligence (COMPLETED)
 - [x] **Phase 8**: Ecoscan ecosystem mapper + whale intelligence (COMPLETED)
+- [x] **Phase 10**: AI Insight Panel + IQ Meter Dashboard (COMPLETED)
 - [ ] Sentiment analysis from social media and news
 - [ ] Portfolio optimizer with risk constraints
 - [ ] Multi-timeframe signal aggregation
