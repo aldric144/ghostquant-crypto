@@ -15,7 +15,7 @@ export default function LineChart({ data, xKey, yKey, title }: LineChartProps) {
   useEffect(() => {
     if (typeof window === 'undefined' || !chartRef.current || data.length === 0) return
 
-    import('plotly.js-dist-min').then((Plotly) => {
+    import('plotly.js').then((Plotly) => {
       const x = data.map(d => new Date(d[xKey]))
       const y = data.map(d => d[yKey])
 
