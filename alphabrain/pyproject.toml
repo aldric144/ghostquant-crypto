@@ -3,6 +3,7 @@ name = "ghostquant-alphabrain"
 version = "0.1.0"
 description = "GhostQuant AlphaBrain Quant Intelligence Module"
 authors = ["GhostQuant Team"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
