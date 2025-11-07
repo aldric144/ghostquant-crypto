@@ -1,6 +1,8 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import dynamic from 'next/dynamic'
+
+const Plot = dynamic(() => import('react-plotly.js'), { ssr: false })
 
 interface LineChartProps {
   data: any[]
@@ -10,26 +12,31 @@ interface LineChartProps {
 }
 
 export default function LineChart({ data, xKey, yKey, title }: LineChartProps) {
-  const chartRef = useRef<HTMLDivElement>(null)
+  if (data.length === 0) {
+    return (
+      <div className="h-64 flex items-center justify-center text-gray-500">
+        No data available
+      </div>
+    )
+  }
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !chartRef.current || data.length === 0) return
+  const x = data.map(d => new Date(d[xKey]))
+  const y = data.map(d => d[yKey])
 
-    import('plotly.js').then((Plotly) => {
-      const x = data.map(d => new Date(d[xKey]))
-      const y = data.map(d => d[yKey])
-
-      const trace = {
-        x,
-        y,
-        type: 'scatter',
-        mode: 'lines',
-        line: { color: '#60a5fa', width: 2 },
-        fill: 'tozeroy',
-        fillcolor: 'rgba(96, 165, 250, 0.1)'
-      }
-
-      const layout = {
+  return (
+    <Plot
+      data={[
+        {
+          x,
+          y,
+          type: 'scatter',
+          mode: 'lines',
+          line: { color: '#60a5fa', width: 2 },
+          fill: 'tozeroy',
+          fillcolor: 'rgba(96, 165, 250, 0.1)'
+        }
+      ]}
+      layout={{
         paper_bgcolor: 'rgba(0,0,0,0)',
         plot_bgcolor: 'rgba(0,0,0,0)',
         font: { color: '#9ca3af' },
@@ -43,24 +50,12 @@ export default function LineChart({ data, xKey, yKey, title }: LineChartProps) {
           showgrid: true
         },
         hovermode: 'closest'
-      }
-
-      const config = {
+      }}
+      config={{
         responsive: true,
         displayModeBar: false
-      }
-
-      Plotly.newPlot(chartRef.current, [trace], layout, config)
-    })
-  }, [data, xKey, yKey])
-
-  if (data.length === 0) {
-    return (
-      <div className="h-64 flex items-center justify-center text-gray-500">
-        No data available
-      </div>
-    )
-  }
-
-  return <div ref={chartRef} className="h-64" />
+      }}
+      className="h-64 w-full"
+    />
+  )
 }
