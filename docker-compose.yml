@@ -1,0 +1,232 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: timescale/timescaledb:latest-pg15
+    container_name: ghostquant-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ghostquant}
+      POSTGRES_USER: ${POSTGRES_USER:-ghost}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ghostpass}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/initdb:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ghost} -d ${POSTGRES_DB:-ghostquant}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ghostquant-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: ghostquant-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ghostquant-net
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: ghostquant-api
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-ghostquant}
+      POSTGRES_USER: ${POSTGRES_USER:-ghost}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ghostpass}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    ports:
+      - "${API_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ghostquant-net
+
+  ingest:
+    build:
+      context: ./ingest
+      dockerfile: Dockerfile
+    container_name: ghostquant-ingest
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-ghostquant}
+      POSTGRES_USER: ${POSTGRES_USER:-ghost}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ghostpass}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      BINANCE_API_KEY: ${BINANCE_API_KEY:-}
+      BINANCE_API_SECRET: ${BINANCE_API_SECRET:-}
+      BYBIT_API_KEY: ${BYBIT_API_KEY:-}
+      BYBIT_API_SECRET: ${BYBIT_API_SECRET:-}
+      RPC_ETH_MAINNET: ${RPC_ETH_MAINNET:-}
+      USE_MOCK_DATA: ${USE_MOCK_DATA:-true}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    networks:
+      - ghostquant-net
+
+  signals:
+    build:
+      context: ./signals
+      dockerfile: Dockerfile
+    container_name: ghostquant-signals
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-ghostquant}
+      POSTGRES_USER: ${POSTGRES_USER:-ghost}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ghostpass}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    networks:
+      - ghostquant-net
+
+  alerts:
+    build:
+      context: ./alerts
+      dockerfile: Dockerfile
+    container_name: ghostquant-alerts
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-ghostquant}
+      POSTGRES_USER: ${POSTGRES_USER:-ghost}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ghostpass}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      ALERTS_FROM_EMAIL: ${ALERTS_FROM_EMAIL:-}
+      ALERTS_TO_EMAIL: ${ALERTS_TO_EMAIL:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    networks:
+      - ghostquant-net
+
+  alphabrain:
+    build:
+      context: ./alphabrain
+      dockerfile: Dockerfile
+    container_name: ghostquant-alphabrain
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-ghostquant}
+      POSTGRES_USER: ${POSTGRES_USER:-ghost}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ghostpass}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      USE_MOCK_MACRO_DATA: ${USE_MOCK_MACRO_DATA:-true}
+      FACTOR_LOOKBACK_DAYS: ${FACTOR_LOOKBACK_DAYS:-90}
+      VOLATILITY_TARGET: ${VOLATILITY_TARGET:-0.15}
+      KELLY_FRACTION: ${KELLY_FRACTION:-0.25}
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ghostquant-net
+
+  ecoscan:
+    build:
+      context: ./ecoscan
+      dockerfile: Dockerfile
+    container_name: ghostquant-ecoscan
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-ghostquant}
+      POSTGRES_USER: ${POSTGRES_USER:-ghost}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ghostpass}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      USE_MOCK_ECOSCAN_DATA: ${USE_MOCK_ECOSCAN_DATA:-true}
+      ECOSCAN_UPDATE_INTERVAL: ${ECOSCAN_UPDATE_INTERVAL:-300}
+      MIN_WHALE_TX_USD: ${MIN_WHALE_TX_USD:-250000}
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ghostquant-net
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: ghostquant-web
+    environment:
+      NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:8080}
+      NEXT_PUBLIC_ALPHABRAIN_API: ${NEXT_PUBLIC_ALPHABRAIN_API:-http://localhost:8081}
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+      alphabrain:
+        condition: service_healthy
+    networks:
+      - ghostquant-net
+
+volumes:
+  postgres_data:
+
+networks:
+  ghostquant-net:
+    driver: bridge
