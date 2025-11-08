@@ -193,7 +193,7 @@ export default function IQMeterPage() {
               <motion.div
                 className={`h-4 ${metrics.reward_rate > 0 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-red-500 to-red-400'} rounded-full`}
                 initial={{ width: 0 }}
-                animate={{ width: `${Math.abs(metrics.reward_rate) * 1000}%` }}
+                animate={{ width: `${Math.abs(metrics.reward_rate) * 100}%` }}
                 transition={{ duration: 1.2, ease: "easeOut" }}
               />
             </div>

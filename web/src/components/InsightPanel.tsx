@@ -39,7 +39,7 @@ export default function InsightPanel({ isOpen, onClose }: InsightPanelProps) {
       const alphaBrainRes = await fetch(`${process.env.NEXT_PUBLIC_ALPHABRAIN_API || 'http://localhost:8081'}/alphabrain/summary`)
       const alphaBrainJson = await alphaBrainRes.json()
       
-      const ecoscanRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080'}/ecoscan/summary`)
+      const ecoscanRes = await fetch(`${process.env.NEXT_PUBLIC_ECOSCAN_API || 'http://localhost:8082'}/ecoscan/summary`)
       const ecoscanJson = await ecoscanRes.json()
 
       const alphaBrain: AlphaBrainSummary = {
