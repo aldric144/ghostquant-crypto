@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "ghostquant-ingest"
+version = "0.1.0"
+description = "GhostQuant Ingestion Service"
+authors = ["GhostQuant Team"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+psycopg = {extras = ["binary", "pool"], version = "^3.1.0"}
+redis = "^5.0.0"
+websockets = "^12.0"
+aiohttp = "^3.9.0"
+python-dotenv = "^1.0.0"
+web3 = "^6.11.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

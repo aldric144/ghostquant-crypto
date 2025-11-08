@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "ghostquant-ecoscan"
+version = "0.1.0"
+description = "GhostQuant Ecosystem Mapper + Whale Intelligence"
+authors = ["GhostQuant Team"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+psycopg = {extras = ["binary", "pool"], version = "^3.1.0"}
+redis = "^5.0.0"
+numpy = "^1.26.0"
+pandas = "^2.1.0"
+scikit-learn = "^1.3.0"
+scipy = "^1.11.0"
+aiohttp = "^3.9.0"
+python-dotenv = "^1.0.0"
+fastapi = "^0.104.0"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
