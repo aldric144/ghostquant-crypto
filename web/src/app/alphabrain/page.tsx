@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 
-const API_BASE = process.env.NEXT_PUBLIC_ALPHABRAIN_API || 'http://localhost:8081';
-
 interface RegimeData {
   regime: string;
   confidence: number;
@@ -64,7 +62,7 @@ export default function AlphaBrainPage() {
 
   const fetchSummary = async () => {
     try {
-      const response = await fetch(`${API_BASE}/alphabrain/summary`);
+      const response = await fetch('/alphabrain/summary');
       if (!response.ok) throw new Error('Failed to fetch AlphaBrain summary');
       const data = await response.json();
       setSummary(data);

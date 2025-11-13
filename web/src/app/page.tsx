@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react'
 import SignalCard from '@/components/SignalCard'
 import Heatmap from '@/components/Heatmap'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080'
-
 interface Signal {
   asset_id: number
   ts: string
@@ -34,8 +32,8 @@ export default function Home() {
     const fetchData = async () => {
       try {
         const [signalsRes, assetsRes] = await Promise.all([
-          fetch(`${API_BASE}/signals/latest?limit=100`),
-          fetch(`${API_BASE}/assets`)
+          fetch('/api/signals/latest?limit=100'),
+          fetch('/api/assets')
         ])
         
         const signalsData = await signalsRes.json()

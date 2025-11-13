@@ -17,6 +17,7 @@ from typing import Dict, List, Optional
 import psycopg
 from psycopg.rows import dict_row
 import pandas as pd
+import numpy as np
 
 from alphabrain.config import DATABASE_URL, FACTOR_LOOKBACK_DAYS
 from alphabrain.models.macro_regime import MacroRegimeDetector

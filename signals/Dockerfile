@@ -9,4 +9,6 @@ RUN poetry config virtualenvs.create false && poetry install --no-interaction --
 
 COPY src ./src
 
+ENV PYTHONPATH=/app/src
+
 CMD ["python", "-m", "signals.scheduler"]

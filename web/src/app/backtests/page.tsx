@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080'
-
 interface Backtest {
   run_id: string
   params_json: any
@@ -22,7 +20,7 @@ export default function BacktestsPage() {
   useEffect(() => {
     const fetchBacktests = async () => {
       try {
-        const response = await fetch(`${API_BASE}/backtests`)
+        const response = await fetch('/api/backtests')
         if (response.ok) {
           const data = await response.json()
           setBacktests(data)

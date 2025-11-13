@@ -1,8 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
-  env: {
-    NEXT_PUBLIC_API_BASE: process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080',
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://api:8080/:path*',
+      },
+      {
+        source: '/alphabrain/:path*',
+        destination: 'http://alphabrain:8081/alphabrain/:path*',
+      },
+      {
+        source: '/ecoscan/:path*',
+        destination: 'http://ecoscan:8082/ecoscan/:path*',
+      },
+    ];
   },
 }
 

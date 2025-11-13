@@ -167,6 +167,7 @@ class MacroRegimeDetector:
         return {
             'regime': regime.value,
             'confidence': confidence,
+            'exposure_multiplier': self.get_crypto_exposure_multiplier(),
             'macro_data': macro_data,
             'timestamp': self.last_update.isoformat(),
             'interpretation': self._interpret_regime(regime, macro_data)

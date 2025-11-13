@@ -175,10 +175,15 @@ class FactorModel:
             prices = price_history['price']
             returns = prices.pct_change().dropna()
             
-            exposures['momentum_1m'] = self.compute_momentum_factor(prices)
+            exposures['momentum_1m'] = (prices.iloc[-1] / prices.iloc[-30] - 1) if len(prices) >= 30 else 0.0
+            exposures['momentum_3m'] = (prices.iloc[-1] / prices.iloc[-90] - 1) if len(prices) >= 90 else 0.0
+            exposures['momentum_6m'] = (prices.iloc[-1] / prices.iloc[-180] - 1) if len(prices) >= 180 else 0.0
+            
             exposures['volatility_score'] = self.compute_volatility_factor(returns)
         else:
             exposures['momentum_1m'] = 0.0
+            exposures['momentum_3m'] = 0.0
+            exposures['momentum_6m'] = 0.0
             exposures['volatility_score'] = 0.0
         
         exposures['value_score'] = self.compute_value_factor(asset_data)
@@ -238,7 +243,10 @@ class FactorModel:
         else:
             weights = self.factor_weights
         
-        X = self.scaler.transform(factor_exposures[self.factors])
+        if hasattr(self.scaler, 'mean_'):
+            X = self.scaler.transform(factor_exposures[self.factors])
+        else:
+            X = factor_exposures[self.factors].values
         
         scores = X @ weights
         

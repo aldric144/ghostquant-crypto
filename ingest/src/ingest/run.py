@@ -8,6 +8,7 @@ from ingest.adapters.cex_binance import BinanceAdapter
 from ingest.adapters.cex_bybit import BybitAdapter
 from ingest.adapters.dex_univ3 import UniswapV3Adapter
 from ingest.adapters.onchain_evm import EVMAdapter
+from ingest.adapters.api_coingecko import CoinGeckoAdapter
 from ingest.utils.timeseries import (
     batch_insert_ticks, batch_insert_books, 
     batch_insert_derivatives, batch_insert_dex_metrics,
@@ -158,8 +159,18 @@ class IngestionOrchestrator:
         await self.initialize()
         
         symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT']
+        spot_symbols = ['BTC', 'ETH', 'SOL']  # CoinGecko format
         
-        binance = BinanceAdapter(symbols, self.on_tick, self.on_book)
+        coingecko_api_key = os.getenv('COINGECKO_API_KEY', '')
+        use_coingecko = coingecko_api_key or os.getenv('USE_MOCK_DATA', 'true').lower() == 'true'
+        
+        if use_coingecko:
+            logger.info("Using CoinGecko adapter for spot prices (US-friendly)")
+            spot_adapter = CoinGeckoAdapter(spot_symbols, self.on_tick, self.on_book)
+        else:
+            logger.info("Using Binance adapter for spot prices")
+            spot_adapter = BinanceAdapter(symbols, self.on_tick, self.on_book)
+        
         bybit = BybitAdapter(symbols, self.on_derivative)
         
         pools_list = [{'pool_id': p['pool_id'], 'address': p['address']} for p in self.pools.values()]
@@ -169,7 +180,7 @@ class IngestionOrchestrator:
         evm = EVMAdapter(assets_list, self.on_flow)
         
         await asyncio.gather(
-            binance.start(),
+            spot_adapter.start(),
             bybit.start(),
             uniswap.start(),
             evm.start(),
