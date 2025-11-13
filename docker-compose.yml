@@ -218,12 +218,15 @@ services:
     environment:
       NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:8080}
       NEXT_PUBLIC_ALPHABRAIN_API: ${NEXT_PUBLIC_ALPHABRAIN_API:-http://localhost:8081}
+      NEXT_PUBLIC_ECOSCAN_API: ${NEXT_PUBLIC_ECOSCAN_API:-http://localhost:8082}
     ports:
       - "3000:3000"
     depends_on:
       api:
         condition: service_healthy
       alphabrain:
+        condition: service_healthy
+      ecoscan:
         condition: service_healthy
     networks:
       - ghostquant-net
