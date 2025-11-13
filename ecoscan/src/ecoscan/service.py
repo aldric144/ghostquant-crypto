@@ -159,17 +159,23 @@ class EcoscanService:
             
             assets = await self.get_assets()
             
+            ecosystems = await self.ecosystem_mapper.get_all_ecosystems()
+            chain_emi_map = {eco["chain"]: eco["emi_score"] for eco in ecosystems}
+            
             asset_scores = {}
             
             for asset in assets:
                 symbol = asset["symbol"]
+                asset_id = asset["asset_id"]
+                chain = asset.get("chain") or ""
+                chain = chain.lower() if chain else ""
                 
-                emi = 50.0  # Default neutral
+                emi = chain_emi_map.get(chain, 50.0)
                 
                 transactions = await self.whale_tracker.fetch_whale_transactions(symbol)
                 wcf = self.whale_tracker.compute_wcf(transactions)
                 
-                pretrend = await self._get_pretrend_from_alphabrain(symbol)
+                pretrend = await self._get_pretrend_from_signals(asset_id)
                 
                 asset_scores[symbol] = {
                     "emi": emi,
@@ -205,8 +211,30 @@ class EcoscanService:
             logger.error(f"Error computing Ecoscores: {e}")
             return []
     
+    async def _get_pretrend_from_signals(self, asset_id: int) -> Optional[float]:
+        """Get Pre-Trend probability from latest signal in database."""
+        try:
+            async with self.db_conn.cursor() as cur:
+                await cur.execute(
+                    """
+                    SELECT pretrend_prob 
+                    FROM signals 
+                    WHERE asset_id = %s 
+                    ORDER BY ts DESC 
+                    LIMIT 1
+                    """,
+                    (asset_id,)
+                )
+                result = await cur.fetchone()
+                if result and result["pretrend_prob"] is not None:
+                    return float(result["pretrend_prob"])
+                return 0.5
+        except Exception as e:
+            logger.error(f"Error fetching pretrend for asset_id {asset_id}: {e}")
+            return 0.5
+    
     async def _get_pretrend_from_alphabrain(self, symbol: str) -> Optional[float]:
-        """Get Pre-Trend probability from AlphaBrain service."""
+        """Get Pre-Trend probability from AlphaBrain service (deprecated, use _get_pretrend_from_signals)."""
         return None
     
     async def get_summary(self) -> Dict:
