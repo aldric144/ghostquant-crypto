@@ -42,11 +42,20 @@ interface ClusterSummary {
   };
 }
 
+interface BridgeFlowSummary {
+  total_inflows: number;
+  total_outflows: number;
+  total_net_flow: number;
+  top_inflow_chains: Array<{ chain: string; inflows: number }>;
+  top_outflow_chains: Array<{ chain: string; outflows: number }>;
+}
+
 export default function EcoscanPage() {
   const [ecosystems, setEcosystems] = useState<Ecosystem[]>([]);
   const [whaleFlows, setWhaleFlows] = useState<WhaleFlow[]>([]);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [clusterSummary, setClusterSummary] = useState<ClusterSummary | null>(null);
+  const [bridgeFlows, setBridgeFlows] = useState<BridgeFlowSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,6 +78,7 @@ export default function EcoscanPage() {
       setWhaleFlows(summary.whale_activity?.heatmap || []);
       setOpportunities(summary.opportunities?.top_10 || []);
       setClusterSummary(summary.smart_money || null);
+      setBridgeFlows(summary.bridge_flows?.summary || null);
 
       setLoading(false);
     } catch (err) {
@@ -262,6 +272,58 @@ export default function EcoscanPage() {
             ))}
           </div>
         </div>
+
+        {/* Bridge Flow Monitor */}
+        {bridgeFlows && (
+          <div className="mb-8 bg-[#1A2332] rounded-lg p-6 border border-gray-700">
+            <h2 className="text-2xl font-bold mb-4 text-[#D4AF37]">
+              Cross-Chain Bridge Flows
+            </h2>
+            <p className="text-sm text-gray-400 mb-4">
+              24h bridge activity • Wormhole, LayerZero, Stargate, Across, Hop, Synapse, Multichain
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div className="p-4 bg-[#0B1622] rounded-lg border border-gray-700">
+                <div className="text-sm text-gray-400">Total Inflows</div>
+                <div className="text-2xl font-bold text-green-400">
+                  ${(bridgeFlows.total_inflows / 1e6).toFixed(1)}M
+                </div>
+              </div>
+              <div className="p-4 bg-[#0B1622] rounded-lg border border-gray-700">
+                <div className="text-sm text-gray-400">Total Outflows</div>
+                <div className="text-2xl font-bold text-red-400">
+                  ${(bridgeFlows.total_outflows / 1e6).toFixed(1)}M
+                </div>
+              </div>
+              <div className="p-4 bg-[#0B1622] rounded-lg border border-gray-700">
+                <div className="text-sm text-gray-400">Net Flow</div>
+                <div className={`text-2xl font-bold ${bridgeFlows.total_net_flow >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  ${(bridgeFlows.total_net_flow / 1e6).toFixed(1)}M
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div className="text-sm font-bold text-gray-300 mb-2">Top Inflow Chains</div>
+                {bridgeFlows.top_inflow_chains.slice(0, 5).map((chain) => (
+                  <div key={chain.chain} className="flex justify-between items-center py-2 border-b border-gray-800">
+                    <span className="capitalize">{chain.chain}</span>
+                    <span className="text-green-400">${(chain.inflows / 1e6).toFixed(1)}M</span>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <div className="text-sm font-bold text-gray-300 mb-2">Top Outflow Chains</div>
+                {bridgeFlows.top_outflow_chains.slice(0, 5).map((chain) => (
+                  <div key={chain.chain} className="flex justify-between items-center py-2 border-b border-gray-800">
+                    <span className="capitalize">{chain.chain}</span>
+                    <span className="text-red-400">${(chain.outflows / 1e6).toFixed(1)}M</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Smart Money Clusters */}
         {clusterSummary && (

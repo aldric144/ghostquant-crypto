@@ -332,13 +332,96 @@ async def get_whale_detail(
         
         return {
             "asset": asset,
-            "transactions": transactions[:50],  # Limit to 50 most recent
+            "transactions": transactions[:50],
             "summary": summary,
             "lookback_hours": lookback_hours,
             "timestamp": datetime.utcnow().isoformat(),
         }
     except Exception as e:
         logger.error(f"Error getting whale detail for {asset}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/ecoscan/bridges")
+async def get_bridge_flows(
+    lookback_hours: int = Query(24, ge=1, le=168, description="Hours to look back")
+):
+    """
+    Get cross-chain bridge flow data.
+    
+    Args:
+        lookback_hours: Hours to look back (1-168)
+        
+    Returns:
+        Bridge flow summary with inflows/outflows by chain
+    """
+    try:
+        bridge_flows = await service.bridge_monitor.get_all_bridge_flows(
+            lookback_hours=lookback_hours
+        )
+        
+        bridge_summary = service.bridge_monitor.get_bridge_flow_summary(bridge_flows)
+        
+        anomalies = []
+        for flow in bridge_flows[:10]:
+            flow_anomalies = service.bridge_monitor.detect_unusual_bridge_activity(flow)
+            anomalies.extend(flow_anomalies)
+        
+        return {
+            "flows": bridge_flows,
+            "summary": bridge_summary,
+            "anomalies": anomalies,
+            "lookback_hours": lookback_hours,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+    except Exception as e:
+        logger.error(f"Error getting bridge flows: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/ecoscan/bridges/{chain}")
+async def get_bridge_flows_by_chain(
+    chain: str,
+    lookback_hours: int = Query(24, ge=1, le=168, description="Hours to look back")
+):
+    """
+    Get bridge flow data for a specific chain.
+    
+    Args:
+        chain: Chain name (e.g., 'ethereum', 'arbitrum')
+        lookback_hours: Hours to look back (1-168)
+        
+    Returns:
+        Detailed bridge flow data for the chain
+    """
+    try:
+        flow_data = await service.bridge_monitor.fetch_bridge_flows(
+            chain,
+            lookback_hours=lookback_hours
+        )
+        
+        if not flow_data:
+            raise HTTPException(status_code=404, detail=f"Chain '{chain}' not found")
+        
+        sentiment = service.bridge_monitor.classify_bridge_sentiment(
+            flow_data["net_flow"],
+            flow_data["inflows"] + flow_data["outflows"]
+        )
+        
+        anomalies = service.bridge_monitor.detect_unusual_bridge_activity(flow_data)
+        
+        return {
+            "chain": chain,
+            "flows": flow_data,
+            "sentiment": sentiment,
+            "anomalies": anomalies,
+            "lookback_hours": lookback_hours,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting bridge flows for {chain}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

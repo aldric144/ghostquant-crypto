@@ -20,6 +20,7 @@ from .models import (
     WhaleTracker,
     SmartMoneyCluster,
     EcoscoreAggregator,
+    BridgeMonitor,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -42,6 +43,7 @@ class EcoscanService:
         self.whale_tracker = WhaleTracker()
         self.smartmoney_cluster = SmartMoneyCluster()
         self.ecoscore_aggregator = EcoscoreAggregator()
+        self.bridge_monitor = BridgeMonitor()
         
         self.db_conn = None
         self.update_interval = ECOSCAN_UPDATE_INTERVAL
@@ -215,12 +217,15 @@ class EcoscanService:
             
             assets = await self.get_assets()
             whale_data = {}
-            for asset in assets[:10]:  # Top 10 assets
+            for asset in assets[:10]:
                 symbol = asset["symbol"]
                 transactions = await self.whale_tracker.fetch_whale_transactions(symbol)
                 whale_data[symbol] = transactions
             
             whale_heatmap = self.whale_tracker.get_whale_heatmap_data(whale_data)
+            
+            bridge_flows = await self.bridge_monitor.get_all_bridge_flows(lookback_hours=24)
+            bridge_summary = self.bridge_monitor.get_bridge_flow_summary(bridge_flows)
             
             opportunities = await self.compute_ecoscores()
             top_opportunities = self.ecoscore_aggregator.get_top_opportunities(opportunities, n=10)
@@ -244,6 +249,11 @@ class EcoscanService:
                 "whale_activity": {
                     "heatmap": whale_heatmap[:10],
                     "total_assets_tracked": len(whale_heatmap),
+                },
+                "bridge_flows": {
+                    "summary": bridge_summary,
+                    "top_inflow_chains": bridge_summary.get("top_inflow_chains", [])[:5],
+                    "top_outflow_chains": bridge_summary.get("top_outflow_chains", [])[:5],
                 },
                 "opportunities": {
                     "top_10": top_opportunities,
