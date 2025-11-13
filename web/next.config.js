@@ -9,11 +9,11 @@ const nextConfig = {
       },
       {
         source: '/alphabrain/:path*',
-        destination: 'http://alphabrain:8081/:path*',
+        destination: 'http://alphabrain:8081/alphabrain/:path*',
       },
       {
         source: '/ecoscan/:path*',
-        destination: 'http://ecoscan:8082/:path*',
+        destination: 'http://ecoscan:8082/ecoscan/:path*',
       },
     ];
   },
