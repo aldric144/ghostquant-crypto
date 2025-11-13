@@ -23,7 +23,7 @@ export default function IQMeterPage() {
 
   const fetchMetrics = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080'}/metrics/learning`)
+      const res = await fetch('/api/metrics/learning')
       const data = await res.json()
       setMetrics(data)
     } catch (error) {

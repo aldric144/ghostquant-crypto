@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import LineChart from '@/components/Charts/LineChart'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080'
-
 export default function AssetPage() {
   const params = useParams()
   const symbol = params.symbol as string
@@ -17,8 +15,8 @@ export default function AssetPage() {
     const fetchData = async () => {
       try {
         const [signalsRes, factorsRes] = await Promise.all([
-          fetch(`${API_BASE}/signals/asset/${symbol}?limit=500`),
-          fetch(`${API_BASE}/factors/asset/${symbol}?limit=1000`)
+          fetch(`/api/signals/asset/${symbol}?limit=500`),
+          fetch(`/api/factors/asset/${symbol}?limit=1000`)
         ])
         
         const signalsData = await signalsRes.json()
