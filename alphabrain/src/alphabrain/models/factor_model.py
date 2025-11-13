@@ -243,7 +243,10 @@ class FactorModel:
         else:
             weights = self.factor_weights
         
-        X = self.scaler.transform(factor_exposures[self.factors])
+        if hasattr(self.scaler, 'mean_'):
+            X = self.scaler.transform(factor_exposures[self.factors])
+        else:
+            X = factor_exposures[self.factors].values
         
         scores = X @ weights
         
