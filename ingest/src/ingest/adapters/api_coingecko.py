@@ -120,7 +120,11 @@ class CoinGeckoAdapter:
                         logger.warning("CoinGecko rate limit hit, backing off")
                         await asyncio.sleep(60)
                     else:
-                        logger.error(f"CoinGecko API error: {response.status}")
+                        try:
+                            error_body = await response.text()
+                            logger.error(f"CoinGecko API error: {response.status} - {error_body[:200]}")
+                        except:
+                            logger.error(f"CoinGecko API error: {response.status}")
         except asyncio.TimeoutError:
             logger.error("CoinGecko API timeout")
         except Exception as e:
