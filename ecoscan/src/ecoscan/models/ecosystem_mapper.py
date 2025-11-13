@@ -118,8 +118,60 @@ class EcosystemMapper:
         }
     
     async def _fetch_defillama_tvl(self, session: aiohttp.ClientSession, chain: str) -> Dict:
-        """Fetch TVL data from DeFiLlama API."""
-        return {"tvl": 0, "protocols": []}
+        """
+        Fetch TVL data from DeFiLlama API.
+        
+        API Docs: https://defillama.com/docs/api
+        """
+        try:
+            chain_mapping = {
+                "ethereum": "Ethereum",
+                "arbitrum": "Arbitrum",
+                "optimism": "Optimism",
+                "polygon": "Polygon",
+                "avalanche": "Avalanche",
+                "bsc": "BSC",
+                "solana": "Solana",
+                "cosmos": "Cosmos",
+                "osmosis": "Osmosis",
+                "base": "Base",
+            }
+            
+            defillama_chain = chain_mapping.get(chain, chain.capitalize())
+            
+            url = f"https://api.llama.fi/v2/historicalChainTvl/{defillama_chain}"
+            async with session.get(url, timeout=10) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data and len(data) > 0:
+                        latest = data[-1]
+                        tvl = latest.get("tvl", 0)
+                        
+                        protocols_url = "https://api.llama.fi/protocols"
+                        async with session.get(protocols_url, timeout=10) as proto_response:
+                            if proto_response.status == 200:
+                                all_protocols = await proto_response.json()
+                                chain_protocols = [
+                                    p["name"] for p in all_protocols
+                                    if defillama_chain in p.get("chains", [])
+                                ]
+                                
+                                logger.info(f"DeFiLlama: {chain} TVL=${tvl/1e9:.2f}B, {len(chain_protocols)} protocols")
+                                return {
+                                    "tvl": tvl,
+                                    "protocols": chain_protocols[:50]  # Limit to top 50
+                                }
+                        
+                        return {"tvl": tvl, "protocols": []}
+                else:
+                    logger.warning(f"DeFiLlama API returned {response.status} for {chain}")
+                    return {"tvl": 0, "protocols": []}
+        except asyncio.TimeoutError:
+            logger.warning(f"DeFiLlama API timeout for {chain}")
+            return {"tvl": 0, "protocols": []}
+        except Exception as e:
+            logger.error(f"Error fetching DeFiLlama data for {chain}: {e}")
+            return {"tvl": 0, "protocols": []}
     
     async def _fetch_coingecko_volume(self, session: aiohttp.ClientSession, chain: str) -> Dict:
         """Fetch volume data from CoinGecko API."""
