@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+# GhostQuant™ — Institutional-grade AI-driven quant intelligence platform
+=======
 # GhostQuant-Crypto
 
 Private, crypto-native research & signal platform with real-time data ingestion, factor computation, TrendScore/Pre-Trend signals, backtesting, dashboards, and alerts.
@@ -389,3 +392,4 @@ Private research platform - not for redistribution.
 ## Support
 
 For issues or questions, refer to the runbooks in the `docs/` directory.
+>>>>>>> devin/1762547590-phase-10-ai-insights-iq-meter
