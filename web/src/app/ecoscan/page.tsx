@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import BridgeLeaderboard from "@/components/BridgeLeaderboard";
+import WhaleTimeline from "@/components/WhaleTimeline";
+import EcoscanMap from "@/components/EcoscanMap";
+import AlertsPanel from "@/components/AlertsPanel";
 
 interface Ecosystem {
   chain: string;
@@ -440,6 +444,26 @@ export default function EcoscanPage() {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Phase 8: Cross-Chain Flow Map */}
+        <div className="mb-8">
+          <EcoscanMap period="24h" minVolume={100000} />
+        </div>
+
+        {/* Phase 8: Bridge Flow Leaderboard */}
+        <div className="mb-8">
+          <BridgeLeaderboard defaultPeriod="24h" showChains={true} />
+        </div>
+
+        {/* Phase 8: Whale Activity Timeline */}
+        <div className="mb-8">
+          <WhaleTimeline minValueUsd={1_000_000} limit={20} />
+        </div>
+
+        {/* Phase 1: Active Alerts Panel */}
+        <div className="mb-8">
+          <AlertsPanel lookbackHours={24} limit={50} autoRefresh={true} />
         </div>
 
         {/* Footer */}
