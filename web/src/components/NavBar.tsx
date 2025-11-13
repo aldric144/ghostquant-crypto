@@ -14,6 +14,7 @@ export default function NavBar() {
             <div className="text-2xl font-bold text-blue-400">GhostQuant</div>
             <div className="flex space-x-6">
               <a href="/" className="text-gray-300 hover:text-blue-400 transition">Dashboard</a>
+              <a href="/assets" className="text-gray-300 hover:text-blue-400 transition">All Assets</a>
               <a href="/alphabrain" className="text-gray-300 hover:text-blue-400 transition">AlphaBrain</a>
               <a href="/ecoscan" className="text-gray-300 hover:text-blue-400 transition">Ecoscan 🗺️</a>
               <a href="/iqmeter" className="text-gray-300 hover:text-blue-400 transition">IQ Meter</a>
