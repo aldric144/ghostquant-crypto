@@ -158,8 +158,18 @@ class IngestionOrchestrator:
     async def start(self):
         await self.initialize()
         
-        symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT']
-        spot_symbols = ['BTC', 'ETH', 'SOL']  # CoinGecko format
+        symbols = [
+            'BTCUSDT', 'ETHUSDT', 'SOLUSDT',
+            'AVAXUSDT', 'MATICUSDT', 'ARBUSDT', 'OPUSDT',
+            'ATOMUSDT', 'NEARUSDT', 'FTMUSDT', 'INJUSDT',
+            'SUIUSDT', 'DOTUSDT'
+        ]
+        spot_symbols = [
+            'BTC', 'ETH', 'SOL',
+            'AVAX', 'MATIC', 'ARB', 'OP',
+            'ATOM', 'NEAR', 'FTM', 'INJ',
+            'SUI', 'DOT'
+        ]
         
         coingecko_api_key = os.getenv('COINGECKO_API_KEY', '')
         use_coingecko = coingecko_api_key or os.getenv('USE_MOCK_DATA', 'true').lower() == 'true'
