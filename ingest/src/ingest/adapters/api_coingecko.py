@@ -37,7 +37,7 @@ class CoinGeckoAdapter:
             'MKR': 'maker'
         }
         
-        self.base_url = "https://api.coingecko.com/api/v3"
+        self.base_url = "https://pro-api.coingecko.com/api/v3" if COINGECKO_API_KEY else "https://api.coingecko.com/api/v3"
         self.update_interval = 30  # seconds (respect rate limits)
         self.last_prices = {}  # cache for comparison
         
