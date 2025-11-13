@@ -79,6 +79,7 @@ services:
       BYBIT_API_KEY: ${BYBIT_API_KEY:-}
       BYBIT_API_SECRET: ${BYBIT_API_SECRET:-}
       RPC_ETH_MAINNET: ${RPC_ETH_MAINNET:-}
+      COINGECKO_API_KEY: ${COINGECKO_API_KEY:-}
       USE_MOCK_DATA: ${USE_MOCK_DATA:-true}
     depends_on:
       postgres:
