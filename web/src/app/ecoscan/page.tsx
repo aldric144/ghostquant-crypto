@@ -30,9 +30,16 @@ interface Opportunity {
 }
 
 interface ClusterSummary {
-  accumulation: { count: number; percentage: number };
-  distribution: { count: number; percentage: number };
-  dormant_activation: { count: number; percentage: number };
+  cluster_counts: {
+    accumulation: number;
+    distribution: number;
+    dormant_activation: number;
+  };
+  cluster_percentages: {
+    accumulation: number;
+    distribution: number;
+    dormant_activation: number;
+  };
 }
 
 export default function EcoscanPage() {
@@ -269,10 +276,10 @@ export default function EcoscanPage() {
               <div className="p-4 bg-[#0B1622] rounded-lg border-2 border-green-500">
                 <div className="text-lg font-bold text-green-400">Accumulation</div>
                 <div className="text-3xl font-bold my-2">
-                  {clusterSummary.accumulation.count}
+                  {clusterSummary.cluster_counts.accumulation}
                 </div>
                 <div className="text-sm text-gray-400">
-                  {clusterSummary.accumulation.percentage.toFixed(1)}% of wallets
+                  {clusterSummary.cluster_percentages.accumulation.toFixed(1)}% of wallets
                 </div>
                 <div className="text-xs text-gray-500 mt-2">
                   Consistent buying, low selling
@@ -281,10 +288,10 @@ export default function EcoscanPage() {
               <div className="p-4 bg-[#0B1622] rounded-lg border-2 border-red-500">
                 <div className="text-lg font-bold text-red-400">Distribution</div>
                 <div className="text-3xl font-bold my-2">
-                  {clusterSummary.distribution.count}
+                  {clusterSummary.cluster_counts.distribution}
                 </div>
                 <div className="text-sm text-gray-400">
-                  {clusterSummary.distribution.percentage.toFixed(1)}% of wallets
+                  {clusterSummary.cluster_percentages.distribution.toFixed(1)}% of wallets
                 </div>
                 <div className="text-xs text-gray-500 mt-2">
                   High selling activity
@@ -295,10 +302,10 @@ export default function EcoscanPage() {
                   Dormant Activation
                 </div>
                 <div className="text-3xl font-bold my-2">
-                  {clusterSummary.dormant_activation.count}
+                  {clusterSummary.cluster_counts.dormant_activation}
                 </div>
                 <div className="text-sm text-gray-400">
-                  {clusterSummary.dormant_activation.percentage.toFixed(1)}% of wallets
+                  {clusterSummary.cluster_percentages.dormant_activation.toFixed(1)}% of wallets
                 </div>
                 <div className="text-xs text-gray-500 mt-2">
                   Recently reactivated wallets
