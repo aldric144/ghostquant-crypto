@@ -1,122 +1,158 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-
-interface Asset {
-  symbol: string;
-  chain: string;
-  sector: string;
-}
-
-interface Signal {
-  asset_id: number;
-  ts: string;
-  trend_score: number;
-  pretrend_prob: number;
-  action: string;
-  confidence: number;
-}
-
-interface AssetWithSignal extends Asset {
-  asset_id: number;
-  latest_signal: Signal | null;
-  price: number;
-  change_24h: number;
-}
+import { useEffect, useState, useMemo } from "react";
+import { Search, Filter, RefreshCw, TrendingUp, TrendingDown } from "lucide-react";
+import AssetCard from "@/components/AssetCard";
+import WhaleExplainModal from "@/components/WhaleExplainModal";
+import BuyModal from "@/components/BuyModal";
+import { fetchAllAssets, assetsCache, type Asset } from "@/lib/api";
 
 export default function AllAssetsPage() {
-  const [assets, setAssets] = useState<AssetWithSignal[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<"symbol" | "trendscore" | "pretrend" | "change">("trendscore");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"momentum" | "trend_score" | "whale_confidence" | "market_cap" | "price_change">("momentum");
   const [filterSignal, setFilterSignal] = useState<string>("all");
+  const [watchlist, setWatchlist] = useState<Set<string>>(new Set());
+  const [whaleModalSymbol, setWhaleModalSymbol] = useState<string | null>(null);
+  const [buyModalAsset, setBuyModalAsset] = useState<Asset | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   useEffect(() => {
-    fetchAllAssets();
-    const interval = setInterval(fetchAllAssets, 60000); // Refresh every minute
-    return () => clearInterval(interval);
+    try {
+      const saved = localStorage.getItem('ghostquant_watchlist');
+      if (saved) {
+        setWatchlist(new Set(JSON.parse(saved)));
+      }
+    } catch (err) {
+      console.error('Failed to load watchlist:', err);
+    }
   }, []);
 
-  const fetchAllAssets = async () => {
+  useEffect(() => {
     try {
-      setLoading(true);
+      localStorage.setItem('ghostquant_watchlist', JSON.stringify(Array.from(watchlist)));
+    } catch (err) {
+      console.error('Failed to save watchlist:', err);
+    }
+  }, [watchlist]);
+
+  const fetchAssets = async () => {
+    try {
       setError(null);
+      
+      const cached = assetsCache.get<Asset[]>('all-assets');
+      if (cached) {
+        setAssets(cached);
+        setLoading(false);
+        return;
+      }
 
-      const assetsRes = await fetch('/api/assets');
-      if (!assetsRes.ok) throw new Error("Failed to fetch assets");
-      const assetsData = await assetsRes.json();
-
-      const signalsRes = await fetch('/api/signals/latest?limit=100');
-      if (!signalsRes.ok) throw new Error("Failed to fetch signals");
-      const signalsData = await signalsRes.json();
-
-      const combined = assetsData.map((asset: Asset & { asset_id: number }) => {
-        const signal = signalsData.find((s: any) => s.asset_id === asset.asset_id);
-        return {
-          ...asset,
-          latest_signal: signal || null,
-          price: signal ? (Math.random() * 1000 + 100) : 0, // Mock price
-          change_24h: signal ? (Math.random() * 20 - 10) : 0, // Mock 24h change
-        };
-      });
-
-      setAssets(combined);
+      const data = await fetchAllAssets({ limit: 500, sort: sortBy });
+      setAssets(data);
+      assetsCache.set('all-assets', data);
+      setLastUpdated(new Date());
       setLoading(false);
     } catch (err) {
       console.error("Error fetching assets:", err);
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : "Failed to fetch assets");
       setLoading(false);
     }
   };
 
-  const getSignalColor = (action: string): string => {
-    if (action === "STRONG_BUY") return "text-green-400";
-    if (action === "BUY") return "text-green-300";
-    if (action === "ACCUMULATE") return "text-yellow-400";
-    if (action === "HOLD") return "text-gray-400";
-    if (action === "REDUCE") return "text-orange-400";
-    return "text-red-400"; // SELL
+  useEffect(() => {
+    fetchAssets();
+    
+    const interval = setInterval(fetchAssets, 30000);
+    
+    return () => clearInterval(interval);
+  }, [sortBy]);
+
+  const handleRefresh = () => {
+    assetsCache.clear();
+    setLoading(true);
+    fetchAssets();
   };
 
-  const getSignalBgColor = (action: string): string => {
-    if (action === "STRONG_BUY") return "bg-green-500/20 border-green-500";
-    if (action === "BUY") return "bg-green-500/10 border-green-500/50";
-    if (action === "ACCUMULATE") return "bg-yellow-500/10 border-yellow-500/50";
-    if (action === "HOLD") return "bg-gray-500/10 border-gray-500/50";
-    if (action === "REDUCE") return "bg-orange-500/10 border-orange-500/50";
-    return "bg-red-500/10 border-red-500/50"; // SELL
+  const handleWatchToggle = (asset: Asset, watched: boolean) => {
+    setWatchlist(prev => {
+      const newSet = new Set(prev);
+      if (watched) {
+        newSet.add(asset.symbol);
+      } else {
+        newSet.delete(asset.symbol);
+      }
+      return newSet;
+    });
   };
 
-  const sortedAssets = [...assets].sort((a, b) => {
-    if (sortBy === "symbol") return a.symbol.localeCompare(b.symbol);
-    if (sortBy === "trendscore") {
-      const aScore = a.latest_signal?.trend_score || 0;
-      const bScore = b.latest_signal?.trend_score || 0;
-      return bScore - aScore;
+  const handleBuyClick = (asset: Asset) => {
+    setBuyModalAsset(asset);
+    
+    if (typeof window !== 'undefined' && (window as any).analytics) {
+      (window as any).analytics.track('buy_clicked', {
+        symbol: asset.symbol,
+        price: asset.price,
+        source: 'all_assets_page',
+      });
     }
-    if (sortBy === "pretrend") {
-      const aPretrend = a.latest_signal?.pretrend_prob || 0;
-      const bPretrend = b.latest_signal?.pretrend_prob || 0;
-      return bPretrend - aPretrend;
-    }
-    if (sortBy === "change") {
-      return b.change_24h - a.change_24h;
-    }
-    return 0;
-  });
+  };
 
-  const filteredAssets = filterSignal === "all" 
-    ? sortedAssets 
-    : sortedAssets.filter(a => a.latest_signal?.action === filterSignal);
+  const handleWhaleClick = (symbol: string) => {
+    setWhaleModalSymbol(symbol);
+    
+    if (typeof window !== 'undefined' && (window as any).analytics) {
+      (window as any).analytics.track('whale_explain_opened', {
+        symbol,
+        source: 'all_assets_page',
+      });
+    }
+  };
+
+  const filteredAndSortedAssets = useMemo(() => {
+    let filtered = assets;
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        asset =>
+          asset.symbol.toLowerCase().includes(query) ||
+          asset.name.toLowerCase().includes(query)
+      );
+    }
+
+    if (filterSignal !== "all") {
+      filtered = filtered.filter(asset => asset.signal === filterSignal);
+    }
+
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case "momentum":
+          return b.momentum_score - a.momentum_score;
+        case "trend_score":
+          return b.trend_score - a.trend_score;
+        case "whale_confidence":
+          return b.whale_confidence - a.whale_confidence;
+        case "market_cap":
+          return b.market_cap - a.market_cap;
+        case "price_change":
+          return (b.price_change_percentage_24h || 0) - (a.price_change_percentage_24h || 0);
+        default:
+          return 0;
+      }
+    });
+
+    return sorted;
+  }, [assets, searchQuery, filterSignal, sortBy]);
 
   if (loading && assets.length === 0) {
     return (
-      <div className="min-h-screen bg-[#0B1622] text-white p-8">
+      <div className="min-h-screen bg-slate-900 text-white p-4 sm:p-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8 text-[#D4AF37]">All Assets</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-blue-400">All Assets</h1>
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D4AF37] mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
             <p className="mt-4 text-gray-400">Loading assets...</p>
           </div>
         </div>
@@ -124,16 +160,16 @@ export default function AllAssetsPage() {
     );
   }
 
-  if (error) {
+  if (error && assets.length === 0) {
     return (
-      <div className="min-h-screen bg-[#0B1622] text-white p-8">
+      <div className="min-h-screen bg-slate-900 text-white p-4 sm:p-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8 text-[#D4AF37]">All Assets</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-blue-400">All Assets</h1>
           <div className="bg-red-900/20 border border-red-500 rounded-lg p-6">
-            <p className="text-red-400">Error: {error}</p>
+            <p className="text-red-400 mb-4">Error: {error}</p>
             <button
-              onClick={fetchAllAssets}
-              className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 rounded"
+              onClick={handleRefresh}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
             >
               Retry
             </button>
@@ -144,147 +180,163 @@ export default function AllAssetsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0B1622] text-white p-8">
+    <div className="min-h-screen bg-slate-900 text-white p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#D4AF37] mb-2">All Assets</h1>
-          <p className="text-gray-400">
-            Overview of all {assets.length} tracked assets with latest signals
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-blue-400 mb-2">All Assets</h1>
+          <p className="text-gray-400 text-sm sm:text-base">
+            Full market universe: {filteredAndSortedAssets.length} of {assets.length} assets
+            {lastUpdated && (
+              <span className="ml-2 text-xs text-slate-500">
+                • Updated {Math.floor((Date.now() - lastUpdated.getTime()) / 1000)}s ago
+              </span>
+            )}
           </p>
         </div>
 
-        {/* Filters and Sort */}
-        <div className="mb-6 flex flex-wrap gap-4 items-center">
-          <div>
-            <label className="text-sm text-gray-400 mr-2">Sort by:</label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-[#1A2332] border border-gray-700 rounded px-3 py-2 text-white"
-            >
-              <option value="trendscore">TrendScore (High to Low)</option>
-              <option value="pretrend">Pre-Trend (High to Low)</option>
-              <option value="change">24h Change</option>
-              <option value="symbol">Symbol (A-Z)</option>
-            </select>
+        {/* Search and Filters */}
+        <div className="mb-6 space-y-4">
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search by symbol or name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-colors"
+            />
           </div>
-          <div>
-            <label className="text-sm text-gray-400 mr-2">Filter by Signal:</label>
+
+          {/* Filters Row */}
+          <div className="flex flex-wrap gap-3 items-center">
+            {/* Sort By */}
+            <div className="flex items-center gap-2">
+              <Filter size={16} className="text-gray-400" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+              >
+                <option value="momentum">Momentum Score</option>
+                <option value="trend_score">Trend Score</option>
+                <option value="whale_confidence">Whale Activity</option>
+                <option value="market_cap">Market Cap</option>
+                <option value="price_change">24h Change</option>
+              </select>
+            </div>
+
+            {/* Signal Filter */}
             <select
               value={filterSignal}
               onChange={(e) => setFilterSignal(e.target.value)}
-              className="bg-[#1A2332] border border-gray-700 rounded px-3 py-2 text-white"
+              className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
             >
               <option value="all">All Signals</option>
-              <option value="STRONG_BUY">Strong Buy</option>
               <option value="BUY">Buy</option>
-              <option value="ACCUMULATE">Accumulate</option>
               <option value="HOLD">Hold</option>
-              <option value="REDUCE">Reduce</option>
-              <option value="SELL">Sell</option>
+              <option value="EXIT">Exit</option>
             </select>
-          </div>
-          <div className="ml-auto">
+
+            {/* Refresh Button */}
             <button
-              onClick={fetchAllAssets}
-              className="px-4 py-2 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 rounded text-[#D4AF37]"
+              onClick={handleRefresh}
+              disabled={loading}
+              className="ml-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center gap-2 text-sm"
+              style={{ minWidth: '44px', minHeight: '44px' }}
             >
-              Refresh
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+              <span className="hidden sm:inline">Refresh</span>
             </button>
+          </div>
+
+          {/* Stats Bar */}
+          <div className="flex flex-wrap gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <TrendingUp size={16} className="text-green-400" />
+              <span className="text-gray-400">
+                Gainers: {assets.filter(a => (a.price_change_percentage_24h || 0) > 0).length}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <TrendingDown size={16} className="text-red-400" />
+              <span className="text-gray-400">
+                Losers: {assets.filter(a => (a.price_change_percentage_24h || 0) < 0).length}
+              </span>
+            </div>
+            <div className="text-gray-400">
+              Watchlist: {watchlist.size}
+            </div>
           </div>
         </div>
 
         {/* Assets Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredAssets.map((asset) => (
-            <Link
-              key={asset.symbol}
-              href={`/assets/${asset.symbol}`}
-              className="block"
-            >
-              <div
-                className={`bg-[#1A2332] rounded-lg p-6 border-2 hover:scale-105 transition-all cursor-pointer ${
-                  asset.latest_signal
-                    ? getSignalBgColor(asset.latest_signal.action)
-                    : "border-gray-700"
-                }`}
-              >
-                {/* Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-2xl font-bold">{asset.symbol}</h3>
-                    <p className="text-sm text-gray-400 capitalize">
-                      {asset.chain || asset.sector}
-                    </p>
-                  </div>
-                  {asset.latest_signal && (
-                    <div
-                      className={`px-3 py-1 rounded text-sm font-bold ${getSignalColor(
-                        asset.latest_signal.action
-                      )}`}
-                    >
-                      {asset.latest_signal.action}
-                    </div>
-                  )}
-                </div>
-
-                {/* Metrics */}
-                {asset.latest_signal ? (
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-400">TrendScore</span>
-                      <span className="text-lg font-bold text-[#D4AF37]">
-                        {asset.latest_signal.trend_score.toFixed(1)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-400">Pre-Trend</span>
-                      <span className="text-lg font-bold text-blue-400">
-                        {(asset.latest_signal.pretrend_prob * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-400">Confidence</span>
-                      <span className="text-lg font-bold text-gray-300">
-                        {(asset.latest_signal.confidence * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-400">24h Change</span>
-                      <span
-                        className={`text-lg font-bold ${
-                          asset.change_24h >= 0 ? "text-green-400" : "text-red-400"
-                        }`}
-                      >
-                        {asset.change_24h >= 0 ? "+" : ""}
-                        {asset.change_24h.toFixed(2)}%
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-4 text-gray-500">
-                    No signal data available
-                  </div>
-                )}
-
-                {/* View Details Link */}
-                <div className="mt-4 pt-4 border-t border-gray-700">
-                  <span className="text-sm text-[#D4AF37] hover:underline">
-                    View Details →
-                  </span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {filteredAssets.length === 0 && (
+        {filteredAndSortedAssets.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
-            No assets match the selected filter
+            <p className="text-lg mb-2">No assets found</p>
+            <p className="text-sm">Try adjusting your search or filters</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredAndSortedAssets.map((asset) => (
+              <AssetCard
+                key={asset.symbol}
+                asset={asset}
+                onBuyClick={handleBuyClick}
+                onWatchToggle={handleWatchToggle}
+                onWhaleClick={handleWhaleClick}
+                isWatched={watchlist.has(asset.symbol)}
+                compact={true}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Load More Hint */}
+        {assets.length >= 500 && (
+          <div className="mt-6 text-center text-sm text-gray-400">
+            Showing first 500 assets. Use search and filters to find specific assets.
           </div>
         )}
       </div>
+
+      {/* Modals */}
+      {whaleModalSymbol && (
+        <WhaleExplainModal
+          symbol={whaleModalSymbol}
+          onClose={() => setWhaleModalSymbol(null)}
+        />
+      )}
+
+      {buyModalAsset && (
+        <BuyModal
+          coin={{
+            id: buyModalAsset.coin_id || buyModalAsset.symbol,
+            symbol: buyModalAsset.symbol,
+            name: buyModalAsset.name,
+            image: buyModalAsset.image,
+            current_price: buyModalAsset.price,
+            market_cap: buyModalAsset.market_cap,
+            total_volume: buyModalAsset.total_volume,
+            price_change_percentage_24h: buyModalAsset.price_change_percentage_24h || 0,
+            momentum_score: buyModalAsset.momentum_score,
+            sub_scores: {
+              price_momentum: 0,
+              volume_spike: 0,
+              rsi_signal: 0,
+              ma_cross: 0,
+              pretrend_bonus: 0,
+              whale_bonus: 0,
+            },
+            whale_confidence: buyModalAsset.whale_confidence,
+            pretrend_prob: buyModalAsset.pretrend,
+            action: buyModalAsset.signal,
+            confidence: 0,
+          }}
+          onClose={() => setBuyModalAsset(null)}
+        />
+      )}
     </div>
   );
 }
