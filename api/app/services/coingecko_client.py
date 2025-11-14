@@ -199,3 +199,37 @@ class CoinGeckoClient:
         
         data = await self._request(f"coins/{coin_id}/market_chart", params)
         return data.get("prices", [])
+    
+    async def get_tickers(self, coin_id: str) -> List[Dict[str, Any]]:
+        """
+        Get ticker data for a coin across exchanges.
+        Used to compute cross_exchange_confirmation_count.
+        
+        Args:
+            coin_id: CoinGecko coin ID
+            
+        Returns:
+            List of ticker dictionaries
+        """
+        if self.use_mock:
+            import random
+            random.seed(sum(ord(c) for c in coin_id))
+            num_exchanges = random.randint(2, 5)
+            return [
+                {
+                    "market": {"name": f"Exchange{i}"},
+                    "base": coin_id[:3].upper(),
+                    "target": "USD",
+                    "trust_score": "green" if i < 3 else "yellow"
+                }
+                for i in range(num_exchanges)
+            ]
+        
+        params = {
+            "include_exchange_logo": "false",
+            "page": 1,
+            "order": "trust_score_desc"
+        }
+        
+        data = await self._request(f"coins/{coin_id}/tickers", params)
+        return data.get("tickers", [])

@@ -2,69 +2,171 @@
 
 import { useEffect, useState } from "react";
 
-interface MomentumResult {
-  symbol: string;
-  momentum_score: number;
-  price_change_pct: number;
-  volume_24h: number;
-  volatility: number;
-  sparkline: number[];
-  rank: number;
+interface TopFeature {
+  feature: string;
+  contribution: number;
+  note: string;
 }
 
-interface MomentumResponse {
-  period: string;
-  period_hours: number;
-  results: MomentumResult[];
-  total_assets: number;
+interface ScoredCoin {
+  id: string;
+  symbol: string;
+  name: string;
+  image: string;
+  current_price: number;
+  market_cap: number;
+  market_cap_rank?: number;
+  total_volume: number;
+  price_change_percentage_1h?: number;
+  price_change_percentage_24h?: number;
+  price_change_percentage_7d?: number;
+  score: number;
+  confidence: number;
+  top_features: TopFeature[];
+  risk_flags: string[];
+  why: string;
+  liquidity_score: number;
+  cross_exchange_count: number;
+  sparkline_7d?: number[];
+  trade_readiness?: string;
+  suggested_pair?: {
+    exchange: string;
+    pair: string;
+  };
+  estimated_slippage_pct?: number;
+}
+
+interface ScreenerResponse {
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+  results: ScoredCoin[];
   timestamp: string;
 }
 
-export default function MomentumScreenerPage() {
-  const [data, setData] = useState<MomentumResponse | null>(null);
+interface TopCoinsResponse {
+  count: number;
+  results: ScoredCoin[];
+  filters: any;
+  timestamp: string;
+}
+
+export default function NativeScreenerPage() {
+  const [data, setData] = useState<ScreenerResponse | null>(null);
+  const [topCoins, setTopCoins] = useState<TopCoinsResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState("24h");
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [minScore, setMinScore] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCoin, setSelectedCoin] = useState<ScoredCoin | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    fetchMomentumData();
-    const interval = setInterval(fetchMomentumData, 60000); // Refresh every minute
-    return () => clearInterval(interval);
-  }, [period]);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
-  const fetchMomentumData = async () => {
+  useEffect(() => {
+    fetchScreenerData();
+    fetchTopCoins();
+    const interval = setInterval(() => {
+      fetchScreenerData();
+      fetchTopCoins();
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [page, search, minScore]);
+
+  const fetchScreenerData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/screener/momentum?period=${period}&limit=25`);
-      if (!response.ok) throw new Error("Failed to fetch momentum data");
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: "50",
+      });
+      if (minScore !== null) params.append("min_score", minScore.toString());
+      if (search) params.append("search", search);
+
+      const response = await fetch(`/api/screener/list?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch screener data");
       const json = await response.json();
       setData(json);
       setError(null);
     } catch (err) {
-      console.error("Error fetching momentum data:", err);
-      setError("Failed to load momentum screener data");
+      console.error("Error fetching screener data:", err);
+      setError("Failed to load screener data");
     } finally {
       setLoading(false);
     }
   };
 
-  const getMomentumColor = (score: number) => {
-    if (score >= 70) return "text-green-400";
-    if (score >= 60) return "text-blue-400";
-    if (score >= 50) return "text-gray-400";
-    if (score >= 40) return "text-orange-400";
+  const fetchTopCoins = async () => {
+    try {
+      const response = await fetch("/api/screener/top_coins?limit=10");
+      if (!response.ok) throw new Error("Failed to fetch top coins");
+      const json = await response.json();
+      setTopCoins(json);
+    } catch (err) {
+      console.error("Error fetching top coins:", err);
+    }
+  };
+
+  const handleCoinClick = (coin: ScoredCoin) => {
+    setSelectedCoin(coin);
+  };
+
+  const exportToCSV = () => {
+    if (!topCoins?.results) return;
+    
+    const headers = ["Rank", "Symbol", "Name", "Score", "Confidence", "Liquidity", "Exchanges", "Trade Readiness"];
+    const rows = topCoins.results.map((coin, idx) => [
+      idx + 1,
+      coin.symbol,
+      coin.name,
+      coin.score.toFixed(2),
+      coin.confidence.toFixed(2),
+      coin.liquidity_score.toFixed(2),
+      coin.cross_exchange_count,
+      coin.trade_readiness || "N/A"
+    ]);
+    
+    const csv = [headers, ...rows].map(row => row.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `top-coins-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-400";
+    if (score >= 70) return "text-blue-400";
+    if (score >= 60) return "text-yellow-400";
+    if (score >= 50) return "text-orange-400";
     return "text-red-400";
   };
 
-  const getMomentumBg = (score: number) => {
-    if (score >= 70) return "bg-green-900/20 border-green-500/30";
-    if (score >= 60) return "bg-blue-900/20 border-blue-500/30";
-    if (score >= 50) return "bg-gray-900/20 border-gray-500/30";
-    if (score >= 40) return "bg-orange-900/20 border-orange-500/30";
-    return "bg-red-900/20 border-red-500/30";
+  const getScoreBg = (score: number) => {
+    if (score >= 80) return "bg-green-500";
+    if (score >= 70) return "bg-blue-500";
+    if (score >= 60) return "bg-yellow-500";
+    if (score >= 50) return "bg-orange-500";
+    return "bg-red-500";
   };
 
-  const renderSparkline = (sparkline: number[]) => {
+  const getTradeReadinessBadge = (readiness?: string) => {
+    if (readiness === "Ready") return "bg-green-500/20 text-green-400 border-green-500/30";
+    if (readiness === "Watch") return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+    return "bg-red-500/20 text-red-400 border-red-500/30";
+  };
+
+  const renderSparkline = (sparkline?: number[]) => {
     if (!sparkline || sparkline.length === 0) return null;
 
     const min = Math.min(...sparkline);
@@ -81,7 +183,7 @@ export default function MomentumScreenerPage() {
     const color = isPositive ? "#10b981" : "#ef4444";
 
     return (
-      <svg width="80" height="30" className="inline-block">
+      <svg width="60" height="24" className="inline-block">
         <polyline
           points={points}
           fill="none"
@@ -93,14 +195,145 @@ export default function MomentumScreenerPage() {
     );
   };
 
+  const renderMobileCard = (coin: ScoredCoin, rank: number) => (
+    <div
+      key={coin.symbol}
+      onClick={() => handleCoinClick(coin)}
+      className="bg-slate-800/50 backdrop-blur-sm rounded-lg border border-slate-700 p-4 hover:bg-slate-700/50 transition cursor-pointer"
+    >
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex items-center gap-3">
+          <div className="text-2xl font-bold text-gray-400">#{rank}</div>
+          <div>
+            <div className="text-xl font-bold text-white">{coin.symbol}</div>
+            <div className="text-sm text-gray-400">{coin.name}</div>
+          </div>
+        </div>
+        <div className={`text-3xl font-bold ${getScoreColor(coin.score)}`}>
+          {coin.score.toFixed(0)}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <div className="text-xs text-gray-400">Price</div>
+          <div className="text-sm font-semibold text-white">
+            ${coin.current_price.toFixed(2)}
+          </div>
+        </div>
+        <div>
+          <div className="text-xs text-gray-400">24h Change</div>
+          <div className={`text-sm font-semibold ${
+            (coin.price_change_percentage_24h || 0) >= 0 ? "text-green-400" : "text-red-400"
+          }`}>
+            {(coin.price_change_percentage_24h || 0) >= 0 ? "+" : ""}
+            {(coin.price_change_percentage_24h || 0).toFixed(2)}%
+          </div>
+        </div>
+        <div>
+          <div className="text-xs text-gray-400">Confidence</div>
+          <div className="text-sm font-semibold text-blue-400">
+            {coin.confidence.toFixed(0)}%
+          </div>
+        </div>
+        <div>
+          <div className="text-xs text-gray-400">Exchanges</div>
+          <div className="text-sm font-semibold text-purple-400">
+            {coin.cross_exchange_count}
+          </div>
+        </div>
+      </div>
+
+      <div className="text-xs text-gray-400 mb-2">
+        {coin.why}
+      </div>
+
+      {coin.risk_flags.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {coin.risk_flags.map((flag) => (
+            <span key={flag} className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-400 border border-red-500/30">
+              {flag}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderDesktopRow = (coin: ScoredCoin, rank: number) => (
+    <tr
+      key={coin.symbol}
+      onClick={() => handleCoinClick(coin)}
+      className="hover:bg-slate-700/30 transition cursor-pointer border-l-4 border-transparent hover:border-blue-500"
+    >
+      <td className="px-4 py-3 whitespace-nowrap">
+        <div className="text-lg font-bold text-gray-400">#{rank}</div>
+      </td>
+      <td className="px-4 py-3 whitespace-nowrap">
+        <div className="flex items-center gap-2">
+          <div>
+            <div className="text-lg font-bold text-white">{coin.symbol}</div>
+            <div className="text-xs text-gray-400">{coin.name}</div>
+          </div>
+        </div>
+      </td>
+      <td className="px-4 py-3 whitespace-nowrap text-center">
+        {renderSparkline(coin.sparkline_7d)}
+      </td>
+      <td className="px-4 py-3 whitespace-nowrap text-right">
+        <div className="text-sm text-gray-300">
+          ${coin.current_price.toFixed(2)}
+        </div>
+      </td>
+      <td className="px-4 py-3 whitespace-nowrap text-right">
+        <div className={`text-sm font-semibold ${
+          (coin.price_change_percentage_1h || 0) >= 0 ? "text-green-400" : "text-red-400"
+        }`}>
+          {(coin.price_change_percentage_1h || 0) >= 0 ? "+" : ""}
+          {(coin.price_change_percentage_1h || 0).toFixed(2)}%
+        </div>
+      </td>
+      <td className="px-4 py-3 whitespace-nowrap text-right">
+        <div className={`text-sm font-semibold ${
+          (coin.price_change_percentage_24h || 0) >= 0 ? "text-green-400" : "text-red-400"
+        }`}>
+          {(coin.price_change_percentage_24h || 0) >= 0 ? "+" : ""}
+          {(coin.price_change_percentage_24h || 0).toFixed(2)}%
+        </div>
+      </td>
+      <td className="px-4 py-3 whitespace-nowrap text-center">
+        <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${getScoreBg(coin.score)}/20 border-2 ${getScoreBg(coin.score)}`}>
+          <span className={`text-xl font-bold ${getScoreColor(coin.score)}`}>
+            {coin.score.toFixed(0)}
+          </span>
+        </div>
+      </td>
+      <td className="px-4 py-3 whitespace-nowrap text-center">
+        <div className="text-sm text-blue-400">{coin.confidence.toFixed(0)}%</div>
+      </td>
+      <td className="px-4 py-3 whitespace-nowrap text-center">
+        <div className="w-full bg-slate-700 rounded-full h-2">
+          <div
+            className={`h-2 rounded-full ${getScoreBg(coin.liquidity_score)}`}
+            style={{ width: `${coin.liquidity_score}%` }}
+          />
+        </div>
+        <div className="text-xs text-gray-400 mt-1">{coin.liquidity_score.toFixed(0)}</div>
+      </td>
+      <td className="px-4 py-3 whitespace-nowrap text-center">
+        <div className="text-sm text-purple-400">{coin.cross_exchange_count}</div>
+      </td>
+    </tr>
+  );
+
   if (loading && !data) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4 md:p-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-8">
             Native Coin Momentum Screener
           </h1>
-          <div className="text-gray-400">Loading momentum data...</div>
+          <div className="text-gray-400">Loading screener data...</div>
         </div>
       </div>
     );
@@ -108,9 +341,9 @@ export default function MomentumScreenerPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4 md:p-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-8">
             Native Coin Momentum Screener
           </h1>
           <div className="text-red-400">{error}</div>
@@ -120,126 +353,217 @@ export default function MomentumScreenerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
             Native Coin Momentum Screener
           </h1>
-          <div className="flex gap-2">
-            {["1h", "6h", "24h", "7d"].map((p) => (
+          <div className="text-sm text-gray-400">
+            {data?.total || 0} coins • Updated {data?.timestamp ? new Date(data.timestamp).toLocaleTimeString() : "N/A"}
+          </div>
+        </div>
+
+        {topCoins && topCoins.results.length > 0 && (
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-4 md:p-6 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl md:text-2xl font-bold text-white">Top Coins Watchlist</h2>
               <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={`px-4 py-2 rounded-lg font-semibold transition ${
-                  period === p
-                    ? "bg-blue-600 text-white"
-                    : "bg-slate-800 text-gray-400 hover:bg-slate-700"
-                }`}
+                onClick={exportToCSV}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition text-sm"
               >
-                {p}
+                Export CSV
               </button>
-            ))}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              {topCoins.results.slice(0, 10).map((coin) => (
+                <div
+                  key={coin.symbol}
+                  onClick={() => handleCoinClick(coin)}
+                  className="bg-slate-900/50 rounded-lg p-3 border border-slate-700 hover:border-blue-500 transition cursor-pointer"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="text-lg font-bold text-white">{coin.symbol}</div>
+                    <div className={`text-2xl font-bold ${getScoreColor(coin.score)}`}>
+                      {coin.score.toFixed(0)}
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-400 mb-2">{coin.name}</div>
+                  {coin.trade_readiness && (
+                    <div className={`text-xs px-2 py-1 rounded border ${getTradeReadinessBadge(coin.trade_readiness)}`}>
+                      {coin.trade_readiness}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-4 md:p-6 mb-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <input
+              type="text"
+              placeholder="Search by symbol or name..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="flex-1 px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+            />
+            <input
+              type="number"
+              placeholder="Min Score"
+              value={minScore || ""}
+              onChange={(e) => {
+                setMinScore(e.target.value ? parseFloat(e.target.value) : null);
+                setPage(1);
+              }}
+              className="w-full md:w-32 px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+            />
           </div>
         </div>
 
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 p-6 mb-6">
-          <div className="grid grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-gray-400 text-sm mb-1">Total Assets</div>
-              <div className="text-2xl font-bold text-white">{data?.total_assets || 0}</div>
-            </div>
-            <div>
-              <div className="text-gray-400 text-sm mb-1">Period</div>
-              <div className="text-2xl font-bold text-blue-400">{data?.period || "24h"}</div>
-            </div>
-            <div>
-              <div className="text-gray-400 text-sm mb-1">Top Momentum</div>
-              <div className="text-2xl font-bold text-green-400">
-                {data?.results[0]?.symbol || "N/A"}
-              </div>
-            </div>
-            <div>
-              <div className="text-gray-400 text-sm mb-1">Last Updated</div>
-              <div className="text-sm text-gray-400">
-                {data?.timestamp ? new Date(data.timestamp).toLocaleTimeString() : "N/A"}
-              </div>
-            </div>
+        {isMobile ? (
+          <div className="space-y-3">
+            {data?.results.map((coin, idx) => 
+              renderMobileCard(coin, (page - 1) * 50 + idx + 1)
+            )}
           </div>
-        </div>
-
-        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-900/50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Rank
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Asset
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Momentum Score
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Price Change
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Volume 24h
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Volatility
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Trend
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-700">
-                {data?.results.map((result) => (
-                  <tr
-                    key={result.symbol}
-                    className={`hover:bg-slate-700/30 transition ${getMomentumBg(result.momentum_score)} border-l-4`}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-lg font-bold text-gray-400">#{result.rank}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-lg font-bold text-white">{result.symbol}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div className={`text-2xl font-bold ${getMomentumColor(result.momentum_score)}`}>
-                        {result.momentum_score.toFixed(1)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div
-                        className={`text-lg font-semibold ${
-                          result.price_change_pct >= 0 ? "text-green-400" : "text-red-400"
-                        }`}
-                      >
-                        {result.price_change_pct >= 0 ? "+" : ""}
-                        {result.price_change_pct.toFixed(2)}%
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div className="text-sm text-gray-300">
-                        ${(result.volume_24h / 1_000_000).toFixed(2)}M
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div className="text-sm text-gray-400">{result.volatility.toFixed(2)}%</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      {renderSparkline(result.sparkline)}
-                    </td>
+        ) : (
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-900/50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Rank</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Symbol</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-400 uppercase">Trend</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400 uppercase">Price</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400 uppercase">1h</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400 uppercase">24h</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-400 uppercase">Score</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-400 uppercase">Conf</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-400 uppercase">Liquidity</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-400 uppercase">Exchanges</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-700">
+                  {data?.results.map((coin, idx) => 
+                    renderDesktopRow(coin, (page - 1) * 50 + idx + 1)
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
+
+        {data && data.total_pages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-6">
+            <button
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+              className="px-4 py-2 bg-slate-800 text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700 transition"
+            >
+              Previous
+            </button>
+            <span className="text-gray-400">
+              Page {page} of {data.total_pages}
+            </span>
+            <button
+              onClick={() => setPage(Math.min(data.total_pages, page + 1))}
+              disabled={page === data.total_pages}
+              className="px-4 py-2 bg-slate-800 text-white rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700 transition"
+            >
+              Next
+            </button>
+          </div>
+        )}
+
+        {selectedCoin && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setSelectedCoin(null)}>
+            <div className="bg-slate-800 rounded-xl border border-slate-700 p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-3xl font-bold text-white mb-2">{selectedCoin.symbol}</h2>
+                  <p className="text-gray-400">{selectedCoin.name}</p>
+                </div>
+                <button
+                  onClick={() => setSelectedCoin(null)}
+                  className="text-gray-400 hover:text-white text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="bg-slate-900/50 rounded-lg p-4">
+                  <div className="text-sm text-gray-400 mb-1">Composite Score</div>
+                  <div className={`text-4xl font-bold ${getScoreColor(selectedCoin.score)}`}>
+                    {selectedCoin.score.toFixed(1)}
+                  </div>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-4">
+                  <div className="text-sm text-gray-400 mb-1">Confidence</div>
+                  <div className="text-4xl font-bold text-blue-400">
+                    {selectedCoin.confidence.toFixed(0)}%
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-white mb-3">Top Features</h3>
+                <div className="space-y-2">
+                  {selectedCoin.top_features.map((feature, idx) => (
+                    <div key={idx} className="bg-slate-900/50 rounded-lg p-3">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm font-semibold text-gray-300">{feature.feature}</span>
+                        <span className="text-sm text-blue-400">{feature.contribution.toFixed(1)}</span>
+                      </div>
+                      <div className="text-xs text-gray-400">{feature.note}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {selectedCoin.risk_flags.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-white mb-3">Risk Flags</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedCoin.risk_flags.map((flag) => (
+                      <span key={flag} className="px-3 py-1 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 text-sm">
+                        {flag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedCoin.suggested_pair && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-white mb-3">Suggested Pair</h3>
+                  <div className="bg-slate-900/50 rounded-lg p-4">
+                    <div className="text-sm text-gray-400 mb-1">Exchange</div>
+                    <div className="text-lg font-semibold text-white mb-3">{selectedCoin.suggested_pair.exchange}</div>
+                    <div className="text-sm text-gray-400 mb-1">Pair</div>
+                    <div className="text-lg font-semibold text-white mb-3">{selectedCoin.suggested_pair.pair}</div>
+                    {selectedCoin.estimated_slippage_pct !== undefined && (
+                      <>
+                        <div className="text-sm text-gray-400 mb-1">Estimated Slippage</div>
+                        <div className="text-lg font-semibold text-yellow-400">{selectedCoin.estimated_slippage_pct.toFixed(2)}%</div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="text-sm text-gray-400 italic">
+                {selectedCoin.why}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 text-center text-sm text-gray-500">
           Auto-refreshes every 60 seconds

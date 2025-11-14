@@ -5,7 +5,10 @@ import logging
 from app.db import init_db_pool, close_db_pool
 from app.routers import health, assets, signals, metrics, screener, alerts, market, dashboard, insights, liquidity
 from app.services.momentum_worker import start_worker, stop_worker
+from app.services.screener_worker import ScreenerWorker
 from app.services.websocket_server import get_ws_manager
+
+screener_worker = ScreenerWorker()
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +18,7 @@ async def lifespan(app: FastAPI):
     await init_db_pool()
     
     await start_worker()
+    await screener_worker.start()
     
     ws_manager = get_ws_manager()
     ws_manager.start()
@@ -25,6 +29,7 @@ async def lifespan(app: FastAPI):
     
     logger.info("Shutting down GhostQuant API...")
     await stop_worker()
+    await screener_worker.stop()
     ws_manager.stop()
     await close_db_pool()
     logger.info("GhostQuant API shut down successfully")

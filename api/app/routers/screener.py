@@ -1,16 +1,54 @@
-"""Momentum Screener - Phase 1 Quick Win."""
+"""Momentum Screener - Native Coin Momentum Screener MVP."""
 
+import os
 import logging
 from datetime import datetime, timedelta
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Query, HTTPException, Depends
+from pydantic import BaseModel, Field
 import numpy as np
+import json
 
 from ..deps import get_database
+from ..services.composite_scorer import CompositeScorer
+from ..services.liquidity_engine import LiquidityEngine
+from ..services.redis_cache import RedisCache
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/screener", tags=["screener"])
+
+composite_scorer = CompositeScorer()
+liquidity_engine = LiquidityEngine()
+redis_cache = RedisCache()
+
+
+class TopFeature(BaseModel):
+    feature: str
+    contribution: float
+    note: str
+
+
+class ScoredCoin(BaseModel):
+    id: str
+    symbol: str
+    name: str
+    image: str
+    current_price: float
+    market_cap: float
+    market_cap_rank: Optional[int]
+    total_volume: float
+    price_change_percentage_1h: Optional[float]
+    price_change_percentage_24h: Optional[float]
+    price_change_percentage_7d: Optional[float]
+    score: float = Field(description="Composite momentum score (0-100)")
+    confidence: float = Field(description="Confidence in score (0-100)")
+    top_features: List[TopFeature]
+    risk_flags: List[str]
+    why: str = Field(description="Short explanation of score")
+    liquidity_score: float
+    cross_exchange_count: int
+    sparkline_7d: Optional[List[float]] = None
 
 
 @router.get("/momentum")
@@ -169,3 +207,237 @@ def _generate_mock_sparkline(symbol: str, period_hours: int) -> List[float]:
         prices.append(prices[-1] * (1 + ret))
     
     return prices
+
+
+@router.get("/list")
+async def get_screener_list(
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(50, ge=1, le=250, description="Results per page"),
+    min_score: Optional[float] = Query(None, ge=0, le=100, description="Minimum score filter"),
+    search: Optional[str] = Query(None, description="Search by symbol or name"),
+    db=Depends(get_database)
+):
+    """
+    Get paginated screener results with composite momentum scores.
+    
+    This is the main endpoint for the Native Coin Momentum Screener.
+    Returns coins with full scoring, explainability, and filtering.
+    
+    Args:
+        page: Page number (1-indexed)
+        limit: Results per page (1-250)
+        min_score: Filter coins with score >= min_score
+        search: Search filter for symbol or name
+        
+    Returns:
+        Paginated list of scored coins
+    """
+    try:
+        scored_coins = await redis_cache.get_scored_coins()
+        
+        if not scored_coins:
+            logger.warning("No scored coins in cache, returning empty results")
+            return {
+                "page": page,
+                "limit": limit,
+                "total": 0,
+                "total_pages": 0,
+                "results": [],
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        
+        filtered = scored_coins
+        
+        if min_score is not None:
+            filtered = [c for c in filtered if c.get("score", 0) >= min_score]
+        
+        if search:
+            search_lower = search.lower()
+            filtered = [
+                c for c in filtered
+                if search_lower in c.get("symbol", "").lower() or search_lower in c.get("name", "").lower()
+            ]
+        
+        filtered.sort(key=lambda x: x.get("score", 0), reverse=True)
+        
+        total = len(filtered)
+        total_pages = (total + limit - 1) // limit
+        start = (page - 1) * limit
+        end = start + limit
+        results = filtered[start:end]
+        
+        return {
+            "page": page,
+            "limit": limit,
+            "total": total,
+            "total_pages": total_pages,
+            "results": results,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in screener list: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/top_coins")
+async def get_top_coins(
+    limit: int = Query(10, ge=1, le=50, description="Number of top coins to return"),
+    min_score: float = Query(None, description="Minimum score (default from env)"),
+    db=Depends(get_database)
+):
+    """
+    Get Top Coins watchlist with multi-condition filtering.
+    
+    Returns coins that meet ALL criteria:
+    - score >= min_score (default 75)
+    - liquidity_score >= 70
+    - cross_exchange_count >= 2
+    - market_cap >= MIN_MARKET_CAP (default $1M)
+    
+    Args:
+        limit: Number of results (1-50)
+        min_score: Override default minimum score
+        
+    Returns:
+        List of top coins with buy badges and trade readiness
+    """
+    try:
+        default_min_score = float(os.getenv("DEFAULT_MIN_SCORE", 75))
+        min_market_cap = float(os.getenv("MIN_MARKET_CAP", 1_000_000))
+        
+        if min_score is None:
+            min_score = default_min_score
+        
+        scored_coins = await redis_cache.get_scored_coins()
+        
+        if not scored_coins:
+            return {
+                "count": 0,
+                "results": [],
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        
+        top_coins = []
+        for coin in scored_coins:
+            score = coin.get("score", 0)
+            liquidity_score = coin.get("liquidity_score", 0)
+            cross_exchange_count = coin.get("cross_exchange_count", 0)
+            market_cap = coin.get("market_cap", 0)
+            
+            if (score >= min_score and
+                liquidity_score >= 70 and
+                cross_exchange_count >= 2 and
+                market_cap >= min_market_cap):
+                
+                risk_flags = coin.get("risk_flags", [])
+                if not risk_flags and liquidity_score >= 85:
+                    trade_readiness = "Ready"
+                elif len(risk_flags) <= 1 and liquidity_score >= 70:
+                    trade_readiness = "Watch"
+                else:
+                    trade_readiness = "Risky"
+                
+                suggested_pair = {
+                    "exchange": os.getenv("PRIMARY_EXCHANGE", "coinbasepro"),
+                    "pair": f"{coin.get('symbol', '')}-USD"
+                }
+                
+                if liquidity_score >= 85:
+                    estimated_slippage_pct = 0.3
+                elif liquidity_score >= 70:
+                    estimated_slippage_pct = 0.5
+                else:
+                    estimated_slippage_pct = 1.0
+                
+                top_coins.append({
+                    **coin,
+                    "trade_readiness": trade_readiness,
+                    "suggested_pair": suggested_pair,
+                    "estimated_slippage_pct": estimated_slippage_pct
+                })
+        
+        top_coins.sort(key=lambda x: x.get("score", 0), reverse=True)
+        top_coins = top_coins[:limit]
+        
+        return {
+            "count": len(top_coins),
+            "results": top_coins,
+            "filters": {
+                "min_score": min_score,
+                "min_liquidity_score": 70,
+                "min_cross_exchange_count": 2,
+                "min_market_cap": min_market_cap
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in top_coins: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{symbol}")
+async def get_coin_detail(
+    symbol: str,
+    db=Depends(get_database)
+):
+    """
+    Get detailed analysis for a specific coin.
+    
+    Returns full score breakdown with explainability.
+    
+    Args:
+        symbol: Coin symbol (e.g., BTC, ETH)
+        
+    Returns:
+        Detailed coin analysis with score breakdown
+    """
+    try:
+        symbol_upper = symbol.upper()
+        
+        scored_coins = await redis_cache.get_scored_coins()
+        
+        coin = None
+        for c in scored_coins:
+            if c.get("symbol", "").upper() == symbol_upper:
+                coin = c
+                break
+        
+        if not coin:
+            raise HTTPException(status_code=404, detail=f"Coin {symbol} not found")
+        
+        features = {
+            "symbol": coin.get("symbol"),
+            "short_return_1h": coin.get("price_change_percentage_1h", 0),
+            "med_return_4h": (coin.get("price_change_percentage_1h", 0) + coin.get("price_change_percentage_24h", 0)) / 2,
+            "long_return_24h": coin.get("price_change_percentage_24h", 0),
+            "vol_ratio_30m_vs_24h": 1.0,  # Would need historical data
+            "orderbook_imbalance": 0.0,  # Would need orderbook data
+            "liquidity_depth_at_1pct": coin.get("market_cap", 0) * 0.02,  # Estimate
+            "onchain_inflow_30m_usd": 0.0,  # Phase 2
+            "cross_exchange_confirmation_count": coin.get("cross_exchange_count", 1),
+            "pretrend_prob": 0.0,  # Phase 2
+            "market_cap": coin.get("market_cap", 0),
+            "total_volume": coin.get("total_volume", 0),
+            "liquidity_score": coin.get("liquidity_score", 50)
+        }
+        
+        explained = composite_scorer.compute_score(features, explain=True)
+        
+        result = {
+            **coin,
+            "explain": explained.get("explain", {}),
+            "suggested_pair": {
+                "exchange": os.getenv("PRIMARY_EXCHANGE", "coinbasepro"),
+                "pair": f"{symbol_upper}-USD"
+            }
+        }
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting coin detail for {symbol}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
