@@ -4,7 +4,7 @@ Redis caching layer for momentum scores and coin data.
 import os
 import logging
 import json
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 import redis.asyncio as redis
 
 logger = logging.getLogger(__name__)
@@ -26,20 +26,30 @@ class RedisCache:
             self.client = await redis.from_url(self.redis_url, decode_responses=True)
         return self.client
     
-    async def get(self, key: str) -> Optional[str]:
-        """Get value from cache."""
+    async def get(self, key: str) -> Optional[Any]:
+        """Get value from cache, automatically deserializing JSON."""
         try:
             client = await self._get_client()
-            return await client.get(key)
+            value = await client.get(key)
+            if value is None:
+                return None
+            try:
+                return json.loads(value)
+            except (json.JSONDecodeError, TypeError):
+                return value
         except Exception as e:
             logger.error(f"Redis GET error for key {key}: {e}")
             return None
     
-    async def set(self, key: str, value: str, ttl: Optional[int] = None) -> bool:
-        """Set value in cache with TTL."""
+    async def set(self, key: str, value: Any, ttl: Optional[int] = None) -> bool:
+        """Set value in cache with TTL, automatically serializing to JSON."""
         try:
             client = await self._get_client()
             ttl = ttl or self.default_ttl
+            
+            if not isinstance(value, str):
+                value = json.dumps(value)
+            
             await client.setex(key, ttl, value)
             return True
         except Exception as e:
