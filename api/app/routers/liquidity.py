@@ -8,6 +8,9 @@ from datetime import datetime, timedelta
 
 from ..db import get_db
 from ..services.redis_cache import RedisCache
+from ..services.slippage_estimator import get_slippage_estimator
+from ..utils.feature_flags import is_feature_enabled
+from ..utils.cache_helper import get_cached, set_cached
 
 logger = logging.getLogger(__name__)
 
@@ -321,3 +324,46 @@ async def get_liquidity_summary(
     except Exception as e:
         logger.error(f"Error getting liquidity summary: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to fetch liquidity summary: {str(e)}")
+
+
+@router.get("/market")
+async def get_market_liquidity(
+    symbol: str = Query(..., description="Trading symbol (e.g., BTC, ETH)"),
+    size_usd: Optional[float] = Query(None, description="Trade size in USD (default: 10000)")
+) -> Dict[str, Any]:
+    """
+    Get market liquidity with slippage estimation and best pair suggestion.
+    
+    Phase 2 feature: Provides orderbook depth, slippage estimates for various sizes,
+    and suggests the best exchange/pair for minimal slippage.
+    
+    Args:
+        symbol: Trading symbol
+        size_usd: Trade size in USD (optional, defaults to 10000)
+        
+    Returns:
+        Dictionary with depth, slippage estimates, and best pair suggestion
+    """
+    if not is_feature_enabled('liq_estimator'):
+        raise HTTPException(status_code=501, detail="Liquidity estimator feature is not enabled")
+    
+    # Check cache
+    cache_key = f"market:liquidity:{symbol}:{size_usd or 10000}"
+    cached = get_cached(cache_key)
+    if cached:
+        logger.info(f"Returning cached market liquidity for {symbol}")
+        return cached
+    
+    try:
+        estimator = get_slippage_estimator()
+        result = estimator.estimate_liquidity(symbol, size_usd)
+        
+        # Cache for 30 seconds
+        set_cached(cache_key, result, ttl=30)
+        
+        logger.info(f"Fetched market liquidity for {symbol} (size=${size_usd or 10000})")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error fetching market liquidity for {symbol}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch market liquidity: {str(e)}")

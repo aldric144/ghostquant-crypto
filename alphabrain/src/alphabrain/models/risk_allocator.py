@@ -109,8 +109,16 @@ class RiskAllocator:
         Returns:
             Volatility-scaled weights
         """
-        vol_matrix = np.outer(volatilities, volatilities)
-        cov_matrix = correlations.values * vol_matrix
+        idx = base_weights.index
+        vol = volatilities.reindex(idx, fill_value=0.5)
+        corr = correlations.reindex(index=idx, columns=idx, fill_value=0)
+        
+        for i in idx:
+            if i in corr.index and i in corr.columns:
+                corr.loc[i, i] = 1.0
+        
+        vol_matrix = np.outer(vol.values, vol.values)
+        cov_matrix = corr.values * vol_matrix
         
         portfolio_vol = np.sqrt(
             base_weights.values @ cov_matrix @ base_weights.values
@@ -227,18 +235,34 @@ class RiskAllocator:
         Returns:
             Dict with expected_return, volatility, sharpe, max_weight, concentration
         """
-        expected_return = (weights * expected_returns).sum()
+        idx = weights.index
+        w = weights.loc[idx]
+        mu = expected_returns.reindex(idx, fill_value=0)
+        vol = volatilities.reindex(idx, fill_value=0.5)
+        corr = correlations.reindex(index=idx, columns=idx, fill_value=0)
         
-        covariance = self._build_covariance_matrix(volatilities, correlations)
-        portfolio_vol = np.sqrt(
-            weights.values @ covariance.loc[weights.index, weights.index].values @ weights.values
-        )
+        # Fill diagonal with 1s for correlation matrix
+        for i in idx:
+            if i in corr.index and i in corr.columns:
+                corr.loc[i, i] = 1.0
+        
+        logger.debug(f"Computing metrics - weights shape: {len(w)}, vol shape: {len(vol)}, corr shape: {corr.shape}")
+        
+        expected_return = (w * mu).sum()
+        
+        vol_matrix = np.outer(vol.values, vol.values)
+        cov_matrix = corr.values * vol_matrix
+        
+        assert cov_matrix.shape[0] == cov_matrix.shape[1] == len(w), \
+            f"Shape mismatch: cov {cov_matrix.shape}, weights {len(w)}"
+        
+        portfolio_vol = np.sqrt(w.values @ cov_matrix @ w.values)
         
         sharpe = expected_return / portfolio_vol if portfolio_vol > 0 else 0
         
-        max_weight = weights.max()
-        herfindahl = (weights ** 2).sum()  # 1/n for equal weight, 1 for single asset
-        effective_n = 1 / herfindahl if herfindahl > 0 else len(weights)
+        max_weight = w.max()
+        herfindahl = (w ** 2).sum()
+        effective_n = 1 / herfindahl if herfindahl > 0 else len(w)
         
         return {
             'expected_return': expected_return,
