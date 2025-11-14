@@ -75,12 +75,12 @@ async def get_whale_explanation(
     try:
         async with pool.acquire() as conn:
             asset = await conn.fetchrow(
-                "SELECT asset_id, symbol, name FROM assets WHERE UPPER(symbol) = UPPER($1)",
+                "SELECT asset_id, symbol FROM assets WHERE UPPER(symbol) = UPPER($1)",
                 symbol
             )
             
             if not asset:
-                raise HTTPException(status_code=404, detail=f"Asset {symbol} not found")
+                raise HTTPException(status_code=404, detail=f"Asset {symbol} not found in database. Use whale-explain-lite for market data analysis.")
             
             asset_id = asset['asset_id']
             
