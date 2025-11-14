@@ -39,9 +39,13 @@ export default function WhaleExplainModal({ symbol, onClose }: WhaleExplainModal
         }
 
         const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
-        const response = await fetch(`${apiBase}/insights/whale-explain?symbol=${symbol}`);
+        const encodedSymbol = encodeURIComponent(symbol);
+        const response = await fetch(`${apiBase}/insights/whale-explain?symbol=${encodedSymbol}`);
         
         if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('NOT_FOUND');
+          }
           throw new Error(`Failed to fetch: ${response.status}`);
         }
         
@@ -50,7 +54,11 @@ export default function WhaleExplainModal({ symbol, onClose }: WhaleExplainModal
         setError(null);
       } catch (err) {
         console.error('Error fetching whale explanation:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch explanation');
+        if (err instanceof Error && err.message === 'NOT_FOUND') {
+          setError('NOT_FOUND');
+        } else {
+          setError(err instanceof Error ? err.message : 'Failed to fetch explanation');
+        }
       } finally {
         setLoading(false);
       }
@@ -137,13 +145,28 @@ export default function WhaleExplainModal({ symbol, onClose }: WhaleExplainModal
 
           {error && (
             <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-6 text-center">
-              <p className="text-red-400 mb-4">Unable to fetch explanation: {error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-              >
-                Retry
-              </button>
+              {error === 'NOT_FOUND' ? (
+                <>
+                  <p className="text-amber-400 mb-2 text-lg font-semibold">Explanation Not Available Yet</p>
+                  <p className="text-gray-300 mb-4">
+                    Detailed whale activity explanation for <span className="font-semibold">{symbol}</span> is not available yet. 
+                    This asset is not in our coverage at the moment.
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    We're continuously expanding coverage. Check back soon!
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-red-400 mb-4">Unable to fetch explanation: {error}</p>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                  >
+                    Retry
+                  </button>
+                </>
+              )}
             </div>
           )}
 
