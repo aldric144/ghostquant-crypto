@@ -3,10 +3,10 @@
 import logging
 from datetime import datetime, timedelta
 from typing import List, Optional
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, Depends
 import numpy as np
 
-from ..db import get_db_pool
+from ..deps import get_database
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,8 @@ router = APIRouter(prefix="/screener", tags=["screener"])
 @router.get("/momentum")
 async def get_momentum_screener(
     period: str = Query("24h", regex="^(1h|6h|24h|7d)$", description="Time period for momentum calculation"),
-    limit: int = Query(25, ge=1, le=100, description="Number of results to return")
+    limit: int = Query(25, ge=1, le=100, description="Number of results to return"),
+    db=Depends(get_database)
 ):
     """
     Native Coin Momentum Screener - Phase 1 Quick Win.
@@ -40,63 +41,59 @@ async def get_momentum_screener(
             "7d": 168,
         }[period]
         
-        pool = await get_db_pool()
+        await db.execute("SELECT asset_id, symbol, chain FROM assets ORDER BY symbol")
+        assets = await db.fetchall()
         
-        async with pool.connection() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute("SELECT asset_id, symbol, chain FROM assets ORDER BY symbol")
-                assets = await cur.fetchall()
-                
-                momentum_data = []
-                
-                for asset in assets:
-                    asset_id = asset["asset_id"]
-                    symbol = asset["symbol"]
-                    
-                    cutoff_time = datetime.utcnow() - timedelta(hours=period_hours)
-                    
-                    await cur.execute(
-                        """
-                        SELECT ts, price, qty
-                        FROM ticks
-                        WHERE asset_id = %s AND ts >= %s
-                        ORDER BY ts ASC
-                        """,
-                        (asset_id, cutoff_time)
-                    )
-                    
-                    ticks = await cur.fetchall()
-                    
-                    if len(ticks) < 10:
-                        momentum_score, price_change_pct, volume_24h, volatility = _generate_mock_momentum(symbol, period_hours)
-                        sparkline = _generate_mock_sparkline(symbol, period_hours)
-                    else:
-                        momentum_score, price_change_pct, volume_24h, volatility, sparkline = _calculate_momentum(ticks)
-                    
-                    momentum_data.append({
-                        "symbol": symbol,
-                        "momentum_score": momentum_score,
-                        "price_change_pct": price_change_pct,
-                        "volume_24h": volume_24h,
-                        "volatility": volatility,
-                        "sparkline": sparkline,
-                        "rank": 0,  # Will be set after sorting
-                    })
-                
-                momentum_data.sort(key=lambda x: x["momentum_score"], reverse=True)
-                
-                for i, item in enumerate(momentum_data):
-                    item["rank"] = i + 1
-                
-                top_momentum = momentum_data[:limit]
-                
-                return {
-                    "period": period,
-                    "period_hours": period_hours,
-                    "results": top_momentum,
-                    "total_assets": len(momentum_data),
-                    "timestamp": datetime.utcnow().isoformat(),
-                }
+        momentum_data = []
+        
+        for asset in assets:
+            asset_id = asset["asset_id"]
+            symbol = asset["symbol"]
+            
+            cutoff_time = datetime.utcnow() - timedelta(hours=period_hours)
+            
+            await db.execute(
+                """
+                SELECT ts, price, qty
+                FROM ticks
+                WHERE asset_id = %s AND ts >= %s
+                ORDER BY ts ASC
+                """,
+                (asset_id, cutoff_time)
+            )
+            
+            ticks = await db.fetchall()
+            
+            if len(ticks) < 10:
+                momentum_score, price_change_pct, volume_24h, volatility = _generate_mock_momentum(symbol, period_hours)
+                sparkline = _generate_mock_sparkline(symbol, period_hours)
+            else:
+                momentum_score, price_change_pct, volume_24h, volatility, sparkline = _calculate_momentum(ticks)
+            
+            momentum_data.append({
+                "symbol": symbol,
+                "momentum_score": momentum_score,
+                "price_change_pct": price_change_pct,
+                "volume_24h": volume_24h,
+                "volatility": volatility,
+                "sparkline": sparkline,
+                "rank": 0,  # Will be set after sorting
+            })
+        
+        momentum_data.sort(key=lambda x: x["momentum_score"], reverse=True)
+        
+        for i, item in enumerate(momentum_data):
+            item["rank"] = i + 1
+        
+        top_momentum = momentum_data[:limit]
+        
+        return {
+            "period": period,
+            "period_hours": period_hours,
+            "results": top_momentum,
+            "total_assets": len(momentum_data),
+            "timestamp": datetime.utcnow().isoformat(),
+        }
     
     except Exception as e:
         logger.error(f"Error in momentum screener: {e}")

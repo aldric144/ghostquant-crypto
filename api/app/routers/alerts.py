@@ -3,10 +3,10 @@
 import logging
 from datetime import datetime, timedelta
 from typing import List, Optional
-from fastapi import APIRouter, Query, HTTPException, Body
+from fastapi import APIRouter, Query, HTTPException, Body, Depends
 import numpy as np
 
-from ..db import get_db_pool
+from ..deps import get_database
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,8 @@ router = APIRouter(prefix="/alerts", tags=["alerts"])
 async def get_momentum_alerts(
     lookback_hours: int = Query(24, ge=1, le=168, description="Hours to look back"),
     min_pretrend_prob: float = Query(0.6, ge=0, le=1, description="Minimum Pre-Trend probability"),
-    limit: int = Query(50, ge=1, le=100, description="Number of alerts to return")
+    limit: int = Query(50, ge=1, le=100, description="Number of alerts to return"),
+    db=Depends(get_database)
 ):
     """
     Early Momentum Alerts - Phase 1 Quick Win.
@@ -35,34 +36,30 @@ async def get_momentum_alerts(
         List of momentum alerts with Pre-Trend signals
     """
     try:
-        pool = await get_db_pool()
+        cutoff_time = datetime.utcnow() - timedelta(hours=lookback_hours)
         
-        async with pool.connection() as conn:
-            async with conn.cursor() as cur:
-                cutoff_time = datetime.utcnow() - timedelta(hours=lookback_hours)
-                
-                await cur.execute(
-                    """
-                    SELECT 
-                        s.asset_id,
-                        a.symbol,
-                        s.ts,
-                        s.trend_score,
-                        s.pretrend_prob,
-                        s.action,
-                        s.confidence,
-                        s.rationale
-                    FROM signals s
-                    JOIN assets a ON s.asset_id = a.asset_id
-                    WHERE s.ts >= %s
-                      AND s.pretrend_prob >= %s
-                    ORDER BY s.ts DESC, s.pretrend_prob DESC
-                    LIMIT %s
-                    """,
-                    (cutoff_time, min_pretrend_prob, limit * 2)
-                )
-                
-                signals = await cur.fetchall()
+        await db.execute(
+            """
+            SELECT 
+                s.asset_id,
+                a.symbol,
+                s.ts,
+                s.trend_score,
+                s.pretrend_prob,
+                s.action,
+                s.confidence,
+                s.rationale
+            FROM signals s
+            JOIN assets a ON s.asset_id = a.asset_id
+            WHERE s.ts >= %s
+              AND s.pretrend_prob >= %s
+            ORDER BY s.ts DESC, s.pretrend_prob DESC
+            LIMIT %s
+            """,
+            (cutoff_time, min_pretrend_prob, limit * 2)
+        )
+        
+        signals = await db.fetchall()
                 
                 alerts = []
                 
@@ -115,7 +112,8 @@ async def get_momentum_alerts(
 async def get_whale_alerts(
     lookback_hours: int = Query(24, ge=1, le=168, description="Hours to look back"),
     min_value_usd: float = Query(10_000_000, ge=0, description="Minimum transaction value"),
-    limit: int = Query(50, ge=1, le=100, description="Number of alerts to return")
+    limit: int = Query(50, ge=1, le=100, description="Number of alerts to return"),
+    db=Depends(get_database)
 ):
     """
     Whale Activity Alerts.
@@ -131,35 +129,31 @@ async def get_whale_alerts(
         List of whale transaction alerts
     """
     try:
-        pool = await get_db_pool()
+        cutoff_time = datetime.utcnow() - timedelta(hours=lookback_hours)
         
-        async with pool.connection() as conn:
-            async with conn.cursor() as cur:
-                cutoff_time = datetime.utcnow() - timedelta(hours=lookback_hours)
-                
-                await cur.execute(
-                    """
-                    SELECT 
-                        ts,
-                        chain,
-                        tx_hash,
-                        from_addr,
-                        to_addr,
-                        token_symbol,
-                        amount,
-                        amount_usd,
-                        detected_by,
-                        metadata
-                    FROM large_transfers
-                    WHERE ts >= %s
-                      AND amount_usd >= %s
-                    ORDER BY ts DESC, amount_usd DESC
-                    LIMIT %s
-                    """,
-                    (cutoff_time, min_value_usd, limit)
-                )
-                
-                transfers = await cur.fetchall()
+        await db.execute(
+            """
+            SELECT 
+                ts,
+                chain,
+                tx_hash,
+                from_addr,
+                to_addr,
+                token_symbol,
+                amount,
+                amount_usd,
+                detected_by,
+                metadata
+            FROM large_transfers
+            WHERE ts >= %s
+              AND amount_usd >= %s
+            ORDER BY ts DESC, amount_usd DESC
+            LIMIT %s
+            """,
+            (cutoff_time, min_value_usd, limit)
+        )
+        
+        transfers = await db.fetchall()
                 
                 alerts = []
                 
@@ -248,7 +242,8 @@ async def get_all_alerts(
 @router.post("/test")
 async def create_test_alert(
     alert_type: str = Body("momentum", regex="^(momentum|whale|bridge_flow)$"),
-    asset: str = Body("BTC")
+    asset: str = Body("BTC"),
+    db=Depends(get_database)
 ):
     """
     Create a test alert for testing the alerts system.
@@ -261,45 +256,40 @@ async def create_test_alert(
         Test alert object
     """
     try:
-        pool = await get_db_pool()
+        await db.execute(
+            """
+            INSERT INTO alerts (
+                alert_type,
+                asset,
+                severity,
+                title,
+                message,
+                metadata
+            ) VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id, created_at
+            """,
+            (
+                alert_type,
+                asset,
+                "medium",
+                f"Test {alert_type} alert for {asset}",
+                f"This is a test alert to verify the alerts system is working correctly.",
+                {"test": True}
+            )
+        )
         
-        async with pool.connection() as conn:
-            async with conn.cursor() as cur:
-                await cur.execute(
-                    """
-                    INSERT INTO alerts (
-                        alert_type,
-                        asset,
-                        severity,
-                        title,
-                        message,
-                        metadata
-                    ) VALUES (%s, %s, %s, %s, %s, %s)
-                    RETURNING id, created_at
-                    """,
-                    (
-                        alert_type,
-                        asset,
-                        "medium",
-                        f"Test {alert_type} alert for {asset}",
-                        f"This is a test alert to verify the alerts system is working correctly.",
-                        {"test": True}
-                    )
-                )
-                
-                result = await cur.fetchone()
-                await conn.commit()
-                
-                return {
-                    "alert_id": f"test_{result['id']}",
-                    "alert_type": alert_type,
-                    "asset": asset,
-                    "severity": "medium",
-                    "title": f"Test {alert_type} alert for {asset}",
-                    "message": "This is a test alert to verify the alerts system is working correctly.",
-                    "timestamp": result["created_at"].isoformat(),
-                    "test": True,
-                }
+        result = await db.fetchone()
+        
+        return {
+            "alert_id": f"test_{result['id']}",
+            "alert_type": alert_type,
+            "asset": asset,
+            "severity": "medium",
+            "title": f"Test {alert_type} alert for {asset}",
+            "message": "This is a test alert to verify the alerts system is working correctly.",
+            "timestamp": result["created_at"].isoformat(),
+            "test": True,
+        }
     
     except Exception as e:
         logger.error(f"Error creating test alert: {e}")
