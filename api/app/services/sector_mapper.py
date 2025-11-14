@@ -34,9 +34,13 @@ class SectorMapper:
     def _load_local_mapping(self) -> Dict[str, str]:
         """Load local sector mapping from mock data."""
         try:
-            mock_file = Path(__file__).parent.parent.parent.parent / 'mock_data' / 'phase2_sample.json'
+            mock_file = Path(__file__).parent.parent.parent.parent / 'mock_data' / 'phase2_sample_refined.json'
+            if not mock_file.exists():
+                mock_file = Path(__file__).parent.parent.parent.parent / 'mock_data' / 'phase2_sample.json'
             with open(mock_file, 'r') as f:
                 data = json.load(f)
+                if 'sector_data' in data and 'coins' in data['sector_data']:
+                    return {coin['symbol']: coin['sector'] for coin in data['sector_data']['coins']}
                 return data.get('sector_map', {})
         except Exception as e:
             logger.error(f"Failed to load sector mapping: {e}")
@@ -80,58 +84,111 @@ class SectorMapper:
         period: str = "24h"
     ) -> List[Dict[str, Any]]:
         """
-        Aggregate momentum by sector.
+        Aggregate momentum by sector using VWAPC (Volume-Weighted Average Price Change).
+        
+        VWAPC = sum(volume_i * price_change_i) / sum(volume_i)
         
         Args:
-            screener_data: List of coins with momentum scores
-            period: Time period (not used in current implementation)
+            screener_data: List of coins with momentum scores, volume, and price change
+            period: Time period (24h, 7d, 30d)
             
         Returns:
-            List of sector momentum aggregates
+            List of sector momentum aggregates with 5-tier color scale
         """
-        sector_scores: Dict[str, List[float]] = {sector: [] for sector in self.SECTORS}
+        sector_data: Dict[str, Dict[str, Any]] = {
+            sector: {'total_volume': 0.0, 'weighted_change': 0.0, 'coins': []}
+            for sector in self.SECTORS
+        }
+        
+        coin_data = self._load_coin_data()
         
         for coin in screener_data:
             symbol = coin.get('symbol', '').lower()
-            score = coin.get('momentum_score') or coin.get('score', 0)
-            
             sector = self.get_sector(symbol)
-            if sector and sector in sector_scores:
-                sector_scores[sector].append(float(score))
+            
+            if sector and sector in sector_data:
+                coin_info = coin_data.get(symbol, {})
+                volume = coin_info.get('volume_24h_usd', 0)
+                price_change = coin_info.get('price_change_24h_pct', 0)
+                
+                if volume > 0:
+                    sector_data[sector]['total_volume'] += volume
+                    sector_data[sector]['weighted_change'] += volume * price_change
+                    sector_data[sector]['coins'].append(symbol)
         
         results = []
-        color_map = {
-            "L1": "#10b981",      # green
-            "L2": "#8b5cf6",      # purple
-            "DeFi": "#3b82f6",    # blue
-            "Oracles": "#f59e0b", # amber
-            "Stablecoins": "#6b7280", # gray
-            "CeFi": "#ec4899",    # pink
-            "NFT": "#f97316",     # orange
-            "Tokens": "#14b8a6"   # teal
-        }
         
         for sector in self.SECTORS:
-            scores = sector_scores[sector]
-            if scores:
-                avg_momentum = sum(scores) / len(scores)
-                results.append({
-                    'sector': sector,
-                    'momentum_avg': round(avg_momentum, 1),
-                    'n_assets': len(scores),
-                    'color': color_map.get(sector, '#6b7280')
-                })
+            data = sector_data[sector]
+            total_volume = data['total_volume']
+            
+            if total_volume > 0:
+                vwapc = data['weighted_change'] / total_volume
             else:
-                results.append({
-                    'sector': sector,
-                    'momentum_avg': 0.0,
-                    'n_assets': 0,
-                    'color': color_map.get(sector, '#6b7280')
-                })
+                vwapc = 0.0
+            
+            color = self._get_color_for_vwapc(vwapc)
+            
+            results.append({
+                'sector': sector,
+                'vwapc': round(vwapc, 2),
+                'momentum_avg': round(vwapc, 1),
+                'n_assets': len(data['coins']),
+                'color': color
+            })
         
-        results.sort(key=lambda x: x['momentum_avg'], reverse=True)
+        results.sort(key=lambda x: x['vwapc'], reverse=True)
         
         return results
+    
+    def _load_coin_data(self) -> Dict[str, Dict[str, Any]]:
+        """Load coin volume and price change data."""
+        try:
+            mock_file = Path(__file__).parent.parent.parent.parent / 'mock_data' / 'phase2_sample_refined.json'
+            if not mock_file.exists():
+                return {}
+            with open(mock_file, 'r') as f:
+                data = json.load(f)
+                if 'sector_data' in data and 'coins' in data['sector_data']:
+                    return {
+                        coin['symbol']: {
+                            'volume_24h_usd': coin.get('volume_24h_usd', 0),
+                            'price_change_24h_pct': coin.get('price_change_24h_pct', 0)
+                        }
+                        for coin in data['sector_data']['coins']
+                    }
+                return {}
+        except Exception as e:
+            logger.error(f"Failed to load coin data: {e}")
+            return {}
+    
+    def _get_color_for_vwapc(self, vwapc: float) -> str:
+        """
+        Get color for VWAPC value using 5-tier scale.
+        
+        Tiers:
+        - Deep Red: < -5.0%
+        - Light Red: -5.0% to -1.0%
+        - Grey/Neutral: -1.0% to +1.0%
+        - Light Green: +1.0% to +5.0%
+        - Deep Green: > +5.0%
+        
+        Args:
+            vwapc: Volume-Weighted Average Price Change percentage
+            
+        Returns:
+            Hex color code
+        """
+        if vwapc < -5.0:
+            return "#dc2626"
+        elif vwapc < -1.0:
+            return "#f87171"
+        elif vwapc < 1.0:
+            return "#6b7280"
+        elif vwapc < 5.0:
+            return "#4ade80"
+        else:
+            return "#10b981"
     
     def get_mock_sector_momentum(self) -> List[Dict[str, Any]]:
         """Get mock sector momentum data."""
