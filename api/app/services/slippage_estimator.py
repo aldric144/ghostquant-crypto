@@ -21,7 +21,9 @@ class SlippageEstimator:
     def _load_mock_data(self) -> Dict[str, Any]:
         """Load mock liquidity data."""
         try:
-            mock_file = Path(__file__).parent.parent.parent.parent / 'mock_data' / 'phase2_sample.json'
+            mock_file = Path(__file__).parent.parent.parent.parent / 'mock_data' / 'phase2_sample_refined.json'
+            if not mock_file.exists():
+                mock_file = Path(__file__).parent.parent.parent.parent / 'mock_data' / 'phase2_sample.json'
             with open(mock_file, 'r') as f:
                 data = json.load(f)
                 return data.get('liquidity_data', {})
@@ -49,7 +51,7 @@ class SlippageEstimator:
             return self._estimate_from_exchanges(symbol, size_usd)
     
     def _estimate_from_mock(self, symbol: str, size_usd: float) -> Dict[str, Any]:
-        """Estimate from mock data."""
+        """Estimate from mock data with best pair selection."""
         symbol_upper = symbol.upper()
         
         if symbol_upper not in self.mock_data:
@@ -68,23 +70,75 @@ class SlippageEstimator:
         
         data = self.mock_data[symbol_upper]
         
-        if size_usd <= 10000:
-            slippage = data.get('est_slippage_for_10k', 0.1)
-        elif size_usd <= 100000:
-            slippage = data.get('est_slippage_for_100k', 0.5)
+        if 'pairs' in data:
+            best_pair, slippage = self._select_best_pair(data['pairs'], size_usd)
         else:
-            base_slippage = data.get('est_slippage_for_100k', 0.5)
-            slippage = base_slippage * (size_usd / 100000) ** 0.7
+            if size_usd <= 10000:
+                slippage = data.get('est_slippage_for_10k', 0.1)
+            elif size_usd <= 100000:
+                slippage = data.get('est_slippage_for_100k', 0.5)
+            else:
+                base_slippage = data.get('est_slippage_for_100k', 0.5)
+                slippage = base_slippage * (size_usd / 100000) ** 0.7
+            
+            best_pair = data.get('best_pair', {'exchange': 'Unknown', 'pair': f'{symbol_upper}/USD'})
         
         return {
             'symbol': symbol_upper,
             'depth_at_0_5': data.get('depth_at_0_5', 0),
             'depth_at_1_0': data.get('depth_at_1_0', 0),
             'est_slippage_pct': round(slippage, 2),
-            'best_pair': data.get('best_pair', {'exchange': 'Unknown', 'pair': f'{symbol_upper}/USD'}),
+            'best_pair': best_pair,
             'size_usd': size_usd,
             'data_source': 'mock'
         }
+    
+    def _select_best_pair(self, pairs: List[Dict[str, Any]], size_usd: float) -> Tuple[Dict[str, Any], float]:
+        """
+        Select best pair based on lowest slippage for the given trade size.
+        
+        For $10k trades, uses slippage_10k directly.
+        For other sizes, interpolates between available slippage points.
+        
+        Args:
+            pairs: List of pair data with slippage at different sizes
+            size_usd: Trade size in USD
+            
+        Returns:
+            Tuple of (best_pair_dict, estimated_slippage)
+        """
+        best_pair = None
+        best_slippage = float('inf')
+        
+        for pair in pairs:
+            if size_usd <= 1000:
+                slippage = pair.get('slippage_1k', 0.1)
+            elif size_usd <= 10000:
+                slippage_1k = pair.get('slippage_1k', 0.05)
+                slippage_10k = pair.get('slippage_10k', 0.1)
+                ratio = (size_usd - 1000) / 9000
+                slippage = slippage_1k + (slippage_10k - slippage_1k) * ratio
+            elif size_usd <= 100000:
+                slippage_10k = pair.get('slippage_10k', 0.1)
+                slippage_100k = pair.get('slippage_100k', 0.5)
+                ratio = (size_usd - 10000) / 90000
+                slippage = slippage_10k + (slippage_100k - slippage_10k) * ratio
+            else:
+                slippage_100k = pair.get('slippage_100k', 0.5)
+                slippage = slippage_100k * (size_usd / 100000) ** 0.7
+            
+            if slippage < best_slippage:
+                best_slippage = slippage
+                best_pair = {
+                    'exchange': pair['exchange'],
+                    'pair': pair['pair']
+                }
+        
+        if best_pair is None:
+            best_pair = {'exchange': 'Unknown', 'pair': 'Unknown'}
+            best_slippage = 1.0
+        
+        return best_pair, best_slippage
     
     def _estimate_from_exchanges(self, symbol: str, size_usd: float) -> Dict[str, Any]:
         """Estimate from live exchange data."""
