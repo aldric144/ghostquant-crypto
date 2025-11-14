@@ -91,6 +91,35 @@ services:
     networks:
       - ghostquant-net
 
+  ingest_ws:
+    build:
+      context: ./stream_ingest
+      dockerfile: Dockerfile
+    container_name: ghostquant-ingest-ws
+    environment:
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      COINGECKO_API_KEY: ${COINGECKO_API_KEY:-}
+      PAIRS_LIMIT: ${PAIRS_LIMIT:-200}
+      FALLBACK_PAIRS: ${FALLBACK_PAIRS:-BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,ADAUSDT,DOGEUSDT,XRPUSDT,DOTUSDT,UNIUSDT,LINKUSDT}
+      BINANCE_WS_URL: ${BINANCE_WS_URL:-wss://stream.binance.com:9443}
+      STREAM_MAXLEN: ${STREAM_MAXLEN:-10000}
+      DISCOVERY_REFRESH_SEC: ${DISCOVERY_REFRESH_SEC:-3600}
+      PAIRS_PER_CONNECTION: ${PAIRS_PER_CONNECTION:-50}
+      HEALTH_PORT: 8099
+    ports:
+      - "8099:8099"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0) if urllib.request.urlopen('http://127.0.0.1:8099/health', timeout=5).status==200 else sys.exit(1)\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ghostquant-net
+
   signals:
     build:
       context: ./signals
