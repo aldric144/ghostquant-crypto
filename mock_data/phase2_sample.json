@@ -1,0 +1,206 @@
+{
+  "whale_events": [
+    {
+      "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+      "chain": "ethereum",
+      "symbol": "ETH",
+      "amount_usd": 5420000,
+      "from": "0xabcd...1234",
+      "to": "0xef12...5678",
+      "time": "2025-11-14T20:30:00Z",
+      "type": "transfer",
+      "explorer_url": "https://etherscan.io/tx/0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+    },
+    {
+      "tx_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+      "chain": "ethereum",
+      "symbol": "USDT",
+      "amount_usd": 12500000,
+      "from": "0x9876...abcd",
+      "to": "Binance",
+      "time": "2025-11-14T19:45:00Z",
+      "type": "exchange_deposit",
+      "explorer_url": "https://etherscan.io/tx/0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+    },
+    {
+      "tx_hash": "0x7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456",
+      "chain": "ethereum",
+      "symbol": "WBTC",
+      "amount_usd": 8900000,
+      "from": "Coinbase",
+      "to": "0x5432...9876",
+      "time": "2025-11-14T18:20:00Z",
+      "type": "exchange_withdrawal",
+      "explorer_url": "https://etherscan.io/tx/0x7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456"
+    },
+    {
+      "tx_hash": "0x456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123",
+      "chain": "ethereum",
+      "symbol": "UNI",
+      "amount_usd": 2100000,
+      "from": "0x1111...2222",
+      "to": "0x3333...4444",
+      "time": "2025-11-14T17:10:00Z",
+      "type": "transfer",
+      "explorer_url": "https://etherscan.io/tx/0x456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123"
+    },
+    {
+      "tx_hash": "0xfedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+      "chain": "ethereum",
+      "symbol": "LINK",
+      "amount_usd": 3750000,
+      "from": "0x5555...6666",
+      "to": "Kraken",
+      "time": "2025-11-14T16:30:00Z",
+      "type": "exchange_deposit",
+      "explorer_url": "https://etherscan.io/tx/0xfedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+    }
+  ],
+  "whale_leaderboard": [
+    {
+      "address": "0xabcd...1234",
+      "impact_score": 95.4,
+      "usd_volume": 45200000,
+      "events": 12,
+      "last_seen": "2025-11-14T20:30:00Z"
+    },
+    {
+      "address": "0x9876...abcd",
+      "impact_score": 88.2,
+      "usd_volume": 38500000,
+      "events": 8,
+      "last_seen": "2025-11-14T19:45:00Z"
+    },
+    {
+      "address": "0x5432...9876",
+      "impact_score": 76.8,
+      "usd_volume": 29100000,
+      "events": 15,
+      "last_seen": "2025-11-14T18:20:00Z"
+    },
+    {
+      "address": "0x1111...2222",
+      "impact_score": 64.5,
+      "usd_volume": 18900000,
+      "events": 6,
+      "last_seen": "2025-11-14T17:10:00Z"
+    }
+  ],
+  "liquidity_data": {
+    "BTC": {
+      "depth_at_0_5": 12500000,
+      "depth_at_1_0": 28000000,
+      "est_slippage_for_10k": 0.08,
+      "est_slippage_for_100k": 0.45,
+      "best_pair": {
+        "exchange": "Coinbase",
+        "pair": "BTC/USD"
+      }
+    },
+    "ETH": {
+      "depth_at_0_5": 8900000,
+      "depth_at_1_0": 19500000,
+      "est_slippage_for_10k": 0.12,
+      "est_slippage_for_100k": 0.62,
+      "best_pair": {
+        "exchange": "Kraken",
+        "pair": "ETH/USD"
+      }
+    },
+    "SOL": {
+      "depth_at_0_5": 3200000,
+      "depth_at_1_0": 7800000,
+      "est_slippage_for_10k": 0.25,
+      "est_slippage_for_100k": 1.15,
+      "best_pair": {
+        "exchange": "Binance",
+        "pair": "SOL/USDT"
+      }
+    }
+  },
+  "sector_map": {
+    "bitcoin": "L1",
+    "ethereum": "L1",
+    "solana": "L1",
+    "polygon": "L2",
+    "arbitrum": "L2",
+    "optimism": "L2",
+    "uniswap": "DeFi",
+    "aave": "DeFi",
+    "compound": "DeFi",
+    "chainlink": "Oracles",
+    "band-protocol": "Oracles",
+    "tether": "Stablecoins",
+    "usd-coin": "Stablecoins",
+    "dai": "Stablecoins",
+    "binancecoin": "CeFi",
+    "crypto-com-chain": "CeFi"
+  },
+  "sector_momentum": [
+    {
+      "sector": "L1",
+      "momentum_avg": 68.5,
+      "n_assets": 12,
+      "color": "#10b981"
+    },
+    {
+      "sector": "DeFi",
+      "momentum_avg": 72.3,
+      "n_assets": 24,
+      "color": "#3b82f6"
+    },
+    {
+      "sector": "L2",
+      "momentum_avg": 65.8,
+      "n_assets": 8,
+      "color": "#8b5cf6"
+    },
+    {
+      "sector": "Oracles",
+      "momentum_avg": 58.2,
+      "n_assets": 5,
+      "color": "#f59e0b"
+    },
+    {
+      "sector": "Stablecoins",
+      "momentum_avg": 45.1,
+      "n_assets": 6,
+      "color": "#6b7280"
+    },
+    {
+      "sector": "CeFi",
+      "momentum_avg": 61.4,
+      "n_assets": 7,
+      "color": "#ec4899"
+    }
+  ],
+  "sample_notes": [
+    {
+      "id": "note_1",
+      "user_id": "device_abc123",
+      "symbol": "BTC",
+      "note": "Strong momentum, watching for breakout above $95k",
+      "tags": ["bullish", "breakout"],
+      "created_at": "2025-11-14T15:30:00Z",
+      "updated_at": "2025-11-14T15:30:00Z"
+    },
+    {
+      "id": "note_2",
+      "user_id": "device_abc123",
+      "symbol": "ETH",
+      "note": "High whale activity, potential accumulation phase",
+      "tags": ["whale-watch", "accumulation"],
+      "created_at": "2025-11-14T14:20:00Z",
+      "updated_at": "2025-11-14T14:20:00Z"
+    },
+    {
+      "id": "note_3",
+      "user_id": "device_abc123",
+      "symbol": "SOL",
+      "note": "Ecosystem growth strong, DeFi TVL increasing",
+      "tags": ["ecosystem", "defi"],
+      "created_at": "2025-11-14T13:10:00Z",
+      "updated_at": "2025-11-14T13:10:00Z"
+    }
+  ]
+}
