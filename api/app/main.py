@@ -14,11 +14,12 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import asyncio
     logger.info("Starting GhostQuant API...")
     await init_db_pool()
     
-    await start_worker()
-    await screener_worker.start()
+    asyncio.create_task(start_worker())
+    asyncio.create_task(screener_worker.start())
     
     ws_manager = get_ws_manager()
     ws_manager.start()
