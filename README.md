@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 # GhostQuant™ — Institutional-grade AI-driven quant intelligence platform
-=======
-# GhostQuant-Crypto
 
 Private, crypto-native research & signal platform with real-time data ingestion, factor computation, TrendScore/Pre-Trend signals, backtesting, dashboards, and alerts.
 
@@ -362,6 +359,70 @@ docker compose logs ingest
 - **Local Deployment**: Do not expose ports publicly without proper security
 - **Secrets Management**: Never commit `.env` files or hard-code credentials
 
+## Testing
+
+### Smoke Tests
+
+Run the smoke test script to verify all critical endpoints:
+
+```bash
+# Test locally (services must be running)
+./scripts/smoke_test.sh
+
+# Test on droplet
+API_BASE=http://159.89.178.196:8080 \
+ALPHABRAIN_BASE=http://159.89.178.196:8081 \
+ECOSCAN_BASE=http://159.89.178.196:8082 \
+WEB_BASE=http://159.89.178.196:3000 \
+./scripts/smoke_test.sh
+```
+
+The smoke test verifies:
+- Health endpoints for all services
+- Core API endpoints (assets, signals, market data)
+- Dashboard endpoints (top-movers with various limits)
+- AlphaBrain endpoints (summary, regime, portfolio)
+- Ecoscan endpoints (summary, whale alerts, bridge flows)
+
+### Manual Testing
+
+```bash
+# Verify assets DB has many coins
+docker exec -it ghostquant-db psql -U ghost -d ghostquant -c "SELECT COUNT(*) FROM assets;"
+
+# Test top-movers endpoint
+curl http://localhost:8080/dashboard/top-movers?limit=100 | jq '.[0:5]'
+
+# Test AlphaBrain summary
+curl http://localhost:8081/alphabrain/summary | jq .
+
+# Test Ecoscan summary
+curl http://localhost:8082/ecoscan/summary | jq .
+
+# Check all services are healthy
+docker compose ps
+```
+
+### Unit Tests
+
+```bash
+# API tests
+cd api
+poetry run pytest
+
+# Signals tests
+cd signals
+poetry run pytest
+
+# AlphaBrain tests
+cd alphabrain
+poetry run pytest
+
+# Ecoscan tests
+cd ecoscan
+poetry run pytest
+```
+
 ## Roadmap
 
 Future enhancements:
@@ -392,4 +453,3 @@ Private research platform - not for redistribution.
 ## Support
 
 For issues or questions, refer to the runbooks in the `docs/` directory.
->>>>>>> devin/1762547590-phase-10-ai-insights-iq-meter
