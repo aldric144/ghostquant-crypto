@@ -323,3 +323,121 @@ class EcosystemMapper:
             return f"{chain} emerging with moderate growth signals."
         else:
             return f"{chain} showing mature or declining momentum."
+    
+    def compute_emi_breakdown(
+        self,
+        current_data: Dict,
+        historical_data: Optional[Dict] = None
+    ) -> Dict:
+        """
+        Compute EMI with detailed breakdown of contributions.
+        
+        Returns:
+            Dict with emi_score, deltas, contributions, drivers, and rationale
+        """
+        if historical_data is None:
+            historical_data = {
+                "tvl_usd": current_data["tvl_usd"] * 0.95,
+                "wallets_24h": current_data["wallets_24h"] * 0.95,
+                "volume_24h": current_data["volume_24h"] * 0.95,
+                "bridge_flows": current_data["bridge_flows"] * 0.5,
+            }
+        
+        tvl_delta = self._safe_pct_change(
+            current_data["tvl_usd"],
+            historical_data["tvl_usd"]
+        )
+        
+        wallets_delta = self._safe_pct_change(
+            current_data["wallets_24h"],
+            historical_data["wallets_24h"]
+        )
+        
+        volume_delta = self._safe_pct_change(
+            current_data["volume_24h"],
+            historical_data["volume_24h"]
+        )
+        
+        bridge_flow_score = (
+            current_data["bridge_flows"] / max(current_data["tvl_usd"], 1e6)
+        ) * 100
+        
+        tvl_contribution = self.emi_weights["tvl_delta"] * tvl_delta
+        wallets_contribution = self.emi_weights["active_wallets_delta"] * wallets_delta
+        volume_contribution = self.emi_weights["volume_delta"] * volume_delta
+        bridge_contribution = self.emi_weights["bridge_flows"] * bridge_flow_score
+        
+        emi_raw = (
+            tvl_contribution +
+            wallets_contribution +
+            volume_contribution +
+            bridge_contribution
+        )
+        
+        emi_normalized = 100 / (1 + np.exp(-emi_raw / 10))
+        
+        contributions = [
+            {
+                "metric": "TVL Growth",
+                "value": tvl_delta,
+                "weight": self.emi_weights["tvl_delta"],
+                "contribution": tvl_contribution,
+                "note": f"TVL {'increased' if tvl_delta > 0 else 'decreased'} by {abs(tvl_delta):.1f}%"
+            },
+            {
+                "metric": "Active Wallets",
+                "value": wallets_delta,
+                "weight": self.emi_weights["active_wallets_delta"],
+                "contribution": wallets_contribution,
+                "note": f"Wallet activity {'up' if wallets_delta > 0 else 'down'} {abs(wallets_delta):.1f}%"
+            },
+            {
+                "metric": "Volume Growth",
+                "value": volume_delta,
+                "weight": self.emi_weights["volume_delta"],
+                "contribution": volume_contribution,
+                "note": f"Trading volume {'surged' if volume_delta > 10 else 'changed'} {abs(volume_delta):.1f}%"
+            },
+            {
+                "metric": "Bridge Flows",
+                "value": bridge_flow_score,
+                "weight": self.emi_weights["bridge_flows"],
+                "contribution": bridge_contribution,
+                "note": f"Net bridge flow: ${current_data['bridge_flows']/1e6:.1f}M"
+            }
+        ]
+        
+        contributions_sorted = sorted(
+            contributions,
+            key=lambda x: abs(x["contribution"]),
+            reverse=True
+        )
+        
+        top_drivers = contributions_sorted[:3]
+        rationale_parts = []
+        for driver in top_drivers:
+            if abs(driver["contribution"]) > 0.5:
+                rationale_parts.append(driver["note"])
+        
+        rationale = " • ".join(rationale_parts) if rationale_parts else "Stable ecosystem metrics."
+        
+        return {
+            "emi_score": float(emi_normalized),
+            "emi_raw": float(emi_raw),
+            "deltas": {
+                "tvl_24h_pct": float(tvl_delta),
+                "wallets_24h_pct": float(wallets_delta),
+                "volume_24h_pct": float(volume_delta),
+                "bridge_net_24h_usd": float(current_data["bridge_flows"])
+            },
+            "contributions": contributions,
+            "top_drivers": [
+                {
+                    "metric": d["metric"],
+                    "contribution_pct": abs(d["contribution"]) / max(abs(emi_raw), 1) * 100
+                }
+                for d in top_drivers
+            ],
+            "rationale": rationale,
+            "stage": self.classify_ecosystem_stage(emi_normalized)
+        }
