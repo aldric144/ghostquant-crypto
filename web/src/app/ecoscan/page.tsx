@@ -5,6 +5,8 @@ import BridgeLeaderboard from "@/components/BridgeLeaderboard";
 import WhaleTimeline from "@/components/WhaleTimeline";
 import EcoscanMap from "@/components/EcoscanMap";
 import AlertsPanel from "@/components/AlertsPanel";
+import EcosystemFlipCard from "@/components/EcosystemFlipCard";
+import { Search, Filter, ArrowUpDown, Info } from "lucide-react";
 
 interface Ecosystem {
   chain: string;
@@ -62,6 +64,12 @@ export default function EcoscanPage() {
   const [bridgeFlows, setBridgeFlows] = useState<BridgeFlowSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"emi" | "tvl" | "wallets" | "volume">("emi");
+  const [filterStage, setFilterStage] = useState<string>("all");
+  const [comparisonMode, setComparisonMode] = useState(false);
+  const [selectedForComparison, setSelectedForComparison] = useState<string[]>([]);
 
   useEffect(() => {
     fetchEcoscanData();
@@ -115,6 +123,48 @@ export default function EcoscanPage() {
     if (signal === "HOLD") return "#6B7280";
     if (signal === "REDUCE") return "#F97316";
     return "#EF4444"; // SELL
+  };
+
+  const filteredAndSortedEcosystems = () => {
+    let filtered = ecosystems;
+    
+    if (searchQuery) {
+      filtered = filtered.filter(eco =>
+        eco.chain.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    if (filterStage !== "all") {
+      filtered = filtered.filter(eco => eco.stage === filterStage);
+    }
+    
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case "emi":
+          return b.emi_score - a.emi_score;
+        case "tvl":
+          return b.tvl_usd - a.tvl_usd;
+        case "wallets":
+          return (b.wallets_24h || 0) - (a.wallets_24h || 0);
+        case "volume":
+          return (b.volume_24h || 0) - (a.volume_24h || 0);
+        default:
+          return 0;
+      }
+    });
+    
+    return sorted;
+  };
+
+  const toggleComparison = (chain: string) => {
+    setSelectedForComparison(prev => {
+      if (prev.includes(chain)) {
+        return prev.filter(c => c !== chain);
+      } else if (prev.length < 3) {
+        return [...prev, chain];
+      }
+      return prev;
+    });
   };
 
   if (loading && ecosystems.length === 0) {
@@ -175,36 +225,131 @@ export default function EcoscanPage() {
 
         {/* Emerging Ecosystems Heatmap */}
         <div className="mb-8 bg-[#1A2332] rounded-lg p-6 border border-gray-700">
-          <h2 className="text-2xl font-bold mb-4 text-[#D4AF37]">
-            Emerging Ecosystems Heatmap
-          </h2>
-          <p className="text-sm text-gray-400 mb-4">
-            Ranked by Ecosystem Momentum Index (EMI) • Higher = More momentum
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {ecosystems.map((eco) => (
-              <div
-                key={eco.chain}
-                className="p-4 rounded-lg border-2 transition-all hover:scale-105 cursor-pointer"
-                style={{
-                  backgroundColor: `${getEMIColor(eco.emi_score)}20`,
-                  borderColor: getEMIColor(eco.emi_score),
-                }}
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-2xl font-bold text-[#D4AF37]">
+                Emerging Ecosystems Heatmap
+              </h2>
+              <p className="text-sm text-gray-400 mt-1">
+                Ranked by Ecosystem Momentum Index (EMI) • Click cards to see analysis
+              </p>
+            </div>
+            <button
+              onClick={() => setComparisonMode(!comparisonMode)}
+              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                comparisonMode
+                  ? "bg-[#D4AF37] text-[#0B1622]"
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+              }`}
+            >
+              {comparisonMode ? `Compare (${selectedForComparison.length}/3)` : "Compare Mode"}
+            </button>
+          </div>
+
+          {/* Filters and Search */}
+          <div className="flex flex-wrap gap-3 mb-4">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type="text"
+                placeholder="Search ecosystems..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-[#0B1622] border border-gray-700 rounded text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#D4AF37]"
+              />
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Filter size={18} className="text-gray-400" />
+              <select
+                value={filterStage}
+                onChange={(e) => setFilterStage(e.target.value)}
+                className="px-3 py-2 bg-[#0B1622] border border-gray-700 rounded text-sm text-white focus:outline-none focus:border-[#D4AF37]"
               >
-                <div className="text-lg font-bold capitalize">{eco.chain}</div>
-                <div
-                  className="text-3xl font-bold my-2"
-                  style={{ color: getEMIColor(eco.emi_score) }}
+                <option value="all">All Stages</option>
+                <option value="explosive_growth">Explosive Growth</option>
+                <option value="rapid_growth">Rapid Growth</option>
+                <option value="steady_growth">Steady Growth</option>
+                <option value="emerging">Emerging</option>
+                <option value="mature_or_declining">Mature/Declining</option>
+              </select>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <ArrowUpDown size={18} className="text-gray-400" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="px-3 py-2 bg-[#0B1622] border border-gray-700 rounded text-sm text-white focus:outline-none focus:border-[#D4AF37]"
+              >
+                <option value="emi">Sort by EMI</option>
+                <option value="tvl">Sort by TVL</option>
+                <option value="wallets">Sort by Wallets</option>
+                <option value="volume">Sort by Volume</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Tooltip */}
+          <div className="flex items-start gap-2 mb-4 p-3 bg-[#0B1622] rounded border border-gray-700">
+            <Info size={16} className="text-[#D4AF37] mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-gray-400">
+              <strong className="text-[#D4AF37]">EMI (Ecosystem Momentum Index)</strong> is a composite score weighted by TVL growth (30%), wallet activity (25%), transaction volume (25%), and bridge flows (20%). Higher scores indicate stronger momentum.
+            </p>
+          </div>
+
+          {/* Comparison Panel */}
+          {comparisonMode && selectedForComparison.length > 0 && (
+            <div className="mb-4 p-4 bg-[#0B1622] rounded border border-[#D4AF37]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-[#D4AF37]">
+                  Selected for Comparison ({selectedForComparison.length}/3)
+                </span>
+                <button
+                  onClick={() => setSelectedForComparison([])}
+                  className="text-xs text-gray-400 hover:text-white"
                 >
-                  {eco.emi_score.toFixed(1)}
-                </div>
-                <div className="text-xs text-gray-400 uppercase">{eco.stage}</div>
-                <div className="text-xs text-gray-500 mt-2">
-                  TVL: ${(eco.tvl_usd / 1e9).toFixed(2)}B
-                </div>
+                  Clear All
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {selectedForComparison.map(chain => (
+                  <span
+                    key={chain}
+                    className="px-3 py-1 bg-[#D4AF37] text-[#0B1622] rounded text-sm font-medium capitalize"
+                  >
+                    {chain}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Ecosystem Cards Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {filteredAndSortedEcosystems().map((eco) => (
+              <div key={eco.chain} className="relative">
+                {comparisonMode && (
+                  <div className="absolute top-2 right-2 z-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedForComparison.includes(eco.chain)}
+                      onChange={() => toggleComparison(eco.chain)}
+                      className="w-5 h-5 cursor-pointer"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                )}
+                <EcosystemFlipCard ecosystem={eco} getEMIColor={getEMIColor} />
               </div>
             ))}
           </div>
+
+          {filteredAndSortedEcosystems().length === 0 && (
+            <div className="text-center py-8 text-gray-400">
+              No ecosystems match your filters
+            </div>
+          )}
         </div>
 
         {/* Whale Flow Tracker */}

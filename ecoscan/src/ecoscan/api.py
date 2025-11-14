@@ -290,6 +290,44 @@ async def get_ecosystem_detail(chain: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/ecoscan/ecosystem/{chain}/analysis")
+async def get_ecosystem_analysis(chain: str):
+    """
+    Get detailed EMI analysis with breakdown for a specific chain.
+    
+    Args:
+        chain: Chain name (e.g., 'ethereum', 'arbitrum')
+        
+    Returns:
+        EMI breakdown with contributions, drivers, and rationale
+    """
+    try:
+        ecosystem_data = await service.ecosystem_mapper.fetch_ecosystem_data(chain)
+        
+        if not ecosystem_data:
+            raise HTTPException(status_code=404, detail=f"Chain '{chain}' not found")
+        
+        analysis = service.ecosystem_mapper.compute_emi_breakdown(ecosystem_data)
+        
+        return {
+            "chain": chain,
+            "analysis": analysis,
+            "metrics": {
+                "tvl_usd": ecosystem_data["tvl_usd"],
+                "wallets_24h": ecosystem_data["wallets_24h"],
+                "volume_24h": ecosystem_data["volume_24h"],
+                "bridge_flows": ecosystem_data["bridge_flows"],
+                "protocols_count": len(ecosystem_data["protocols"])
+            },
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting ecosystem analysis for {chain}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/ecoscan/whale/{asset}")
 async def get_whale_detail(
     asset: str,
