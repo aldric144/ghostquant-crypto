@@ -317,9 +317,6 @@ export default function AllAssetsPage() {
             name: buyModalAsset.name,
             image: buyModalAsset.image,
             current_price: buyModalAsset.price,
-            market_cap: buyModalAsset.market_cap,
-            total_volume: buyModalAsset.total_volume,
-            price_change_percentage_24h: buyModalAsset.price_change_percentage_24h || 0,
             momentum_score: buyModalAsset.momentum_score,
             sub_scores: {
               price_momentum: 0,
