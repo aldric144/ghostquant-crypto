@@ -379,6 +379,87 @@ async def get_bridge_flows(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/ecoscan/bridge-leaderboard")
+async def get_bridge_leaderboard(
+    period: str = Query("24h", regex="^(1h|24h|7d)$", description="Time period"),
+    limit: int = Query(20, ge=1, le=50, description="Number of results")
+):
+    """
+    Bridge Flow Leaderboard - Phase 1 Quick Win.
+    
+    Shows which bridges and chains are moving the most value.
+    
+    Args:
+        period: Time period (1h, 24h, 7d)
+        limit: Number of results (1-50)
+        
+    Returns:
+        Leaderboard of bridges and chains by flow volume
+    """
+    try:
+        period_hours = {
+            "1h": 1,
+            "24h": 24,
+            "7d": 168,
+        }[period]
+        
+        bridge_flows = await service.bridge_monitor.get_all_bridge_flows(
+            lookback_hours=period_hours
+        )
+        
+        bridge_summary = service.bridge_monitor.get_bridge_flow_summary(bridge_flows)
+        
+        bridge_leaderboard = []
+        for bridge_name, bridge_data in bridge_summary["bridge_totals"].items():
+            total_volume = bridge_data["inflows"] + bridge_data["outflows"]
+            bridge_leaderboard.append({
+                "bridge": bridge_name,
+                "total_volume_usd": total_volume,
+                "inflows_usd": bridge_data["inflows"],
+                "outflows_usd": bridge_data["outflows"],
+                "net_flow_usd": bridge_data["net_flow"],
+                "tx_count": bridge_data["tx_count"],
+                "sentiment": service.bridge_monitor.classify_bridge_sentiment(
+                    bridge_data["net_flow"],
+                    total_volume
+                ),
+            })
+        
+        bridge_leaderboard.sort(key=lambda x: x["total_volume_usd"], reverse=True)
+        bridge_leaderboard = bridge_leaderboard[:limit]
+        
+        chain_leaderboard = []
+        for flow in bridge_flows:
+            total_volume = flow["inflows"] + flow["outflows"]
+            chain_leaderboard.append({
+                "chain": flow["chain"],
+                "total_volume_usd": total_volume,
+                "inflows_usd": flow["inflows"],
+                "outflows_usd": flow["outflows"],
+                "net_flow_usd": flow["net_flow"],
+                "sentiment": service.bridge_monitor.classify_bridge_sentiment(
+                    flow["net_flow"],
+                    total_volume
+                ),
+            })
+        
+        chain_leaderboard.sort(key=lambda x: x["total_volume_usd"], reverse=True)
+        chain_leaderboard = chain_leaderboard[:limit]
+        
+        return {
+            "period": period,
+            "period_hours": period_hours,
+            "bridge_leaderboard": bridge_leaderboard,
+            "chain_leaderboard": chain_leaderboard,
+            "total_volume_usd": bridge_summary["total_inflows"] + bridge_summary["total_outflows"],
+            "total_net_flow_usd": bridge_summary["total_net_flow"],
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+    except Exception as e:
+        logger.error(f"Error getting bridge leaderboard: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/ecoscan/bridges/{chain}")
 async def get_bridge_flows_by_chain(
     chain: str,
