@@ -84,7 +84,7 @@ class WhaleProvider(ABC):
     """Abstract whale event provider."""
     
     @abstractmethod
-    def get_recent_events(self, limit: int = 50) -> List[WhaleEvent]:
+    def get_recent_events(self, limit: int = 50, chain_filter: Optional[List[str]] = None) -> List[WhaleEvent]:
         """Get recent whale events."""
         pass
     
@@ -104,28 +104,37 @@ class MockWhaleProvider(WhaleProvider):
     def _load_mock_data(self) -> Dict[str, Any]:
         """Load mock data from file."""
         try:
-            mock_file = Path(__file__).parent.parent.parent.parent / 'mock_data' / 'phase2_sample.json'
+            mock_file = Path(__file__).parent.parent.parent.parent / 'mock_data' / 'phase2_sample_refined.json'
+            if not mock_file.exists():
+                mock_file = Path(__file__).parent.parent.parent.parent / 'mock_data' / 'phase2_sample.json'
             with open(mock_file, 'r') as f:
                 return json.load(f)
         except Exception as e:
             logger.error(f"Failed to load mock data: {e}")
             return {'whale_events': [], 'whale_leaderboard': []}
     
-    def get_recent_events(self, limit: int = 50) -> List[WhaleEvent]:
+    def get_recent_events(self, limit: int = 50, chain_filter: Optional[List[str]] = None) -> List[WhaleEvent]:
         """Get recent whale events from mock data."""
         events = []
-        for event_data in self.mock_data.get('whale_events', [])[:limit]:
+        for event_data in self.mock_data.get('whale_events', []):
+            if chain_filter and event_data['chain'].lower() not in [c.lower() for c in chain_filter]:
+                continue
+            
             events.append(WhaleEvent(
                 tx_hash=event_data['tx_hash'],
                 chain=event_data['chain'],
                 symbol=event_data['symbol'],
                 amount_usd=event_data['amount_usd'],
-                from_address=event_data['from'],
-                to_address=event_data['to'],
-                timestamp=event_data['time'],
+                from_address=event_data.get('from_address', event_data.get('from', '')),
+                to_address=event_data.get('to_address', event_data.get('to', '')),
+                timestamp=event_data.get('timestamp', event_data.get('time', '')),
                 event_type=event_data['type'],
                 explorer_url=event_data['explorer_url']
             ))
+            
+            if len(events) >= limit:
+                break
+        
         return events
     
     def get_leaderboard(self, since_hours: int = 24) -> List[WhaleLeaderboardEntry]:
@@ -151,10 +160,10 @@ class EtherscanWhaleProvider(WhaleProvider):
         self.base_url = "https://api.etherscan.io/api"
         self.min_whale_amount = float(os.getenv('WHALE_MIN_USD', '100000'))
     
-    def get_recent_events(self, limit: int = 50) -> List[WhaleEvent]:
+    def get_recent_events(self, limit: int = 50, chain_filter: Optional[List[str]] = None) -> List[WhaleEvent]:
         """Get recent whale events from Etherscan."""
         logger.warning("Etherscan provider not fully implemented, using mock data")
-        return MockWhaleProvider().get_recent_events(limit)
+        return MockWhaleProvider().get_recent_events(limit, chain_filter)
     
     def get_leaderboard(self, since_hours: int = 24) -> List[WhaleLeaderboardEntry]:
         """Get whale leaderboard from Etherscan."""
@@ -170,10 +179,10 @@ class AlchemyWhaleProvider(WhaleProvider):
         self.api_key = api_key
         self.min_whale_amount = float(os.getenv('WHALE_MIN_USD', '100000'))
     
-    def get_recent_events(self, limit: int = 50) -> List[WhaleEvent]:
+    def get_recent_events(self, limit: int = 50, chain_filter: Optional[List[str]] = None) -> List[WhaleEvent]:
         """Get recent whale events from Alchemy."""
         logger.warning("Alchemy provider not fully implemented, using mock data")
-        return MockWhaleProvider().get_recent_events(limit)
+        return MockWhaleProvider().get_recent_events(limit, chain_filter)
     
     def get_leaderboard(self, since_hours: int = 24) -> List[WhaleLeaderboardEntry]:
         """Get whale leaderboard from Alchemy."""
