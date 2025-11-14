@@ -218,12 +218,12 @@ class AlphaBrainService:
             regime_multiplier
         )
         
-        weights_series = pd.Series(portfolio_weights)
+        weights_series = pd.Series(portfolio_weights).reindex(expected_returns.index, fill_value=0.0)
         portfolio_metrics = self.risk_allocator.compute_portfolio_metrics(
             weights_series,
-            expected_returns,
-            volatilities,
-            correlations
+            expected_returns.reindex(weights_series.index),
+            volatilities.reindex(weights_series.index),
+            correlations.reindex(index=weights_series.index, columns=weights_series.index)
         )
         
         narratives = generate_mock_narratives(10)

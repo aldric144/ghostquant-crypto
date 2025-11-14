@@ -92,10 +92,24 @@ export default function NativeScreenerPage() {
       if (minScore !== null) params.append("min_score", minScore.toString());
       if (search) params.append("search", search);
 
-      const response = await fetch(`/api/screener/list?${params}`);
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
+      const response = await fetch(`${API_BASE}/screener/list?${params}`);
       if (!response.ok) throw new Error("Failed to fetch screener data");
       const json = await response.json();
-      setData(json);
+      
+      const normalized = {
+        ...json,
+        results: (json.results || []).map((c: any) => ({
+          ...c,
+          score: Number.isFinite(c.momentum_score) ? c.momentum_score : (c.score ?? 0),
+          confidence: Number.isFinite(c.confidence) ? c.confidence : 0,
+          liquidity_score: Number.isFinite(c.liquidity_score) ? c.liquidity_score : 0,
+          risk_flags: Array.isArray(c.risk_flags) ? c.risk_flags : [],
+          cross_exchange_count: c.cross_exchange_count ?? 0,
+        })),
+      };
+      
+      setData(normalized);
       setError(null);
     } catch (err) {
       console.error("Error fetching screener data:", err);
@@ -107,10 +121,28 @@ export default function NativeScreenerPage() {
 
   const fetchTopCoins = async () => {
     try {
-      const response = await fetch("/api/screener/top_coins?limit=10");
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
+      const response = await fetch(`${API_BASE}/screener/top_coins?limit=10`);
       if (!response.ok) throw new Error("Failed to fetch top coins");
       const json = await response.json();
-      setTopCoins(json);
+      
+      const normalized = {
+        ...json,
+        results: (json.results || []).map((c: any) => ({
+          ...c,
+          score: Number.isFinite(c.momentum_score) ? c.momentum_score : (c.score ?? 0),
+          confidence: Number.isFinite(c.confidence) ? c.confidence : 0,
+          liquidity_score: Number.isFinite(c.liquidity_score) ? c.liquidity_score : 0,
+          risk_flags: Array.isArray(c.risk_flags) ? c.risk_flags : [],
+          cross_exchange_count: c.cross_exchange_count ?? 0,
+          top_features: Array.isArray(c.top_features) ? c.top_features : [],
+          suggested_pair: c.suggested_pair ?? null,
+          why: typeof c.why === 'string' ? c.why : "",
+          sparkline_7d: Array.isArray(c.sparkline_7d) ? c.sparkline_7d : [],
+        })),
+      };
+      
+      setTopCoins(normalized);
     } catch (err) {
       console.error("Error fetching top coins:", err);
     }
@@ -128,10 +160,10 @@ export default function NativeScreenerPage() {
       idx + 1,
       coin.symbol,
       coin.name,
-      coin.score.toFixed(2),
-      coin.confidence.toFixed(2),
-      coin.liquidity_score.toFixed(2),
-      coin.cross_exchange_count,
+      (coin.score || 0).toFixed(2),
+      ((coin.confidence || 0) * 100).toFixed(2),
+      (coin.liquidity_score || 0).toFixed(2),
+      coin.cross_exchange_count || 0,
       coin.trade_readiness || "N/A"
     ]);
     
@@ -233,13 +265,13 @@ export default function NativeScreenerPage() {
         <div>
           <div className="text-xs text-gray-400">Confidence</div>
           <div className="text-sm font-semibold text-blue-400">
-            {coin.confidence.toFixed(0)}%
+            {(coin.confidence * 100).toFixed(0)}%
           </div>
         </div>
         <div>
           <div className="text-xs text-gray-400">Exchanges</div>
           <div className="text-sm font-semibold text-purple-400">
-            {coin.cross_exchange_count}
+            {coin.cross_exchange_count || 0}
           </div>
         </div>
       </div>
@@ -248,7 +280,7 @@ export default function NativeScreenerPage() {
         {coin.why}
       </div>
 
-      {coin.risk_flags.length > 0 && (
+      {coin.risk_flags && Array.isArray(coin.risk_flags) && coin.risk_flags.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {coin.risk_flags.map((flag) => (
             <span key={flag} className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-400 border border-red-500/30">
@@ -309,19 +341,19 @@ export default function NativeScreenerPage() {
         </div>
       </td>
       <td className="px-4 py-3 whitespace-nowrap text-center">
-        <div className="text-sm text-blue-400">{coin.confidence.toFixed(0)}%</div>
+        <div className="text-sm text-blue-400">{(coin.confidence * 100).toFixed(0)}%</div>
       </td>
       <td className="px-4 py-3 whitespace-nowrap text-center">
         <div className="w-full bg-slate-700 rounded-full h-2">
           <div
-            className={`h-2 rounded-full ${getScoreBg(coin.liquidity_score)}`}
-            style={{ width: `${coin.liquidity_score}%` }}
+            className={`h-2 rounded-full ${getScoreBg(coin.liquidity_score || 0)}`}
+            style={{ width: `${Math.max(0, Math.min(100, coin.liquidity_score || 0))}%` }}
           />
         </div>
-        <div className="text-xs text-gray-400 mt-1">{coin.liquidity_score.toFixed(0)}</div>
+        <div className="text-xs text-gray-400 mt-1">{(coin.liquidity_score || 0).toFixed(0)}</div>
       </td>
       <td className="px-4 py-3 whitespace-nowrap text-center">
-        <div className="text-sm text-purple-400">{coin.cross_exchange_count}</div>
+        <div className="text-sm text-purple-400">{coin.cross_exchange_count || 0}</div>
       </td>
     </tr>
   );
@@ -507,27 +539,29 @@ export default function NativeScreenerPage() {
                 <div className="bg-slate-900/50 rounded-lg p-4">
                   <div className="text-sm text-gray-400 mb-1">Confidence</div>
                   <div className="text-4xl font-bold text-blue-400">
-                    {selectedCoin.confidence.toFixed(0)}%
+                    {(selectedCoin.confidence * 100).toFixed(0)}%
                   </div>
                 </div>
               </div>
 
-              <div className="mb-6">
-                <h3 className="text-lg font-bold text-white mb-3">Top Features</h3>
-                <div className="space-y-2">
-                  {selectedCoin.top_features.map((feature, idx) => (
-                    <div key={idx} className="bg-slate-900/50 rounded-lg p-3">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm font-semibold text-gray-300">{feature.feature}</span>
-                        <span className="text-sm text-blue-400">{feature.contribution.toFixed(1)}</span>
+              {Array.isArray(selectedCoin.top_features) && selectedCoin.top_features.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-white mb-3">Top Features</h3>
+                  <div className="space-y-2">
+                    {selectedCoin.top_features.map((feature, idx) => (
+                      <div key={idx} className="bg-slate-900/50 rounded-lg p-3">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm font-semibold text-gray-300">{feature.feature}</span>
+                          <span className="text-sm text-blue-400">{feature.contribution.toFixed(1)}</span>
+                        </div>
+                        <div className="text-xs text-gray-400">{feature.note}</div>
                       </div>
-                      <div className="text-xs text-gray-400">{feature.note}</div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {selectedCoin.risk_flags.length > 0 && (
+              {Array.isArray(selectedCoin.risk_flags) && selectedCoin.risk_flags.length > 0 && (
                 <div className="mb-6">
                   <h3 className="text-lg font-bold text-white mb-3">Risk Flags</h3>
                   <div className="flex flex-wrap gap-2">
@@ -558,9 +592,11 @@ export default function NativeScreenerPage() {
                 </div>
               )}
 
-              <div className="text-sm text-gray-400 italic">
-                {selectedCoin.why}
-              </div>
+              {selectedCoin.why && (
+                <div className="text-sm text-gray-400 italic">
+                  {selectedCoin.why}
+                </div>
+              )}
             </div>
           </div>
         )}

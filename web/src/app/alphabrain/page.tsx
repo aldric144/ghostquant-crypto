@@ -62,7 +62,8 @@ export default function AlphaBrainPage() {
 
   const fetchSummary = async () => {
     try {
-      const response = await fetch('/alphabrain/summary');
+      const ALPHABRAIN_API = process.env.NEXT_PUBLIC_ALPHABRAIN_API || 'http://localhost:8081';
+      const response = await fetch(`${ALPHABRAIN_API}/alphabrain/summary`);
       if (!response.ok) throw new Error('Failed to fetch AlphaBrain summary');
       const data = await response.json();
       setSummary(data);
