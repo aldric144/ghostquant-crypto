@@ -80,32 +80,6 @@ export async function fetchWhaleExplain(symbol: string): Promise<WhaleExplainRes
   return response.json();
 }
 
-export async function fetchLiquidity(symbol: string): Promise<LiquidityResponse> {
-  return {
-    symbol,
-    best_exchanges: [
-      {
-        exchange: 'Binance',
-        pair: `${symbol}/USDT`,
-        url: `https://www.binance.com/en/trade/${symbol}_USDT`,
-        volume_24h: 1000000000,
-      },
-      {
-        exchange: 'Coinbase',
-        pair: `${symbol}/USD`,
-        url: `https://www.coinbase.com/price/${symbol.toLowerCase()}`,
-        volume_24h: 500000000,
-      },
-      {
-        exchange: 'Kraken',
-        pair: `${symbol}/USD`,
-        url: `https://www.kraken.com/prices/${symbol.toLowerCase()}`,
-        volume_24h: 250000000,
-      },
-    ],
-    slippage_1pct_size: 100000,
-  };
-}
 
 export class CacheManager {
   private cache: Map<string, { data: any; timestamp: number }> = new Map();
@@ -141,4 +115,80 @@ export class CacheManager {
 }
 
 export const assetsCache = new CacheManager(30); // 30s cache
-export const whaleExplainCache = new CacheManager(120); // 120s cache
+export const whaleExplainCache = new CacheManager(120);
+export const liquidityCache = new CacheManager(60);
+
+export interface LiquidityData {
+  symbol: string;
+  timestamp: string;
+  cex_liquidity: {
+    bid_price: number;
+    ask_price: number;
+    mid_price: number;
+    bid_size: number;
+    ask_size: number;
+    spread_bps: number;
+    spread_pct: number;
+    avg_spread_1h_bps: number;
+    last_updated: string;
+  } | null;
+  dex_liquidity: Array<{
+    pool_id: number;
+    chain: string;
+    address: string;
+    pair: string;
+    fee_bps: number;
+    tvl_usd: number | null;
+    volume_24h: number | null;
+    depth_1pct: number | null;
+    last_updated: string | null;
+  }> | null;
+  derivatives: {
+    funding_rate_8h: number | null;
+    open_interest: number | null;
+    basis_bps: number | null;
+    liquidations_1h: number | null;
+    last_updated: string;
+  } | null;
+  liquidity_score: number | null;
+  slippage_estimates: {
+    buy: {
+      [key: string]: {
+        slippage_bps: number | null;
+        effective_price: number | null;
+      };
+    };
+    sell: {
+      [key: string]: {
+        slippage_bps: number | null;
+        effective_price: number | null;
+      };
+    };
+  } | null;
+}
+
+/**
+ * Fetch comprehensive liquidity data for an asset
+ */
+export async function fetchLiquidity(
+  symbol: string,
+  includeDex: boolean = true
+): Promise<LiquidityData> {
+  const cacheKey = `liquidity:${symbol}:${includeDex}`;
+  const cached = liquidityCache.get<LiquidityData>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  const response = await fetch(
+    `${API_BASE}/liquidity/asset/${symbol}?include_dex=${includeDex}`
+  );
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch liquidity for ${symbol}: ${response.status}`);
+  }
+  
+  const data = await response.json();
+  liquidityCache.set(cacheKey, data);
+  return data;
+} // 120s cache

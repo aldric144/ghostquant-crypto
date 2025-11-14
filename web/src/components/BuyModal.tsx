@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { X, Mail, Send, Bell, Copy, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Mail, Send, Bell, Copy, Check, TrendingUp, TrendingDown, Activity } from "lucide-react";
+import { fetchLiquidity, LiquidityData } from "@/lib/api";
 
 interface BuyModalProps {
   coin: {
@@ -28,8 +29,26 @@ export default function BuyModal({ coin, onClose }: BuyModalProps) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [liquidity, setLiquidity] = useState<LiquidityData | null>(null);
+  const [liquidityLoading, setLiquidityLoading] = useState(true);
 
   const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+
+  useEffect(() => {
+    const loadLiquidity = async () => {
+      try {
+        setLiquidityLoading(true);
+        const data = await fetchLiquidity(coin.symbol, true);
+        setLiquidity(data);
+      } catch (err) {
+        console.error("Failed to fetch liquidity:", err);
+      } finally {
+        setLiquidityLoading(false);
+      }
+    };
+    
+    loadLiquidity();
+  }, [coin.symbol]);
 
   const handleCreateAlert = async () => {
     if (!email && channels.includes("email")) {
@@ -138,6 +157,139 @@ PreTrend Probability: ${(coin.pretrend_prob * 100).toFixed(0)}%`;
                 <div className="text-2xl font-bold text-cyan-400">{(coin.pretrend_prob * 100).toFixed(0)}%</div>
               </div>
             </div>
+          </div>
+
+          {/* Liquidity & Slippage */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Activity size={18} />
+              Liquidity & Slippage
+            </h3>
+            
+            {liquidityLoading ? (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 text-center text-slate-400">
+                Loading liquidity data...
+              </div>
+            ) : liquidity ? (
+              <div className="space-y-3">
+                {/* Liquidity Score */}
+                {liquidity.liquidity_score !== null && (
+                  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-400">Liquidity Score</span>
+                      <span className={`text-lg font-bold ${
+                        liquidity.liquidity_score >= 70 ? 'text-green-400' :
+                        liquidity.liquidity_score >= 40 ? 'text-yellow-400' :
+                        'text-red-400'
+                      }`}>
+                        {liquidity.liquidity_score.toFixed(0)}/100
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* CEX Order Book */}
+                {liquidity.cex_liquidity && (
+                  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
+                    <div className="text-sm font-medium text-slate-300 mb-2">Order Book</div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <div className="text-slate-400">Spread</div>
+                        <div className="font-medium">{liquidity.cex_liquidity.spread_bps.toFixed(2)} bps</div>
+                      </div>
+                      <div>
+                        <div className="text-slate-400">Mid Price</div>
+                        <div className="font-medium">${liquidity.cex_liquidity.mid_price.toLocaleString()}</div>
+                      </div>
+                      <div>
+                        <div className="text-slate-400">Bid Size</div>
+                        <div className="font-medium text-green-400">${liquidity.cex_liquidity.bid_size.toLocaleString()}</div>
+                      </div>
+                      <div>
+                        <div className="text-slate-400">Ask Size</div>
+                        <div className="font-medium text-red-400">${liquidity.cex_liquidity.ask_size.toLocaleString()}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Slippage Estimates */}
+                {liquidity.slippage_estimates && (
+                  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
+                    <div className="text-sm font-medium text-slate-300 mb-2">Slippage Estimates</div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-400">$1K Buy</span>
+                        <span className="flex items-center gap-1 text-red-400">
+                          <TrendingUp size={12} />
+                          {liquidity.slippage_estimates.buy['1000_usd']?.slippage_bps?.toFixed(2) || 'N/A'} bps
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-400">$5K Buy</span>
+                        <span className="flex items-center gap-1 text-red-400">
+                          <TrendingUp size={12} />
+                          {liquidity.slippage_estimates.buy['5000_usd']?.slippage_bps?.toFixed(2) || 'N/A'} bps
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-400">$10K Buy</span>
+                        <span className="flex items-center gap-1 text-red-400">
+                          <TrendingUp size={12} />
+                          {liquidity.slippage_estimates.buy['10000_usd']?.slippage_bps?.toFixed(2) || 'N/A'} bps
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* DEX Liquidity */}
+                {liquidity.dex_liquidity && liquidity.dex_liquidity.length > 0 && (
+                  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
+                    <div className="text-sm font-medium text-slate-300 mb-2">DEX Pools</div>
+                    <div className="space-y-2">
+                      {liquidity.dex_liquidity.map((pool, idx) => (
+                        <div key={idx} className="text-xs">
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-400">{pool.pair} ({pool.chain})</span>
+                            <span className="font-medium">${pool.tvl_usd?.toLocaleString() || 'N/A'}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Derivatives */}
+                {liquidity.derivatives && (
+                  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
+                    <div className="text-sm font-medium text-slate-300 mb-2">Derivatives</div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      {liquidity.derivatives.funding_rate_8h !== null && (
+                        <div>
+                          <div className="text-slate-400">Funding (8h)</div>
+                          <div className={`font-medium ${
+                            liquidity.derivatives.funding_rate_8h > 0 ? 'text-green-400' : 'text-red-400'
+                          }`}>
+                            {(liquidity.derivatives.funding_rate_8h * 100).toFixed(4)}%
+                          </div>
+                        </div>
+                      )}
+                      {liquidity.derivatives.open_interest !== null && (
+                        <div>
+                          <div className="text-slate-400">Open Interest</div>
+                          <div className="font-medium">${liquidity.derivatives.open_interest.toLocaleString()}</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 text-center text-slate-400">
+                Liquidity data unavailable
+              </div>
+            )}
           </div>
 
           {/* Create Alert */}
