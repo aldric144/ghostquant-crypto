@@ -38,7 +38,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://159.89.178.196:3000", "http://localhost:3000", "https://ghostquantpreview.loca.lt", "http://ghostquantpreview.loca.lt", "https://ghostquant.ai", "https://www.ghostquant.ai"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
