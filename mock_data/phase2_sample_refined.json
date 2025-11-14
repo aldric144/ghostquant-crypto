@@ -1,0 +1,348 @@
+{
+  "whale_events": [
+    {
+      "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+      "chain": "ethereum",
+      "symbol": "ETH",
+      "amount_usd": 5420000,
+      "from_address": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+      "to_address": "0xabcd1234567890abcdef1234567890abcdef1234",
+      "timestamp": "2025-11-14T20:30:00Z",
+      "type": "exchange_withdrawal",
+      "explorer_url": "https://etherscan.io/tx/0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+    },
+    {
+      "tx_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+      "chain": "ethereum",
+      "symbol": "USDT",
+      "amount_usd": 12500000,
+      "from_address": "0x9876543210abcdef9876543210abcdef98765432",
+      "to_address": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+      "timestamp": "2025-11-14T19:45:00Z",
+      "type": "exchange_deposit",
+      "explorer_url": "https://etherscan.io/tx/0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+    },
+    {
+      "tx_hash": "0x7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456",
+      "chain": "ethereum",
+      "symbol": "WBTC",
+      "amount_usd": 8900000,
+      "from_address": "0xd551234ae421e3bcba99a0da6d736074f22192ff",
+      "to_address": "0xef123456789abcdef0123456789abcdef012345",
+      "timestamp": "2025-11-14T18:20:00Z",
+      "type": "exchange_withdrawal",
+      "explorer_url": "https://etherscan.io/tx/0x7890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456"
+    },
+    {
+      "tx_hash": "0x456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123",
+      "chain": "polygon",
+      "symbol": "MATIC",
+      "amount_usd": 2100000,
+      "from_address": "0x1111222233334444555566667777888899990000",
+      "to_address": "0x3333444455556666777788889999000011112222",
+      "timestamp": "2025-11-14T17:10:00Z",
+      "type": "transfer",
+      "explorer_url": "https://polygonscan.com/tx/0x456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123"
+    },
+    {
+      "tx_hash": "0xfedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+      "chain": "ethereum",
+      "symbol": "LINK",
+      "amount_usd": 3750000,
+      "from_address": "0x5555666677778888999900001111222233334444",
+      "to_address": "0x28c6c06298d514db089934071355e5743bf21d60",
+      "timestamp": "2025-11-14T16:30:00Z",
+      "type": "exchange_deposit",
+      "explorer_url": "https://etherscan.io/tx/0xfedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210"
+    },
+    {
+      "tx_hash": "0x1111111111111111111111111111111111111111111111111111111111111111",
+      "chain": "ethereum",
+      "symbol": "ETH",
+      "amount_usd": 4200000,
+      "from_address": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+      "to_address": "0xabcd1234567890abcdef1234567890abcdef1234",
+      "timestamp": "2025-11-13T14:00:00Z",
+      "type": "exchange_withdrawal",
+      "explorer_url": "https://etherscan.io/tx/0x1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    {
+      "tx_hash": "0x2222222222222222222222222222222222222222222222222222222222222222",
+      "chain": "ethereum",
+      "symbol": "ETH",
+      "amount_usd": 3800000,
+      "from_address": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+      "to_address": "0xabcd1234567890abcdef1234567890abcdef1234",
+      "timestamp": "2025-11-12T10:30:00Z",
+      "type": "exchange_withdrawal",
+      "explorer_url": "https://etherscan.io/tx/0x2222222222222222222222222222222222222222222222222222222222222222"
+    },
+    {
+      "tx_hash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+      "chain": "ethereum",
+      "symbol": "USDC",
+      "amount_usd": 6500000,
+      "from_address": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+      "to_address": "0xabcd1234567890abcdef1234567890abcdef1234",
+      "timestamp": "2025-11-11T16:45:00Z",
+      "type": "exchange_withdrawal",
+      "explorer_url": "https://etherscan.io/tx/0x3333333333333333333333333333333333333333333333333333333333333333"
+    },
+    {
+      "tx_hash": "0x4444444444444444444444444444444444444444444444444444444444444444",
+      "chain": "ethereum",
+      "symbol": "ETH",
+      "amount_usd": 5100000,
+      "from_address": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+      "to_address": "0xabcd1234567890abcdef1234567890abcdef1234",
+      "timestamp": "2025-11-10T12:20:00Z",
+      "type": "exchange_withdrawal",
+      "explorer_url": "https://etherscan.io/tx/0x4444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "tx_hash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+      "chain": "ethereum",
+      "symbol": "BTC",
+      "amount_usd": 7200000,
+      "from_address": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+      "to_address": "0xabcd1234567890abcdef1234567890abcdef1234",
+      "timestamp": "2025-11-09T09:15:00Z",
+      "type": "exchange_withdrawal",
+      "explorer_url": "https://etherscan.io/tx/0x5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    {
+      "tx_hash": "0x6666666666666666666666666666666666666666666666666666666666666666",
+      "chain": "ethereum",
+      "symbol": "ETH",
+      "amount_usd": 4900000,
+      "from_address": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+      "to_address": "0xabcd1234567890abcdef1234567890abcdef1234",
+      "timestamp": "2025-11-08T18:30:00Z",
+      "type": "exchange_withdrawal",
+      "explorer_url": "https://etherscan.io/tx/0x6666666666666666666666666666666666666666666666666666666666666666"
+    },
+    {
+      "tx_hash": "0x7777777777777777777777777777777777777777777777777777777777777777",
+      "chain": "polygon",
+      "symbol": "MATIC",
+      "amount_usd": 1800000,
+      "from_address": "0x3f5ce5fbfe3e9af3971dd833d26ba9b5c936f0be",
+      "to_address": "0xabcd1234567890abcdef1234567890abcdef1234",
+      "timestamp": "2025-11-08T14:00:00Z",
+      "type": "exchange_withdrawal",
+      "explorer_url": "https://polygonscan.com/tx/0x7777777777777777777777777777777777777777777777777777777777777777"
+    }
+  ],
+  "liquidity_data": {
+    "BTC": {
+      "depth_at_0_5": 12500000,
+      "depth_at_1_0": 28000000,
+      "pairs": [
+        {
+          "exchange": "Coinbase",
+          "pair": "BTC/USD",
+          "slippage_1k": 0.02,
+          "slippage_10k": 0.08,
+          "slippage_100k": 0.45
+        },
+        {
+          "exchange": "Kraken",
+          "pair": "BTC/USD",
+          "slippage_1k": 0.03,
+          "slippage_10k": 0.10,
+          "slippage_100k": 0.52
+        },
+        {
+          "exchange": "Binance",
+          "pair": "BTC/USDT",
+          "slippage_1k": 0.025,
+          "slippage_10k": 0.09,
+          "slippage_100k": 0.48
+        }
+      ]
+    },
+    "ETH": {
+      "depth_at_0_5": 8900000,
+      "depth_at_1_0": 19500000,
+      "pairs": [
+        {
+          "exchange": "Kraken",
+          "pair": "ETH/USD",
+          "slippage_1k": 0.03,
+          "slippage_10k": 0.12,
+          "slippage_100k": 0.62
+        },
+        {
+          "exchange": "Coinbase",
+          "pair": "ETH/USD",
+          "slippage_1k": 0.04,
+          "slippage_10k": 0.15,
+          "slippage_100k": 0.70
+        },
+        {
+          "exchange": "Binance",
+          "pair": "ETH/USDT",
+          "slippage_1k": 0.035,
+          "slippage_10k": 0.13,
+          "slippage_100k": 0.65
+        }
+      ]
+    },
+    "SOL": {
+      "depth_at_0_5": 3200000,
+      "depth_at_1_0": 7800000,
+      "pairs": [
+        {
+          "exchange": "Binance",
+          "pair": "SOL/USDT",
+          "slippage_1k": 0.08,
+          "slippage_10k": 0.25,
+          "slippage_100k": 1.15
+        },
+        {
+          "exchange": "Coinbase",
+          "pair": "SOL/USD",
+          "slippage_1k": 0.10,
+          "slippage_10k": 0.30,
+          "slippage_100k": 1.35
+        },
+        {
+          "exchange": "Kraken",
+          "pair": "SOL/USD",
+          "slippage_1k": 0.09,
+          "slippage_10k": 0.28,
+          "slippage_100k": 1.25
+        }
+      ]
+    }
+  },
+  "sector_data": {
+    "coins": [
+      {
+        "symbol": "bitcoin",
+        "sector": "L1",
+        "volume_24h_usd": 28500000000,
+        "price_change_24h_pct": 3.2
+      },
+      {
+        "symbol": "ethereum",
+        "sector": "L1",
+        "volume_24h_usd": 15200000000,
+        "price_change_24h_pct": 4.1
+      },
+      {
+        "symbol": "solana",
+        "sector": "L1",
+        "volume_24h_usd": 3800000000,
+        "price_change_24h_pct": 6.5
+      },
+      {
+        "symbol": "polygon",
+        "sector": "L2",
+        "volume_24h_usd": 450000000,
+        "price_change_24h_pct": 2.8
+      },
+      {
+        "symbol": "arbitrum",
+        "sector": "L2",
+        "volume_24h_usd": 380000000,
+        "price_change_24h_pct": 1.9
+      },
+      {
+        "symbol": "optimism",
+        "sector": "L2",
+        "volume_24h_usd": 320000000,
+        "price_change_24h_pct": 2.2
+      },
+      {
+        "symbol": "uniswap",
+        "sector": "DeFi",
+        "volume_24h_usd": 890000000,
+        "price_change_24h_pct": 5.8
+      },
+      {
+        "symbol": "aave",
+        "sector": "DeFi",
+        "volume_24h_usd": 420000000,
+        "price_change_24h_pct": 4.2
+      },
+      {
+        "symbol": "compound",
+        "sector": "DeFi",
+        "volume_24h_usd": 180000000,
+        "price_change_24h_pct": 3.5
+      },
+      {
+        "symbol": "chainlink",
+        "sector": "Oracles",
+        "volume_24h_usd": 680000000,
+        "price_change_24h_pct": 1.2
+      },
+      {
+        "symbol": "band-protocol",
+        "sector": "Oracles",
+        "volume_24h_usd": 45000000,
+        "price_change_24h_pct": 0.8
+      },
+      {
+        "symbol": "tether",
+        "sector": "Stablecoins",
+        "volume_24h_usd": 42000000000,
+        "price_change_24h_pct": 0.01
+      },
+      {
+        "symbol": "usd-coin",
+        "sector": "Stablecoins",
+        "volume_24h_usd": 8500000000,
+        "price_change_24h_pct": -0.02
+      },
+      {
+        "symbol": "dai",
+        "sector": "Stablecoins",
+        "volume_24h_usd": 520000000,
+        "price_change_24h_pct": 0.03
+      },
+      {
+        "symbol": "binancecoin",
+        "sector": "CeFi",
+        "volume_24h_usd": 1200000000,
+        "price_change_24h_pct": 2.5
+      },
+      {
+        "symbol": "crypto-com-chain",
+        "sector": "CeFi",
+        "volume_24h_usd": 85000000,
+        "price_change_24h_pct": 1.8
+      }
+    ]
+  },
+  "sample_notes": [
+    {
+      "id": "note_1",
+      "user_id": "device_abc123",
+      "symbol": "BTC",
+      "note": "Strong momentum, watching for breakout above $95k",
+      "tags": ["bullish", "breakout"],
+      "created_at": "2025-11-14T15:30:00Z",
+      "updated_at": "2025-11-14T15:30:00Z"
+    },
+    {
+      "id": "note_2",
+      "user_id": "device_abc123",
+      "symbol": "ETH",
+      "note": "High whale activity, potential accumulation phase",
+      "tags": ["whale-watch", "accumulation"],
+      "created_at": "2025-11-14T14:20:00Z",
+      "updated_at": "2025-11-14T14:20:00Z"
+    },
+    {
+      "id": "note_3",
+      "user_id": "device_abc123",
+      "symbol": "SOL",
+      "note": "Ecosystem growth strong, DeFi TVL increasing",
+      "tags": ["ecosystem", "defi"],
+      "created_at": "2025-11-14T13:10:00Z",
+      "updated_at": "2025-11-14T13:10:00Z"
+    }
+  ]
+}
