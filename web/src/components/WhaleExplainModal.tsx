@@ -40,7 +40,12 @@ export default function WhaleExplainModal({ symbol, onClose }: WhaleExplainModal
 
         const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
         const encodedSymbol = encodeURIComponent(symbol);
-        const response = await fetch(`${apiBase}/insights/whale-explain?symbol=${encodedSymbol}`);
+        
+        let response = await fetch(`${apiBase}/insights/whale-explain?symbol=${encodedSymbol}`);
+        
+        if (response.status === 404) {
+          response = await fetch(`${apiBase}/insights/whale-explain-lite?symbol=${encodedSymbol}`);
+        }
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -172,6 +177,15 @@ export default function WhaleExplainModal({ symbol, onClose }: WhaleExplainModal
 
           {data && (
             <>
+              {/* Data Type Notice */}
+              {(data as any).data_type === 'preliminary' && (
+                <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
+                  <p className="text-sm text-blue-300">
+                    <strong>Market Data Analysis:</strong> {(data as any).note}
+                  </p>
+                </div>
+              )}
+              
               {/* Summary */}
               <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
                 <p className="text-lg text-gray-200 leading-relaxed">
