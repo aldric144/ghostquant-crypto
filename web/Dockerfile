@@ -9,6 +9,17 @@ RUN npm install
 
 FROM base AS builder
 WORKDIR /app
+
+# Accept build args
+ARG NEXT_PUBLIC_API_BASE=http://localhost:8080
+ARG NEXT_PUBLIC_ALPHABRAIN_API=http://localhost:8081
+ARG NEXT_PUBLIC_ECOSCAN_API=http://localhost:8082
+
+# Set as environment variables for the build
+ENV NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE}
+ENV NEXT_PUBLIC_ALPHABRAIN_API=${NEXT_PUBLIC_ALPHABRAIN_API}
+ENV NEXT_PUBLIC_ECOSCAN_API=${NEXT_PUBLIC_ECOSCAN_API}
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 

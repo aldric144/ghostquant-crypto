@@ -153,6 +153,7 @@ class MomentumWorker:
         """
         Full refresh: Update entire CoinGecko universe.
         Called every 5 minutes.
+        Paginates through ALL coins until empty response.
         """
         try:
             start_time = datetime.utcnow()
@@ -160,9 +161,8 @@ class MomentumWorker:
             
             all_scored_coins = []
             page = 1
-            max_pages = 10  # Limit to 2500 coins (250 per page)
             
-            while page <= max_pages:
+            while True:
                 try:
                     coins = await self.coingecko_client.get_coins_markets(
                         page=page,

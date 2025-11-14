@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import SignalCard from '@/components/SignalCard'
 import Heatmap from '@/components/Heatmap'
+import TopMovers from '@/components/TopMovers'
 
 interface Signal {
   asset_id: number
@@ -71,6 +72,13 @@ export default function Home() {
       <div className="bg-gradient-to-r from-blue-900/20 to-blue-800/20 border border-blue-800/30 rounded-lg p-6">
         <h1 className="text-3xl font-bold text-blue-400 mb-2">GhostQuant Dashboard</h1>
         <p className="text-gray-400">Private crypto-native research & signal platform</p>
+      </div>
+
+      <div>
+        <h2 className="text-2xl font-semibold text-blue-400 mb-4">Top Movers</h2>
+        <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-6">
+          <TopMovers limit={100} sort="momentum" />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

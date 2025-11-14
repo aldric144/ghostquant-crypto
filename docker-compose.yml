@@ -214,6 +214,10 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:8080}
+        NEXT_PUBLIC_ALPHABRAIN_API: ${NEXT_PUBLIC_ALPHABRAIN_API:-http://localhost:8081}
+        NEXT_PUBLIC_ECOSCAN_API: ${NEXT_PUBLIC_ECOSCAN_API:-http://localhost:8082}
     container_name: ghostquant-web
     environment:
       NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:8080}
@@ -228,6 +232,12 @@ services:
         condition: service_healthy
       ecoscan:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - ghostquant-net
 

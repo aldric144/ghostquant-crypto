@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
 from app.db import init_db_pool, close_db_pool
-from app.routers import health, assets, signals, metrics, screener, alerts, market
+from app.routers import health, assets, signals, metrics, screener, alerts, market, dashboard
 from app.services.momentum_worker import start_worker, stop_worker
 from app.services.websocket_server import get_ws_manager
 
@@ -38,7 +38,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://159.89.178.196:3000", "http://localhost:3000", "https://ghostquantpreview.loca.lt", "http://ghostquantpreview.loca.lt", "https://ghostquant.ai", "https://www.ghostquant.ai"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -51,6 +51,7 @@ app.include_router(metrics.router, tags=["metrics"])
 app.include_router(screener.router, tags=["screener"])
 app.include_router(alerts.router, tags=["alerts"])
 app.include_router(market.router, tags=["market"])
+app.include_router(dashboard.router, tags=["dashboard"])
 
 @app.websocket("/ws/momentum")
 async def websocket_momentum(websocket: WebSocket):
