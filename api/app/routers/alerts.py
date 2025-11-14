@@ -60,48 +60,48 @@ async def get_momentum_alerts(
         )
         
         signals = await db.fetchall()
+        
+        alerts = []
+        
+        for signal in signals:
+            symbol = signal["symbol"]
+            pretrend_prob = float(signal["pretrend_prob"])
+            trend_score = float(signal["trend_score"]) if signal["trend_score"] else 50.0
+            action = signal["action"] or "HOLD"
+            confidence = float(signal["confidence"]) if signal["confidence"] else 0.5
+            
+            volume_spike = _check_volume_spike(symbol)
+            
+            if volume_spike or pretrend_prob >= 0.7:
+                severity = _classify_alert_severity(pretrend_prob, trend_score, confidence)
                 
-                alerts = []
-                
-                for signal in signals:
-                    symbol = signal["symbol"]
-                    pretrend_prob = float(signal["pretrend_prob"])
-                    trend_score = float(signal["trend_score"]) if signal["trend_score"] else 50.0
-                    action = signal["action"] or "HOLD"
-                    confidence = float(signal["confidence"]) if signal["confidence"] else 0.5
-                    
-                    volume_spike = _check_volume_spike(symbol)
-                    
-                    if volume_spike or pretrend_prob >= 0.7:
-                        severity = _classify_alert_severity(pretrend_prob, trend_score, confidence)
-                        
-                        alert = {
-                            "alert_id": f"momentum_{symbol}_{int(signal['ts'].timestamp())}",
-                            "alert_type": "momentum",
-                            "asset": symbol,
-                            "severity": severity,
-                            "title": f"{symbol}: Pre-Trend Signal Detected",
-                            "message": _generate_alert_message(symbol, pretrend_prob, trend_score, action, volume_spike),
-                            "pretrend_prob": pretrend_prob,
-                            "trend_score": trend_score,
-                            "action": action,
-                            "confidence": confidence,
-                            "volume_spike": volume_spike,
-                            "timestamp": signal["ts"].isoformat(),
-                            "rationale": signal["rationale"],
-                        }
-                        
-                        alerts.append(alert)
-                
-                alerts = alerts[:limit]
-                
-                return {
-                    "alerts": alerts,
-                    "total_alerts": len(alerts),
-                    "lookback_hours": lookback_hours,
-                    "min_pretrend_prob": min_pretrend_prob,
-                    "timestamp": datetime.utcnow().isoformat(),
+                alert = {
+                    "alert_id": f"momentum_{symbol}_{int(signal['ts'].timestamp())}",
+                    "alert_type": "momentum",
+                    "asset": symbol,
+                    "severity": severity,
+                    "title": f"{symbol}: Pre-Trend Signal Detected",
+                    "message": _generate_alert_message(symbol, pretrend_prob, trend_score, action, volume_spike),
+                    "pretrend_prob": pretrend_prob,
+                    "trend_score": trend_score,
+                    "action": action,
+                    "confidence": confidence,
+                    "volume_spike": volume_spike,
+                    "timestamp": signal["ts"].isoformat(),
+                    "rationale": signal["rationale"],
                 }
+                
+                alerts.append(alert)
+        
+        alerts = alerts[:limit]
+        
+        return {
+            "alerts": alerts,
+            "total_alerts": len(alerts),
+            "lookback_hours": lookback_hours,
+            "min_pretrend_prob": min_pretrend_prob,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
     
     except Exception as e:
         logger.error(f"Error getting momentum alerts: {e}")
@@ -154,39 +154,39 @@ async def get_whale_alerts(
         )
         
         transfers = await db.fetchall()
-                
-                alerts = []
-                
-                for transfer in transfers:
-                    severity = _classify_whale_alert_severity(float(transfer["amount_usd"]))
-                    
-                    alert = {
-                        "alert_id": f"whale_{transfer['tx_hash'][:16]}",
-                        "alert_type": "whale",
-                        "asset": transfer["token_symbol"],
-                        "severity": severity,
-                        "title": f"Large {transfer['token_symbol']} Transfer Detected",
-                        "message": _generate_whale_alert_message(transfer),
-                        "value_usd": float(transfer["amount_usd"]),
-                        "chain": transfer["chain"],
-                        "tx_hash": transfer["tx_hash"],
-                        "from_addr": transfer["from_addr"],
-                        "to_addr": transfer["to_addr"],
-                        "timestamp": transfer["ts"].isoformat(),
-                    }
-                    
-                    alerts.append(alert)
-                
-                if not alerts:
-                    alerts = _generate_mock_whale_alerts(lookback_hours, min_value_usd, limit)
-                
-                return {
-                    "alerts": alerts,
-                    "total_alerts": len(alerts),
-                    "lookback_hours": lookback_hours,
-                    "min_value_usd": min_value_usd,
-                    "timestamp": datetime.utcnow().isoformat(),
-                }
+        
+        alerts = []
+        
+        for transfer in transfers:
+            severity = _classify_whale_alert_severity(float(transfer["amount_usd"]))
+            
+            alert = {
+                "alert_id": f"whale_{transfer['tx_hash'][:16]}",
+                "alert_type": "whale",
+                "asset": transfer["token_symbol"],
+                "severity": severity,
+                "title": f"Large {transfer['token_symbol']} Transfer Detected",
+                "message": _generate_whale_alert_message(transfer),
+                "value_usd": float(transfer["amount_usd"]),
+                "chain": transfer["chain"],
+                "tx_hash": transfer["tx_hash"],
+                "from_addr": transfer["from_addr"],
+                "to_addr": transfer["to_addr"],
+                "timestamp": transfer["ts"].isoformat(),
+            }
+            
+            alerts.append(alert)
+        
+        if not alerts:
+            alerts = _generate_mock_whale_alerts(lookback_hours, min_value_usd, limit)
+        
+        return {
+            "alerts": alerts,
+            "total_alerts": len(alerts),
+            "lookback_hours": lookback_hours,
+            "min_value_usd": min_value_usd,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
     
     except Exception as e:
         logger.error(f"Error getting whale alerts: {e}")
