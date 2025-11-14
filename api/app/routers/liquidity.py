@@ -6,7 +6,7 @@ from typing import Dict, Any, List, Optional
 import logging
 from datetime import datetime, timedelta
 
-from ..db import get_db_pool
+from ..db import get_db
 from ..services.redis_cache import RedisCache
 
 logger = logging.getLogger(__name__)
@@ -40,58 +40,60 @@ async def get_asset_liquidity(
             logger.info(f"Returning cached liquidity for {symbol}")
             return cached_data
         
-        pool = await get_db_pool()
-        
-        async with pool.acquire() as conn:
-            asset_row = await conn.fetchrow(
-                "SELECT asset_id FROM assets WHERE UPPER(symbol) = UPPER($1)",
-                symbol
+        async with get_db() as cur:
+            await cur.execute(
+                "SELECT asset_id FROM assets WHERE UPPER(symbol) = UPPER(%s)",
+                (symbol,)
             )
+            asset_row = await cur.fetchone()
             
             if not asset_row:
                 raise HTTPException(status_code=404, detail=f"Asset {symbol} not found")
             
             asset_id = asset_row['asset_id']
             
-            book_row = await conn.fetchrow(
+            await cur.execute(
                 """
                 SELECT 
                     bid_px, ask_px, bid_sz, ask_sz, spread_bps, ts
                 FROM books
-                WHERE asset_id = $1
+                WHERE asset_id = %s
                 ORDER BY ts DESC
                 LIMIT 1
                 """,
-                asset_id
+                (asset_id,)
             )
+            book_row = await cur.fetchone()
             
-            book_history = await conn.fetch(
+            await cur.execute(
                 """
                 SELECT 
                     bid_px, ask_px, spread_bps, ts
                 FROM books
-                WHERE asset_id = $1 AND ts > NOW() - INTERVAL '1 hour'
+                WHERE asset_id = %s AND ts > NOW() - INTERVAL '1 hour'
                 ORDER BY ts DESC
                 LIMIT 60
                 """,
-                asset_id
+                (asset_id,)
             )
+            book_history = await cur.fetchall()
             
-            derivatives_row = await conn.fetchrow(
+            await cur.execute(
                 """
                 SELECT 
                     funding_8h, oi, basis_bps, liq_1h, ts
                 FROM derivatives
-                WHERE asset_id = $1
+                WHERE asset_id = %s
                 ORDER BY ts DESC
                 LIMIT 1
                 """,
-                asset_id
+                (asset_id,)
             )
+            derivatives_row = await cur.fetchone()
             
             dex_liquidity = None
             if include_dex:
-                dex_pools = await conn.fetch(
+                await cur.execute(
                     """
                     SELECT 
                         dp.pool_id, dp.chain, dp.address, dp.token0, dp.token1, dp.fee_bps,
@@ -104,10 +106,11 @@ async def get_asset_liquidity(
                         ORDER BY ts DESC
                         LIMIT 1
                     ) dm ON true
-                    WHERE UPPER(dp.token0) = UPPER($1) OR UPPER(dp.token1) = UPPER($1)
+                    WHERE UPPER(dp.token0) = UPPER(%s) OR UPPER(dp.token1) = UPPER(%s)
                     """,
-                    symbol
+                    (symbol, symbol)
                 )
+                dex_pools = await cur.fetchall()
                 
                 if dex_pools:
                     dex_liquidity = []
