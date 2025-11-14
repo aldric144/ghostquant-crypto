@@ -20,6 +20,21 @@ async def get_redis():
         redis_client = await redis.from_url(redis_url, decode_responses=True)
     return redis_client
 
+async def get_top_movers_data():
+    """Get cached top movers data from Redis."""
+    try:
+        r = await get_redis()
+        for sort in ["momentum", "whale_confidence"]:
+            for limit in [50, 100, 500]:
+                cache_key = f"dashboard:top-movers:{limit}:{sort}"
+                cached = await r.get(cache_key)
+                if cached:
+                    return json.loads(cached)
+        return []
+    except Exception as e:
+        print(f"Error getting top movers data: {e}")
+        return []
+
 async def get_db_pool():
     return await asyncpg.create_pool(
         host=os.getenv("POSTGRES_HOST", "postgres"),
@@ -212,3 +227,135 @@ async def get_whale_explanation(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
     finally:
         await pool.close()
+
+
+@router.get("/whale-explain-lite")
+async def get_whale_explanation_lite(
+    symbol: str = Query(..., description="Asset symbol (e.g., BTC, ETH)")
+):
+    """
+    Get lightweight whale activity explanation based on market data only.
+    
+    This endpoint provides explanations for symbols not in full coverage by analyzing:
+    - Whale confidence score from momentum scoring
+    - Price momentum and volume patterns
+    - Market indicators
+    
+    Returns same format as /whale-explain but labeled as "Market Data Only"
+    """
+    
+    cache_key = f"whale-explain-lite:{symbol.upper()}"
+    try:
+        r = await get_redis()
+        cached = await r.get(cache_key)
+        if cached:
+            return json.loads(cached)
+    except Exception as e:
+        print(f"Redis error: {e}")
+    
+    top_movers = await get_top_movers_data()
+    
+    coin = None
+    for c in top_movers:
+        if c.get("symbol", "").upper() == symbol.upper():
+            coin = c
+            break
+    
+    if not coin:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Symbol {symbol} not found in current market data. This asset may not be actively traded or tracked."
+        )
+    
+    whale_confidence = coin.get("whale_confidence", 0)
+    momentum_score = coin.get("momentum_score", 0)
+    price_change_24h = coin.get("price_change_percentage_24h", 0)
+    price_change_1h = coin.get("price_change_1h", 0)
+    total_volume = coin.get("total_volume", 0)
+    pretrend = coin.get("pretrend", 0)
+    
+    drivers = []
+    confidence_components = []
+    
+    if whale_confidence > 0.6:
+        drivers.append({
+            "type": "whale_activity",
+            "desc": f"Whale activity detected with {whale_confidence*100:.0f}% confidence",
+            "value": f"{whale_confidence*100:.0f}",
+            "unit": "%",
+            "time": datetime.utcnow().isoformat()
+        })
+        confidence_components.append(whale_confidence * 40)  # Up to 40 points
+    
+    if momentum_score > 70:
+        drivers.append({
+            "type": "momentum",
+            "desc": f"Strong momentum score of {momentum_score:.1f}/100",
+            "value": f"{momentum_score:.1f}",
+            "unit": "/100",
+            "time": datetime.utcnow().isoformat()
+        })
+        confidence_components.append(25)
+    elif momentum_score > 60:
+        drivers.append({
+            "type": "momentum",
+            "desc": f"Elevated momentum score of {momentum_score:.1f}/100",
+            "value": f"{momentum_score:.1f}",
+            "unit": "/100",
+            "time": datetime.utcnow().isoformat()
+        })
+        confidence_components.append(15)
+    
+    if abs(price_change_24h) > 5:
+        direction = "upward" if price_change_24h > 0 else "downward"
+        drivers.append({
+            "type": "price_movement",
+            "desc": f"Significant {direction} price movement: {price_change_24h:+.1f}% (24h)",
+            "value": f"{abs(price_change_24h):.1f}",
+            "unit": "%",
+            "time": datetime.utcnow().isoformat()
+        })
+        confidence_components.append(20)
+    
+    if total_volume > 1000000:  # $1M+ volume
+        drivers.append({
+            "type": "volume",
+            "desc": f"High trading volume: ${total_volume:,.0f}",
+            "value": f"{total_volume:,.0f}",
+            "unit": "USD",
+            "time": datetime.utcnow().isoformat()
+        })
+        confidence_components.append(15)
+    
+    confidence = min(sum(confidence_components), 100)
+    
+    if not drivers:
+        summary = f"Whale confidence for {symbol} is {whale_confidence*100:.0f}% based on market patterns. No specific large movements detected in recent data."
+    else:
+        driver_texts = [d["desc"] for d in drivers[:3]]
+        summary = " + ".join(driver_texts) + f" → Whale activity indicated (market data analysis)"
+    
+    response = {
+        "symbol": symbol.upper(),
+        "summary": summary,
+        "confidence": int(confidence),
+        "drivers": drivers[:5],  # Top 5 drivers
+        "source": ["market_data", "momentum_scoring", "whale_fusion"],
+        "data_type": "preliminary",
+        "note": "This explanation is based on market data and momentum analysis. For assets in full coverage, on-chain and derivatives data provide additional insights.",
+        "raw": {
+            "whale_confidence": whale_confidence,
+            "momentum_score": momentum_score,
+            "price_change_24h": price_change_24h,
+            "total_volume": total_volume,
+            "pretrend": pretrend
+        }
+    }
+    
+    try:
+        r = await get_redis()
+        await r.setex(cache_key, 30, json.dumps(response, default=str))
+    except Exception as e:
+        print(f"Redis cache error: {e}")
+    
+    return response
