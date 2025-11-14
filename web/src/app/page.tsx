@@ -74,16 +74,9 @@ export default function Home() {
         <p className="text-gray-400">Private crypto-native research & signal platform</p>
       </div>
 
-      <div>
-        <h2 className="text-2xl font-semibold text-blue-400 mb-4">Top Movers</h2>
-        <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-6">
-          <TopMovers limit={100} sort="momentum" />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 order-1">
         <div className="lg:col-span-2">
-          <h2 className="text-xl font-semibold text-blue-400 mb-4">Latest Signals</h2>
+          <h2 className="text-2xl font-semibold text-blue-400 mb-4">Latest Signals</h2>
           <div className="space-y-4">
             {signals.length === 0 ? (
               <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 text-center text-gray-400">
@@ -102,8 +95,15 @@ export default function Home() {
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold text-blue-400 mb-4">Market Heatmap</h2>
+          <h2 className="text-2xl font-semibold text-blue-400 mb-4">Market Heatmap</h2>
           <Heatmap signals={signals} assets={assets} />
+        </div>
+      </div>
+
+      <div className="order-2">
+        <h2 className="text-2xl font-semibold text-blue-400 mb-4">Top Movers</h2>
+        <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-6">
+          <TopMovers limit={100} sort="momentum" />
         </div>
       </div>
     </div>
