@@ -1,4 +1,4 @@
-# Phase 2 Runbook: Whale Intelligence, Slippage, Heatmap & Notes
+# Phase 2 Runbook: Whale Intelligence, Slippage, Heatmap, Notes & Pattern Signals
 
 ## Overview
 
@@ -8,6 +8,7 @@ Phase 2 adds advanced intelligence features to the GhostQuant screener:
 2. **Liquidity & Slippage Estimator** - Estimate trading costs and suggest best pairs
 3. **Sector/Momentum Heatmap** - Visualize momentum by sector
 4. **Trader Notes** - Persistent notes and watchlists
+5. **AI Pattern & Volatility Signals** - Detect candlestick patterns and technical formations
 
 All features are behind feature flags and have mock fallbacks for QA testing.
 
@@ -21,6 +22,7 @@ FEATURE_WHALES=true
 FEATURE_LIQ_ESTIMATOR=true
 FEATURE_HEATMAP=true
 FEATURE_NOTES=true
+FEATURE_SIGNALS=true
 ```
 
 **Default**: All features are `false` in production until explicitly enabled.
@@ -93,10 +95,27 @@ GET /whales/leaderboard?since=24h
 }
 ```
 
-**Impact Score Formula:**
+**Impact Score Formula (Refined):**
 ```
-impact_score = normalized(usd_volume) * recency_decay * address_recurrence_weight
+impact_score = normalized(usd_volume) × e^(-t/τ) × recurrence_weight × 100
+
+Where:
+- normalized(usd_volume) = (amount - min) / (max - min) over 7-day window
+- e^(-t/τ) = exponential decay with τ=12 hours
+- recurrence_weight = 1.5 if address has >10 events in 7 days, else 1.0
+- Result scaled to 0-100
 ```
+
+**Chain Filtering:**
+```bash
+GET /whales/recent?limit=50&chain=ethereum,polygon
+```
+
+**"Why This Matters" Explanations:**
+Each event includes a `why` field with rule-based explanations:
+- cold_wallet → cex: "Potential selling pressure from long-term holder"
+- cex → cold_wallet: "Accumulation signal - moving to long-term storage"
+- cex → cex: "Exchange rebalancing or arbitrage activity"
 
 ### Caching
 
@@ -623,3 +642,161 @@ For issues or questions:
 - Check logs: `docker compose logs api`
 - Review this runbook
 - Check API docs: http://localhost:8080/docs
+
+## Feature 5: AI Pattern & Volatility Signals
+
+### Configuration
+
+```bash
+# Pattern Signals (Feature 5)
+SIGNAL_MOCK=true                        # Use mock data (true/false)
+SIGNAL_ATR_LOW=0.015                    # Low volatility threshold (1.5%)
+SIGNAL_ATR_HIGH=0.04                    # High volatility threshold (4%)
+SIGNAL_VOLUME_SPIKE_THRESHOLD=2.0       # Volume spike multiplier
+SIGNAL_MA_FAST_PERIOD=50                # Fast MA period
+SIGNAL_MA_SLOW_PERIOD=200               # Slow MA period
+```
+
+### API Endpoints
+
+#### Get Pattern Signals
+
+```bash
+GET /signals/patterns?timeframe=4H&symbols=BTC,ETH
+```
+
+**Parameters:**
+- `timeframe`: Analysis timeframe (4H or 1D)
+- `symbols`: Optional comma-separated symbols to filter
+
+**Response:**
+```json
+{
+  "signals": [
+    {
+      "symbol": "BTC",
+      "timeframe": "4H",
+      "signal_type": "BULL_ENGULFING",
+      "confidence_score": 0.78
+    },
+    {
+      "symbol": "ETH",
+      "timeframe": "1D",
+      "signal_type": "GOLDEN_CROSS",
+      "confidence_score": 0.85
+    }
+  ],
+  "count": 2,
+  "timeframe": "4H",
+  "symbols": ["BTC", "ETH"],
+  "data_source": "mock"
+}
+```
+
+### Signal Types
+
+#### Candlestick Patterns
+
+**BULL_ENGULFING / BEAR_ENGULFING**
+- Pattern: Current candle body completely engulfs previous candle body
+- Confidence Formula: `base(0.6) + volume_bonus(0.2) + trend_bonus(0.1)`
+- Volume bonus: Current volume > 1.5× 20-bar average
+- Trend bonus: Prior 5-bar trend confirms reversal
+
+**DOJI**
+- Pattern: Open and close are very close (body < 10% of range)
+- Confidence Formula: `base(0.4) + atr_bonus(0.2) + context_bonus(0.1)`
+- ATR bonus: High ATR indicates significant indecision
+- Context bonus: Near recent support/resistance
+
+**HARAMI**
+- Pattern: Current candle body contained within previous candle body
+- Confidence Formula: `base(0.5) + volume_bonus(0.1) + reversal_bonus(0.15)`
+- Volume bonus: Lower volume on harami candle
+- Reversal bonus: Trend reversal context
+
+#### Technical Formations
+
+**VOLUME_SPIKE**
+- Pattern: Current volume ≥ threshold × average volume
+- Confidence Formula: `base(0.5) + excess_bonus + price_move_bonus(0.1)`
+- Excess bonus: Scaled by how much volume exceeds threshold
+- Price move bonus: Accompanied by >2% price movement
+
+**GOLDEN_CROSS / DEATH_CROSS**
+- Pattern: Fast MA (50) crosses above/below Slow MA (200)
+- Confidence Formula: `base(0.7) + slope_bonus(0.1) + position_bonus(0.1)`
+- Slope bonus: Fast MA has positive/negative slope
+- Position bonus: Price above/below slow MA
+
+#### Volatility Regimes
+
+**LOW_VOLATILITY**
+- Condition: ATR_normalized < 0.015 (1.5%)
+- Confidence Formula: `0.6 + min(0.3, distance_from_threshold × 0.3)`
+
+**HIGH_VOLATILITY**
+- Condition: ATR_normalized > 0.04 (4%)
+- Confidence Formula: `0.6 + min(0.3, excess_over_threshold × 0.3)`
+
+### ATR Calculation
+
+**Average True Range (ATR):**
+```
+TR = max(H-L, |H-C_prev|, |L-C_prev|)
+ATR(14) = average(TR) over 14 periods
+ATR_normalized = ATR / current_price
+```
+
+**Interpretation:**
+- ATR_n < 1.5%: Low volatility (consolidation, potential breakout)
+- ATR_n 1.5-4%: Normal volatility
+- ATR_n > 4%: High volatility (trending, risk management critical)
+
+### Caching
+
+Pattern signals are cached for **30 minutes (1800 seconds)** per unique combination of:
+- Timeframe (4H, 1D)
+- Symbol filter (sorted for stable cache keys)
+
+Cache keys: `signals:patterns:tf=4h:symbols=BTC,ETH`
+
+### Mock vs Computed Mode
+
+**Mock Mode (SIGNAL_MOCK=true):**
+- Returns precomputed signals from `mock_data/phase2_sample_refined.json`
+- Fast response, no OHLCV data required
+- Ideal for QA testing and development
+
+**Computed Mode (SIGNAL_MOCK=false):**
+- Detects patterns from OHLCV data in real-time
+- Requires OHLCV data in mock file or live data source
+- Falls back to mock if OHLCV unavailable
+
+### Testing
+
+```bash
+# Test with mock data
+curl "http://localhost:8080/signals/patterns?timeframe=4H"
+
+# Test with symbol filter
+curl "http://localhost:8080/signals/patterns?timeframe=1D&symbols=BTC,ETH,SOL"
+
+# Test 1D timeframe
+curl "http://localhost:8080/signals/patterns?timeframe=1D"
+```
+
+### Integration
+
+**UI Badge Mapping:**
+- confidence_score < 0.5: 🟡 Minor signal
+- confidence_score 0.5-0.7: 🟠 Moderate signal
+- confidence_score ≥ 0.7: 🟢 Strong signal
+
+**Signal Priority:**
+1. GOLDEN_CROSS / DEATH_CROSS (highest priority)
+2. BULL_ENGULFING / BEAR_ENGULFING
+3. VOLUME_SPIKE
+4. HIGH_VOLATILITY / LOW_VOLATILITY
+5. HARAMI / DOJI
+
