@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { TrendingUp, TrendingDown, Fish, ShoppingCart } from "lucide-react";
+import WhaleExplainModal from "./WhaleExplainModal";
 
 interface TopMover {
   coin_id: string;
@@ -34,6 +35,7 @@ export default function TopMovers({ limit = 100, sort = "momentum" }: TopMoversP
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [whaleModalSymbol, setWhaleModalSymbol] = useState<string | null>(null);
 
   const fetchTopMovers = async () => {
     try {
@@ -67,6 +69,10 @@ export default function TopMovers({ limit = 100, sort = "momentum" }: TopMoversP
   const handleBuy = (coin: TopMover) => {
     console.log(`Marked ${coin.symbol} as interested`);
     alert(`Marked ${coin.name} (${coin.symbol}) as interested!`);
+  };
+
+  const handleWhaleClick = (symbol: string) => {
+    setWhaleModalSymbol(symbol);
   };
 
   const getSignalColor = (signal: string) => {
@@ -199,10 +205,15 @@ export default function TopMovers({ limit = 100, sort = "momentum" }: TopMoversP
                 </td>
                 <td className="py-3 px-4 text-center">
                   {coin.whale_confidence > 0.6 ? (
-                    <div className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500/20 border border-amber-500/30 rounded-full">
+                    <button
+                      onClick={() => handleWhaleClick(coin.symbol)}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500/20 border border-amber-500/30 rounded-full hover:bg-amber-500/30 transition-colors cursor-pointer"
+                      aria-haspopup="dialog"
+                      title="Click for explanation — why this asset shows whale activity"
+                    >
                       <Fish className="w-4 h-4 text-amber-400" />
                       <span className="text-xs text-amber-400">{(coin.whale_confidence * 100).toFixed(0)}%</span>
-                    </div>
+                    </button>
                   ) : (
                     <span className="text-gray-500 text-xs">-</span>
                   )}
@@ -278,10 +289,15 @@ export default function TopMovers({ limit = 100, sort = "momentum" }: TopMoversP
                   {coin.signal}
                 </span>
                 {coin.whale_confidence > 0.6 && (
-                  <div className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500/20 border border-amber-500/30 rounded-full">
+                  <button
+                    onClick={() => handleWhaleClick(coin.symbol)}
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500/20 border border-amber-500/30 rounded-full hover:bg-amber-500/30 transition-colors cursor-pointer"
+                    aria-haspopup="dialog"
+                    title="Click for explanation — why this asset shows whale activity"
+                  >
                     <Fish className="w-3 h-3 text-amber-400" />
                     <span className="text-xs text-amber-400">{(coin.whale_confidence * 100).toFixed(0)}%</span>
-                  </div>
+                  </button>
                 )}
               </div>
               <button
@@ -300,6 +316,13 @@ export default function TopMovers({ limit = 100, sort = "momentum" }: TopMoversP
         <div className="text-center text-sm text-gray-400 mt-4">
           Last updated: {lastUpdated.toLocaleTimeString()}
         </div>
+      )}
+
+      {whaleModalSymbol && (
+        <WhaleExplainModal
+          symbol={whaleModalSymbol}
+          onClose={() => setWhaleModalSymbol(null)}
+        />
       )}
     </div>
   );
