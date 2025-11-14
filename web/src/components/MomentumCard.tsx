@@ -1,6 +1,6 @@
 "use client";
 
-import { TrendingUp, TrendingDown, Activity, Zap, Brain, Whale } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, Zap, Brain, Fish } from "lucide-react";
 
 interface MomentumCardProps {
   coin: {
@@ -67,7 +67,7 @@ export default function MomentumCard({ coin, onBuyClick }: MomentumCardProps) {
               <h3 className="text-lg font-bold">{coin.symbol.toUpperCase()}</h3>
               {coin.whale_confidence >= 0.6 && (
                 <div className="flex items-center gap-1 px-2 py-0.5 bg-purple-500/20 border border-purple-500/30 rounded text-xs text-purple-400">
-                  <Whale size={12} />
+                  <Fish size={12} />
                   Whale
                 </div>
               )}
@@ -139,7 +139,7 @@ export default function MomentumCard({ coin, onBuyClick }: MomentumCardProps) {
               )}
               {coin.sub_scores.whale_bonus > 0 && (
                 <div className="flex items-center gap-1 px-2 py-1 bg-purple-500/10 border border-purple-500/20 rounded">
-                  <Whale size={10} className="text-purple-400" />
+                  <Fish size={10} className="text-purple-400" />
                   <span className="text-purple-400">+{coin.sub_scores.whale_bonus.toFixed(1)}</span>
                 </div>
               )}
