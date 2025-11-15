@@ -6,6 +6,7 @@ from typing import Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 from .service import service
 
@@ -25,6 +26,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+_cache = {}
 
 
 @app.on_event("startup")
@@ -67,9 +72,18 @@ async def get_summary():
         - Whale activity heatmap
         - Top 10 Ecoscore opportunities
         - Smart money cluster analysis
+    
+    Cached for 60s for performance.
     """
     try:
+        cache_key = "ecoscan:summary"
+        if cache_key in _cache:
+            cached_data, cached_time = _cache[cache_key]
+            if (datetime.utcnow() - cached_time).total_seconds() < 60:
+                return cached_data
+        
         summary = await service.get_summary()
+        _cache[cache_key] = (summary, datetime.utcnow())
         return summary
     except Exception as e:
         logger.error(f"Error getting summary: {e}")

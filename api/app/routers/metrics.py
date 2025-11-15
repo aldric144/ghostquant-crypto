@@ -1,9 +1,11 @@
 from fastapi import APIRouter
 from datetime import datetime
+from ..cache import cache_response
 
 router = APIRouter(prefix="/metrics", tags=["metrics"])
 
 @router.get("/learning")
+@cache_response('metrics:learning', ttl=15)
 async def get_learning_metrics():
     """
     Get GhostQuant learning confidence and performance metrics.
