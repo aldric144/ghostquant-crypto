@@ -241,6 +241,54 @@ services:
     networks:
       - ghostquant-net
 
+  ingester:
+    build:
+      context: ./ingester
+      dockerfile: Dockerfile
+    container_name: ghostquant-ingester
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-ghostquant}
+      POSTGRES_USER: ${POSTGRES_USER:-ghost}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ghostpass}
+      COINGECKO_API_KEY: ${COINGECKO_API_KEY:-}
+      COINGECKO_BASE: ${COINGECKO_BASE:-https://api.coingecko.com/api/v3}
+      COINGECKO_PRO_BASE: ${COINGECKO_PRO_BASE:-https://pro-api.coingecko.com/api/v3}
+      INGESTER_RATE_LIMIT_PER_MIN: ${INGESTER_RATE_LIMIT_PER_MIN:-50}
+      BACKFILL_CHUNK_DAYS: ${BACKFILL_CHUNK_DAYS:-30}
+      BACKFILL_DELAY_SECONDS: ${BACKFILL_DELAY_SECONDS:-1.0}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ghostquant-net
+
+  backtest-worker:
+    build:
+      context: ./backtest-worker
+      dockerfile: Dockerfile
+    container_name: ghostquant-backtest-worker
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-ghostquant}
+      POSTGRES_USER: ${POSTGRES_USER:-ghost}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ghostpass}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      BACKTEST_QUEUE_NAME: ${BACKTEST_QUEUE_NAME:-backtests}
+      BACKTEST_MAX_RUNTIME_SECONDS: ${BACKTEST_MAX_RUNTIME_SECONDS:-7200}
+      BACKTEST_RESULTS_PATH: ${BACKTEST_RESULTS_PATH:-/data/backtests/results}
+    volumes:
+      - backtest_results:/data/backtests/results
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ghostquant-net
+
   web:
     build:
       context: ./web
@@ -274,6 +322,7 @@ services:
 
 volumes:
   postgres_data:
+  backtest_results:
 
 networks:
   ghostquant-net:
