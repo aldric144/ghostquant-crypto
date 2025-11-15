@@ -15,6 +15,7 @@ class FeatureFlags:
         """Load feature flags from environment variables."""
         if not cls._flags:
             cls._flags = {
+                'signals': os.getenv('FEATURE_SIGNALS', 'false').lower() == 'true',
                 'whales': os.getenv('FEATURE_WHALES', 'false').lower() == 'true',
                 'liq_estimator': os.getenv('FEATURE_LIQ_ESTIMATOR', 'false').lower() == 'true',
                 'heatmap': os.getenv('FEATURE_HEATMAP', 'false').lower() == 'true',
@@ -27,7 +28,7 @@ class FeatureFlags:
         Check if a feature is enabled.
         
         Args:
-            feature_name: Name of the feature (whales, liq_estimator, heatmap, notes)
+            feature_name: Name of the feature (signals, whales, liq_estimator, heatmap, notes)
             
         Returns:
             True if feature is enabled, False otherwise

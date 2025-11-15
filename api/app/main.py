@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
 from app.db import init_db_pool, close_db_pool
-from app.routers import health, assets, signals, metrics, screener, alerts, market, dashboard, insights, liquidity, whales, heatmap, notes, patterns
+from app.routers import health, assets, signals, metrics, screener, alerts, market, dashboard, insights, liquidity, whales, heatmap, notes, patterns, backtests
 from app.services.momentum_worker import start_worker, stop_worker
 from app.services.screener_worker import ScreenerWorker
 from app.services.websocket_server import get_ws_manager
@@ -14,11 +14,12 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import asyncio
     logger.info("Starting GhostQuant API...")
     await init_db_pool()
     
-    await start_worker()
-    await screener_worker.start()
+    asyncio.create_task(start_worker())
+    asyncio.create_task(screener_worker.start())
     
     ws_manager = get_ws_manager()
     ws_manager.start()
@@ -63,6 +64,7 @@ app.include_router(whales.router, tags=["whales"])
 app.include_router(heatmap.router, tags=["heatmap"])
 app.include_router(notes.router, tags=["notes"])
 app.include_router(patterns.router, tags=["patterns"])
+app.include_router(backtests.router, tags=["backtests"])
 
 @app.websocket("/ws/momentum")
 async def websocket_momentum(websocket: WebSocket):

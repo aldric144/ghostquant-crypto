@@ -118,6 +118,45 @@ class RedisCache:
             logger.error(f"Error setting scored coin {coin_id}: {e}")
             return False
     
+    async def set_scored_coins(self, coins: List[Dict[str, Any]]) -> bool:
+        """Store multiple scored coins at once."""
+        try:
+            client = await self._get_client()
+            
+            if not coins:
+                return True
+            
+            await client.delete("ghostquant:momentum:latest")
+            
+            scores = {}
+            for coin in coins:
+                coin_id = coin.get("id", "")
+                if not coin_id:
+                    continue
+                
+                score = coin.get("score", 0)
+                scores[coin_id] = score
+                
+                hash_data = {}
+                for k, v in coin.items():
+                    if isinstance(v, (dict, list)):
+                        hash_data[k] = json.dumps(v)
+                    else:
+                        hash_data[k] = str(v)
+                
+                await client.hset(f"ghostquant:coin:{coin_id}", mapping=hash_data)
+                await client.expire(f"ghostquant:coin:{coin_id}", self.default_ttl * 2)
+            
+            if scores:
+                await client.zadd("ghostquant:momentum:latest", scores)
+            
+            logger.info(f"Stored {len(coins)} scored coins in Redis")
+            return True
+        
+        except Exception as e:
+            logger.error(f"Error setting scored coins: {e}")
+            return False
+    
     async def record_rank(self, coin_id: str, rank: int, momentum_score: float) -> bool:
         """Record rank for rank-change tracking."""
         try:

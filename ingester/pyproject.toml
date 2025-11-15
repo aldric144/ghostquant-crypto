@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "ghostquant-ingester"
+version = "1.0.0"
+description = "GhostQuant OHLCV and supply data ingestion service"
+authors = ["GhostQuant Team"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiohttp = "^3.9.0"
+asyncpg = "^0.29.0"
+python-dotenv = "^1.0.0"
+pydantic = "^2.5.0"
+pydantic-settings = "^2.1.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.0"
+pytest-cov = "^4.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
