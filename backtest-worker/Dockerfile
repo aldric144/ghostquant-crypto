@@ -8,9 +8,9 @@ RUN pip install poetry
 # Copy dependency files
 COPY pyproject.toml ./
 
-# Install dependencies
+# Install dependencies (without installing the package itself)
 RUN poetry config virtualenvs.create false && \
-    poetry install --no-interaction --no-ansi
+    poetry install --no-interaction --no-ansi --no-root
 
 # Copy application code
 COPY src ./src
