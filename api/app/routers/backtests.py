@@ -9,7 +9,7 @@ import redis
 from rq import Queue
 from rq.job import Job
 
-from ..deps import get_db_pool
+from ..db import get_db_pool
 
 logger = logging.getLogger(__name__)
 
