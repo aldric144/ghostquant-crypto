@@ -4,6 +4,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from contextlib import asynccontextmanager
 import logging
 from app.db import init_db_pool, close_db_pool
+from app.cache import init_redis
 from app.routers import health, assets, signals, metrics, screener, alerts, market, dashboard, insights, liquidity, whales, heatmap, notes, patterns, backtests
 from app.services.momentum_worker import start_worker, stop_worker
 from app.services.screener_worker import ScreenerWorker

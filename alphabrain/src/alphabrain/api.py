@@ -8,6 +8,8 @@ from datetime import datetime
 from typing import Dict, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from functools import wraps
 import uvicorn
 
 from alphabrain.service import AlphaBrainService
@@ -28,7 +30,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
 service: Optional[AlphaBrainService] = None
+_cache = {}
 
 
 @app.on_event("startup")
@@ -66,9 +71,18 @@ async def get_summary():
         - Top picks
         - Playbook recommendations
         - Narrative summary
+    
+    Cached for 60s for performance.
     """
     try:
+        cache_key = "alphabrain:summary"
+        if cache_key in _cache:
+            cached_data, cached_time = _cache[cache_key]
+            if (datetime.now() - cached_time).total_seconds() < 60:
+                return cached_data
+        
         summary = await service.get_summary()
+        _cache[cache_key] = (summary, datetime.now())
         return summary
     except Exception as e:
         logger.error(f"Error getting summary: {e}")
