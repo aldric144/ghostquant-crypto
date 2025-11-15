@@ -4,6 +4,7 @@ services:
   postgres:
     image: timescale/timescaledb:latest-pg15
     container_name: ghostquant-db
+    restart: always
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-ghostquant}
       POSTGRES_USER: ${POSTGRES_USER:-ghost}
@@ -24,6 +25,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: ghostquant-redis
+    restart: always
     ports:
       - "6379:6379"
     healthcheck:
@@ -39,6 +41,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
     container_name: ghostquant-api
+    restart: always
     env_file:
       - .env
     environment:
@@ -179,6 +182,7 @@ services:
       context: ./alphabrain
       dockerfile: Dockerfile
     container_name: ghostquant-alphabrain
+    restart: always
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
@@ -213,6 +217,7 @@ services:
       context: ./ecoscan
       dockerfile: Dockerfile
     container_name: ghostquant-ecoscan
+    restart: always
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
@@ -298,6 +303,7 @@ services:
         NEXT_PUBLIC_ALPHABRAIN_API: ${NEXT_PUBLIC_ALPHABRAIN_API:-http://localhost:8081}
         NEXT_PUBLIC_ECOSCAN_API: ${NEXT_PUBLIC_ECOSCAN_API:-http://localhost:8082}
     container_name: ghostquant-web
+    restart: always
     environment:
       NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:8080}
       NEXT_PUBLIC_ALPHABRAIN_API: ${NEXT_PUBLIC_ALPHABRAIN_API:-http://localhost:8081}
