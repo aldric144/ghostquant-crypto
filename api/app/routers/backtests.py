@@ -36,6 +36,7 @@ class BacktestResponse(BaseModel):
     start_date: str
     end_date: str
     initial_capital: float
+    params_json: Optional[dict] = None
     status: str
     created_at: str
     started_at: Optional[str] = None
@@ -148,6 +149,7 @@ async def create_backtest(request: BacktestCreate):
             start_date=request.start_date,
             end_date=request.end_date,
             initial_capital=request.initial_capital,
+            params_json=request.params,
             status='pending',
             created_at=datetime.utcnow().isoformat()
         )
@@ -213,6 +215,7 @@ async def list_backtests(
                 start_date=row['start_date'].isoformat(),
                 end_date=row['end_date'].isoformat(),
                 initial_capital=row['initial_capital'],
+                params_json=row['params_json'],
                 status=row['status'],
                 created_at=row['created_at'].isoformat(),
                 started_at=row['started_at'].isoformat() if row['started_at'] else None,
@@ -269,6 +272,7 @@ async def get_backtest(run_id: str):
             start_date=row['start_date'].isoformat(),
             end_date=row['end_date'].isoformat(),
             initial_capital=row['initial_capital'],
+            params_json=row['params_json'],
             status=row['status'],
             created_at=row['created_at'].isoformat(),
             started_at=row['started_at'].isoformat() if row['started_at'] else None,
