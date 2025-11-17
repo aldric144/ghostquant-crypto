@@ -427,6 +427,90 @@ export default function BacktestsPage() {
           ))}
         </div>
       )}
+
+      {showAssetModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-white mb-4">Add New Asset</h3>
+            
+            {assetError && (
+              <div className="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-lg text-red-200 text-sm">
+                {assetError}
+              </div>
+            )}
+
+            <form onSubmit={handleCreateAsset}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Symbol <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={assetFormData.symbol}
+                    onChange={(e) => setAssetFormData({ ...assetFormData, symbol: e.target.value })}
+                    placeholder="e.g., AVAX, MATIC"
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-gray-300 focus:outline-none focus:border-blue-500"
+                    required
+                    maxLength={12}
+                    pattern="[A-Za-z0-9]{2,12}"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">2-12 alphanumeric characters</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Sector <span className="text-gray-500">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={assetFormData.sector}
+                    onChange={(e) => setAssetFormData({ ...assetFormData, sector: e.target.value })}
+                    placeholder="e.g., Layer1, DeFi, Gaming"
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-gray-300 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Risk Tags <span className="text-gray-500">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={assetFormData.risk_tags}
+                    onChange={(e) => setAssetFormData({ ...assetFormData, risk_tags: e.target.value })}
+                    placeholder="e.g., high-cap, liquid, volatile"
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-gray-300 focus:outline-none focus:border-blue-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Comma-separated tags</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAssetModal(false)
+                    setAssetFormData({ symbol: '', sector: '', risk_tags: '' })
+                    setAssetError('')
+                  }}
+                  className="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-gray-300 rounded-lg transition-colors"
+                  disabled={creatingAsset}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                  disabled={creatingAsset}
+                >
+                  {creatingAsset ? 'Creating...' : 'Create Asset'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
