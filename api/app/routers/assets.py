@@ -21,16 +21,12 @@ async def create_asset(asset: AssetCreate, db=Depends(get_database)):
             INSERT INTO assets (symbol, chain, address, sector, risk_tags)
             VALUES ($1, $2, $3, $4, $5)
             """,
-            asset.symbol,
-            asset.chain,
-            asset.address,
-            asset.sector,
-            asset.risk_tags or []
+            (asset.symbol, asset.chain, asset.address, asset.sector, asset.risk_tags or [])
         )
         
         await db.execute(
             "SELECT * FROM assets WHERE symbol = $1",
-            asset.symbol
+            (asset.symbol,)
         )
         row = await db.fetchone()
         return row
