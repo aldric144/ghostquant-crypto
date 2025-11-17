@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from app.models import Asset, AssetCreate
 from app.deps import get_database
-import asyncpg
+from psycopg import errors
 
 router = APIRouter()
 
@@ -19,19 +19,15 @@ async def create_asset(asset: AssetCreate, db=Depends(get_database)):
         await db.execute(
             """
             INSERT INTO assets (symbol, chain, address, sector, risk_tags)
-            VALUES ($1, $2, $3, $4, $5)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING asset_id, symbol, chain, address, sector, risk_tags
             """,
             (asset.symbol, asset.chain, asset.address, asset.sector, asset.risk_tags or [])
-        )
-        
-        await db.execute(
-            "SELECT * FROM assets WHERE symbol = $1",
-            (asset.symbol,)
         )
         row = await db.fetchone()
         return row
         
-    except asyncpg.exceptions.UniqueViolationError:
+    except errors.UniqueViolation:
         raise HTTPException(
             status_code=409,
             detail=f"Asset with symbol '{asset.symbol}' already exists"
