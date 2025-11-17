@@ -17,8 +17,18 @@ interface Backtest {
   trade_count: number
 }
 
+interface Asset {
+  asset_id: number
+  symbol: string
+  chain: string | null
+  address: string | null
+  sector: string
+  risk_tags: string[]
+}
+
 export default function BacktestsPage() {
   const [backtests, setBacktests] = useState<Backtest[]>([])
+  const [assets, setAssets] = useState<Asset[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -46,8 +56,24 @@ export default function BacktestsPage() {
     }
   }
 
+  const fetchAssets = async () => {
+    try {
+      const response = await fetch('/api/assets')
+      if (response.ok) {
+        const data = await response.json()
+        setAssets(data)
+        if (data.length > 0 && !formData.symbol) {
+          setFormData({ ...formData, symbol: data[0].symbol })
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching assets:', error)
+    }
+  }
+
   useEffect(() => {
     fetchBacktests()
+    fetchAssets()
     
     const interval = setInterval(fetchBacktests, 5000)
     return () => clearInterval(interval)
@@ -155,9 +181,19 @@ export default function BacktestsPage() {
                   onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
                   className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-gray-300 focus:outline-none focus:border-blue-500"
                 >
-                  <option value="BTC">BTC</option>
-                  <option value="ETH">ETH</option>
-                  <option value="SOL">SOL</option>
+                  {assets.length > 0 ? (
+                    assets.map((asset) => (
+                      <option key={asset.asset_id} value={asset.symbol}>
+                        {asset.symbol}
+                      </option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="BTC">BTC</option>
+                      <option value="ETH">ETH</option>
+                      <option value="SOL">SOL</option>
+                    </>
+                  )}
                 </select>
               </div>
 
