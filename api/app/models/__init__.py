@@ -1,6 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+import re
 
 class Asset(BaseModel):
     asset_id: int
@@ -9,6 +10,20 @@ class Asset(BaseModel):
     address: Optional[str] = None
     sector: Optional[str] = None
     risk_tags: Optional[List[str]] = None
+
+class AssetCreate(BaseModel):
+    symbol: str = Field(..., min_length=2, max_length=12)
+    chain: Optional[str] = None
+    address: Optional[str] = None
+    sector: Optional[str] = None
+    risk_tags: Optional[List[str]] = []
+    
+    @validator('symbol')
+    def validate_symbol(cls, v):
+        v = v.upper().strip()
+        if not re.match(r'^[A-Z0-9]{2,12}$', v):
+            raise ValueError('Symbol must be 2-12 alphanumeric characters')
+        return v
 
 class Signal(BaseModel):
     asset_id: int

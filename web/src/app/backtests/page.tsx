@@ -32,6 +32,14 @@ export default function BacktestsPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [showAssetModal, setShowAssetModal] = useState(false)
+  const [creatingAsset, setCreatingAsset] = useState(false)
+  const [assetError, setAssetError] = useState('')
+  const [assetFormData, setAssetFormData] = useState({
+    symbol: '',
+    sector: '',
+    risk_tags: ''
+  })
   const [formData, setFormData] = useState({
     strategy: 'trend_v1',
     symbol: 'BTC',
@@ -68,6 +76,46 @@ export default function BacktestsPage() {
       }
     } catch (error) {
       console.error('Error fetching assets:', error)
+    }
+  }
+
+  const handleCreateAsset = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setCreatingAsset(true)
+    setAssetError('')
+
+    try {
+      const payload: any = {
+        symbol: assetFormData.symbol.trim().toUpperCase(),
+        sector: assetFormData.sector.trim() || null,
+        risk_tags: assetFormData.risk_tags
+          ? assetFormData.risk_tags.split(',').map(t => t.trim()).filter(t => t)
+          : []
+      }
+
+      const response = await fetch('/api/assets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to create asset')
+      }
+
+      const newAsset = await response.json()
+      
+      await fetchAssets()
+      
+      setFormData({ ...formData, symbol: newAsset.symbol })
+      
+      setShowAssetModal(false)
+      setAssetFormData({ symbol: '', sector: '', risk_tags: '' })
+    } catch (error: any) {
+      setAssetError(error.message || 'Failed to create asset')
+    } finally {
+      setCreatingAsset(false)
     }
   }
 
@@ -176,25 +224,35 @@ export default function BacktestsPage() {
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Asset
                 </label>
-                <select
-                  value={formData.symbol}
-                  onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-gray-300 focus:outline-none focus:border-blue-500"
-                >
-                  {assets.length > 0 ? (
-                    assets.map((asset) => (
-                      <option key={asset.asset_id} value={asset.symbol}>
-                        {asset.symbol}
-                      </option>
-                    ))
-                  ) : (
-                    <>
-                      <option value="BTC">BTC</option>
-                      <option value="ETH">ETH</option>
-                      <option value="SOL">SOL</option>
-                    </>
-                  )}
-                </select>
+                <div className="flex gap-2">
+                  <select
+                    value={formData.symbol}
+                    onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
+                    className="flex-1 px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-gray-300 focus:outline-none focus:border-blue-500"
+                  >
+                    {assets.length > 0 ? (
+                      assets.map((asset) => (
+                        <option key={asset.asset_id} value={asset.symbol}>
+                          {asset.symbol}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="BTC">BTC</option>
+                        <option value="ETH">ETH</option>
+                        <option value="SOL">SOL</option>
+                      </>
+                    )}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setShowAssetModal(true)}
+                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-gray-300 rounded-lg transition-colors"
+                    title="Add new asset"
+                  >
+                    + Add
+                  </button>
+                </div>
               </div>
 
               <div>
