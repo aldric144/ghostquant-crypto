@@ -9,19 +9,17 @@ export default function NavBar() {
   return (
     <>
       <nav className="bg-slate-950 border-b border-blue-900/30 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 md:gap-8 flex-1 min-w-0">
-            <div className="text-2xl font-bold text-blue-400 shrink-0">GhostQuant</div>
-            <div className="flex flex-1 min-w-0 gap-4 md:gap-6 overflow-x-auto scrollbar-hide whitespace-nowrap [-webkit-overflow-scrolling:touch] md:overflow-visible">
-              <a href="/" className="text-gray-300 hover:text-blue-400 transition shrink-0">Dashboard</a>
-              <a href="/assets" className="text-gray-300 hover:text-blue-400 transition shrink-0">All Assets</a>
-              <a href="/momentum" className="text-gray-300 hover:text-blue-400 transition shrink-0">Momentum 🚀</a>
-              <a href="/screener" className="text-gray-300 hover:text-blue-400 transition shrink-0">Screener</a>
-              <a href="/alphabrain" className="text-gray-300 hover:text-blue-400 transition shrink-0">AlphaBrain</a>
-              <a href="/ecoscan" className="text-gray-300 hover:text-blue-400 transition shrink-0">Ecoscan 🗺️</a>
-              <a href="/iqmeter" className="text-gray-300 hover:text-blue-400 transition shrink-0">IQ Meter</a>
-              <a href="/backtests" className="text-gray-300 hover:text-blue-400 transition shrink-0">Backtests</a>
-            </div>
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+          <div className="text-xl md:text-2xl font-bold text-blue-400 shrink-0">GhostQuant</div>
+          <div className="flex flex-1 min-w-0 w-full order-2 md:order-none mt-3 md:mt-0 gap-4 md:gap-6 overflow-x-auto scrollbar-hide whitespace-nowrap [-webkit-overflow-scrolling:touch] md:overflow-visible">
+            <a href="/" className="text-gray-300 hover:text-blue-400 transition shrink-0">Dashboard</a>
+            <a href="/assets" className="text-gray-300 hover:text-blue-400 transition shrink-0">All Assets</a>
+            <a href="/momentum" className="text-gray-300 hover:text-blue-400 transition shrink-0">Momentum 🚀</a>
+            <a href="/screener" className="text-gray-300 hover:text-blue-400 transition shrink-0">Screener</a>
+            <a href="/alphabrain" className="text-gray-300 hover:text-blue-400 transition shrink-0">AlphaBrain</a>
+            <a href="/ecoscan" className="text-gray-300 hover:text-blue-400 transition shrink-0">Ecoscan 🗺️</a>
+            <a href="/iqmeter" className="text-gray-300 hover:text-blue-400 transition shrink-0">IQ Meter</a>
+            <a href="/backtests" className="text-gray-300 hover:text-blue-400 transition shrink-0">Backtests</a>
           </div>
           <button
             onClick={() => setInsightPanelOpen(true)}
