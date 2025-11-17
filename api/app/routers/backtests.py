@@ -1,6 +1,7 @@
 """Backtest API routes."""
 import logging
 import uuid
+import json
 from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query
@@ -102,7 +103,7 @@ async def create_backtest(request: BacktestCreate):
                     run_id, strategy, symbol, timeframe, start_date, end_date,
                     initial_capital, params_json, status, created_at
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10)
                 """,
                 run_id,
                 request.strategy,
@@ -111,7 +112,7 @@ async def create_backtest(request: BacktestCreate):
                 datetime.fromisoformat(request.start_date),
                 datetime.fromisoformat(request.end_date),
                 request.initial_capital,
-                request.params,
+                json.dumps(request.params),
                 'pending',
                 datetime.utcnow()
             )
