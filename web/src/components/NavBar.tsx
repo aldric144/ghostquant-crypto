@@ -12,7 +12,7 @@ export default function NavBar() {
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 md:gap-8 flex-1 min-w-0">
             <div className="text-2xl font-bold text-blue-400 shrink-0">GhostQuant</div>
-            <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide whitespace-nowrap [-webkit-overflow-scrolling:touch] md:overflow-visible">
+            <div className="flex flex-1 min-w-0 gap-4 md:gap-6 overflow-x-auto scrollbar-hide whitespace-nowrap [-webkit-overflow-scrolling:touch] md:overflow-visible">
               <a href="/" className="text-gray-300 hover:text-blue-400 transition shrink-0">Dashboard</a>
               <a href="/assets" className="text-gray-300 hover:text-blue-400 transition shrink-0">All Assets</a>
               <a href="/momentum" className="text-gray-300 hover:text-blue-400 transition shrink-0">Momentum 🚀</a>
