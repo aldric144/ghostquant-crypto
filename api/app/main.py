@@ -2,6 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from contextlib import asynccontextmanager
+from datetime import datetime
 import logging
 from app.db import init_db_pool, close_db_pool
 from app.cache import init_redis
@@ -9,6 +10,7 @@ from app.routers import health, assets, signals, metrics, screener, alerts, mark
 from app.gde.fabric import intelligence_api
 from app.gde.fabric.intelligence_feed_simulator import IntelligenceFeedSimulator
 from app.gde.fabric.intelligence_queue_worker import IntelligenceQueueWorker
+from app.gde.fabric.websocket_alert_engine import WebSocketAlertEngine
 from app.services.momentum_worker import start_worker, stop_worker
 from app.services.screener_worker import ScreenerWorker
 from app.services.websocket_server import get_ws_manager
@@ -17,6 +19,7 @@ screener_worker = ScreenerWorker()
 
 gde_worker = IntelligenceQueueWorker()
 gde_simulator = IntelligenceFeedSimulator(gde_worker)
+alert_engine = WebSocketAlertEngine()
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +31,7 @@ async def lifespan(app: FastAPI):
     
     asyncio.create_task(start_worker())
     asyncio.create_task(screener_worker.start())
+    asyncio.create_task(alert_engine.start_polling())
     
     ws_manager = get_ws_manager()
     ws_manager.start()
@@ -39,6 +43,7 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down GhostQuant API...")
     await stop_worker()
     await screener_worker.stop()
+    await alert_engine.stop_polling()
     ws_manager.stop()
     await close_db_pool()
     logger.info("GhostQuant API shut down successfully")
@@ -91,6 +96,52 @@ async def stop_sim():
     await gde_simulator.stop()
     await gde_worker.stop()
     return {"status": "simulator-stopped"}
+
+@app.websocket("/ws/alerts")
+async def websocket_alerts(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time intelligence alerts.
+    
+    Features:
+    - Real-time alert streaming from Redis
+    - Automatic reconnect handling
+    - Multiple concurrent clients
+    - Graceful slow client handling
+    
+    Connection flow:
+    1. Client connects
+    2. Receives connection confirmation
+    3. Receives real-time alerts as they are generated
+    4. Receives periodic heartbeats (every 30s)
+    """
+    await alert_engine.connect(websocket)
+    
+    import asyncio
+    heartbeat_task = asyncio.create_task(alert_engine.send_heartbeat(websocket))
+    
+    try:
+        while True:
+            data = await websocket.receive_json()
+            
+            if data.get("action") == "ping":
+                await websocket.send_json({
+                    "type": "pong",
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+            elif data.get("action") == "stats":
+                stats = alert_engine.get_stats()
+                await websocket.send_json({
+                    "type": "stats",
+                    "data": stats
+                })
+    
+    except WebSocketDisconnect:
+        heartbeat_task.cancel()
+        alert_engine.disconnect(websocket)
+    except Exception as e:
+        logger.error(f"WebSocket alert error: {e}")
+        heartbeat_task.cancel()
+        alert_engine.disconnect(websocket)
 
 @app.websocket("/ws/momentum")
 async def websocket_momentum(websocket: WebSocket):
