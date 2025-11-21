@@ -7,11 +7,16 @@ from app.db import init_db_pool, close_db_pool
 from app.cache import init_redis
 from app.routers import health, assets, signals, metrics, screener, alerts, market, dashboard, insights, liquidity, whales, heatmap, notes, patterns, backtests
 from app.gde.fabric import intelligence_api
+from app.gde.fabric.intelligence_feed_simulator import IntelligenceFeedSimulator
+from app.gde.fabric.intelligence_queue_worker import IntelligenceQueueWorker
 from app.services.momentum_worker import start_worker, stop_worker
 from app.services.screener_worker import ScreenerWorker
 from app.services.websocket_server import get_ws_manager
 
 screener_worker = ScreenerWorker()
+
+gde_worker = IntelligenceQueueWorker()
+gde_simulator = IntelligenceFeedSimulator(gde_worker)
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +76,21 @@ app.include_router(notes.router, tags=["notes"])
 app.include_router(patterns.router, tags=["patterns"])
 app.include_router(backtests.router, tags=["backtests"])
 app.include_router(intelligence_api.router)
+
+@app.post("/intel/sim/start")
+async def start_sim():
+    """Start the intelligence feed simulator."""
+    import asyncio
+    await gde_worker.start()
+    asyncio.create_task(gde_simulator.start(interval=1.0))
+    return {"status": "simulator-started"}
+
+@app.post("/intel/sim/stop")
+async def stop_sim():
+    """Stop the intelligence feed simulator."""
+    await gde_simulator.stop()
+    await gde_worker.stop()
+    return {"status": "simulator-stopped"}
 
 @app.websocket("/ws/momentum")
 async def websocket_momentum(websocket: WebSocket):
