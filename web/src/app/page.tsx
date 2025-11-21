@@ -8,6 +8,7 @@ import TopMovers from '@/components/TopMovers'
 import SwipeTabs from '@/components/mobile/SwipeTabs'
 import TileCard from '@/components/mobile/TileCard'
 import SectionHeader from '@/components/mobile/SectionHeader'
+import { useIntelFeed } from '@/hooks/useIntelFeed'
 
 interface Signal {
   asset_id: number
@@ -42,7 +43,68 @@ export default function Home() {
   const [signals, setSignals] = useState<Signal[]>([])
   const [assets, setAssets] = useState<Asset[]>([])
   const [loading, setLoading] = useState(true)
+  const [updatedTiles, setUpdatedTiles] = useState<Set<string>>(new Set())
+  const [tileData, setTileData] = useState({
+    whale: { value: '1,247', trend: '+8%', severity: 'low' as 'low' | 'medium' | 'high' },
+    billionaire: { value: '$18.7B', trend: '+2.4%', severity: 'low' as 'low' | 'medium' | 'high' },
+    institution: { value: '$847M', trend: '+15%', severity: 'low' as 'low' | 'medium' | 'high' },
+    derivative: { value: '$12.4B', trend: '+6%', severity: 'low' as 'low' | 'medium' | 'high' },
+    darkpool: { value: '$1.8B', trend: '+22%', severity: 'medium' as 'low' | 'medium' | 'high' },
+    ai: { value: '127', trend: '+8', severity: 'low' as 'low' | 'medium' | 'high' },
+    manipulation: { value: '0', trend: '0', severity: 'low' as 'low' | 'medium' | 'high' },
+    intelligence: { value: '0', trend: '0', severity: 'low' as 'low' | 'medium' | 'high' }
+  })
   const router = useRouter()
+  
+  const { latestAlert, connectionStatus } = useIntelFeed()
+
+  useEffect(() => {
+    if (!latestAlert) return
+
+    const alertType = latestAlert.intelligence?.event?.event_type || latestAlert.type || 'unknown'
+    const score = latestAlert.score || 0
+    const severity: 'low' | 'medium' | 'high' = score >= 0.7 ? 'high' : score >= 0.4 ? 'medium' : 'low'
+
+    let tileKey: string | null = null
+    
+    if (alertType.includes('whale') || alertType.includes('whale_move')) {
+      tileKey = 'whale'
+    } else if (alertType.includes('manipulation')) {
+      tileKey = 'manipulation'
+    } else if (alertType.includes('signal') || alertType.includes('ai')) {
+      tileKey = 'ai'
+    } else if (alertType.includes('intelligence')) {
+      tileKey = 'intelligence'
+    } else if (alertType.includes('derivative')) {
+      tileKey = 'derivative'
+    } else if (alertType.includes('darkpool') || alertType.includes('dark_pool')) {
+      tileKey = 'darkpool'
+    } else if (alertType.includes('institution')) {
+      tileKey = 'institution'
+    } else if (alertType.includes('billionaire')) {
+      tileKey = 'billionaire'
+    }
+
+    if (tileKey) {
+      setTileData(prev => ({
+        ...prev,
+        [tileKey]: {
+          ...prev[tileKey as keyof typeof prev],
+          severity
+        }
+      }))
+
+      setUpdatedTiles(prev => new Set(prev).add(tileKey!))
+      
+      setTimeout(() => {
+        setUpdatedTiles(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(tileKey!)
+          return newSet
+        })
+      }, 2000)
+    }
+  }, [latestAlert])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,6 +136,22 @@ export default function Home() {
     return asset?.symbol || `Asset ${assetId}`
   }
 
+  const getSeverityColor = (severity: 'low' | 'medium' | 'high') => {
+    switch (severity) {
+      case 'high':
+        return 'border-red-500/50 bg-red-900/10'
+      case 'medium':
+        return 'border-yellow-500/50 bg-yellow-900/10'
+      case 'low':
+      default:
+        return 'border-blue-900/30 bg-slate-900/50'
+    }
+  }
+
+  const getAnimationClass = (tileKey: string) => {
+    return updatedTiles.has(tileKey) ? 'animate-pulse ring-2 ring-blue-400' : ''
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -91,8 +169,26 @@ export default function Home() {
 
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-900/20 to-blue-800/20 border border-blue-800/30 rounded-lg p-4 md:p-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-blue-400 mb-2">GhostQuant Dashboard</h1>
-        <p className="text-sm md:text-base text-gray-400">Private crypto-native research & signal platform</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-blue-400 mb-2">GhostQuant Dashboard</h1>
+            <p className="text-sm md:text-base text-gray-400">Private crypto-native research & signal platform</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${
+              connectionStatus === 'connected' ? 'bg-green-400 animate-pulse' :
+              connectionStatus === 'connecting' ? 'bg-yellow-400 animate-pulse' :
+              connectionStatus === 'error' ? 'bg-red-400' :
+              'bg-gray-400'
+            }`} />
+            <span className="text-xs text-gray-400">
+              {connectionStatus === 'connected' ? 'Live' :
+               connectionStatus === 'connecting' ? 'Connecting...' :
+               connectionStatus === 'error' ? 'Error' :
+               'Offline'}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Preview Tiles Section - Mobile First */}
@@ -128,10 +224,11 @@ export default function Home() {
               </svg>
             }
             title="Whale Activity"
-            value="1,247"
-            trend={{ direction: 'up', value: '+8%' }}
+            value={tileData.whale.value}
+            trend={{ direction: 'up', value: tileData.whale.trend }}
             description="Large wallet movements detected"
             onClick={() => router.push('/details/whales')}
+            className={`${getSeverityColor(tileData.whale.severity)} ${getAnimationClass('whale')}`}
           />
           
           <TileCard
@@ -141,10 +238,11 @@ export default function Home() {
               </svg>
             }
             title="Billionaire Flow"
-            value="$18.7B"
-            trend={{ direction: 'up', value: '+2.4%' }}
+            value={tileData.billionaire.value}
+            trend={{ direction: 'up', value: tileData.billionaire.trend }}
             description="Ultra-wealthy wallet holdings"
             onClick={() => router.push('/details/billionaires')}
+            className={`${getSeverityColor(tileData.billionaire.severity)} ${getAnimationClass('billionaire')}`}
           />
           
           <TileCard
@@ -154,10 +252,11 @@ export default function Home() {
               </svg>
             }
             title="Institutional Flow"
-            value="$847M"
-            trend={{ direction: 'up', value: '+15%' }}
+            value={tileData.institution.value}
+            trend={{ direction: 'up', value: tileData.institution.trend }}
             description="Smart money positioning"
             onClick={() => router.push('/details/institutions')}
+            className={`${getSeverityColor(tileData.institution.severity)} ${getAnimationClass('institution')}`}
           />
           
           <TileCard
@@ -167,10 +266,11 @@ export default function Home() {
               </svg>
             }
             title="Derivative Alerts"
-            value="$12.4B"
-            trend={{ direction: 'up', value: '+6%' }}
+            value={tileData.derivative.value}
+            trend={{ direction: 'up', value: tileData.derivative.trend }}
             description="Open interest & funding rates"
             onClick={() => router.push('/details/derivatives')}
+            className={`${getSeverityColor(tileData.derivative.severity)} ${getAnimationClass('derivative')}`}
           />
           
           <TileCard
@@ -180,10 +280,11 @@ export default function Home() {
               </svg>
             }
             title="Dark Pool Signals"
-            value="$1.8B"
-            trend={{ direction: 'up', value: '+22%' }}
+            value={tileData.darkpool.value}
+            trend={{ direction: 'up', value: tileData.darkpool.trend }}
             description="OTC and private transactions"
             onClick={() => router.push('/details/darkpools')}
+            className={`${getSeverityColor(tileData.darkpool.severity)} ${getAnimationClass('darkpool')}`}
           />
           
           <TileCard
@@ -193,10 +294,39 @@ export default function Home() {
               </svg>
             }
             title="AI Insights"
-            value="127"
-            trend={{ direction: 'up', value: '+8' }}
+            value={tileData.ai.value}
+            trend={{ direction: 'up', value: tileData.ai.trend }}
             description="Machine learning predictions"
             onClick={() => router.push('/details/ai')}
+            className={`${getSeverityColor(tileData.ai.severity)} ${getAnimationClass('ai')}`}
+          />
+          
+          <TileCard
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            }
+            title="Manipulation Alerts"
+            value={tileData.manipulation.value}
+            trend={{ direction: 'neutral', value: tileData.manipulation.trend }}
+            description="Coordinated activity detection"
+            onClick={() => router.push('/details/darkpools')}
+            className={`${getSeverityColor(tileData.manipulation.severity)} ${getAnimationClass('manipulation')}`}
+          />
+          
+          <TileCard
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            }
+            title="Intelligence Feed"
+            value={tileData.intelligence.value}
+            trend={{ direction: 'neutral', value: tileData.intelligence.trend }}
+            description="Real-time intelligence updates"
+            onClick={() => router.push('/')}
+            className={`${getSeverityColor(tileData.intelligence.severity)} ${getAnimationClass('intelligence')}`}
           />
           
           <TileCard
