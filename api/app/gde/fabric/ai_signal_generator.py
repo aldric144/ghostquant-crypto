@@ -1,5 +1,6 @@
 from typing import Dict, Any
 from datetime import datetime
+from app.gde.fabric.redis_bus import RedisBus
 
 
 class AISignalGenerator:
@@ -16,9 +17,9 @@ class AISignalGenerator:
     """
 
     def __init__(self):
-        pass
+        self.redis_bus = RedisBus()
 
-    def generate(self, intelligence: Dict[str, Any]) -> Dict[str, Any]:
+    async def generate(self, intelligence: Dict[str, Any]) -> Dict[str, Any]:
         """
         Convert intelligence payload into an alert-ready signal.
         Placeholder logic for now.
@@ -35,9 +36,16 @@ class AISignalGenerator:
         if intelligence.get("timeline", {}).get("event_count", 0) > 10:
             score += 0.3
 
-        return {
+        signal = {
             "timestamp": datetime.utcnow(),
             "score": round(score, 3),
             "alert": score >= 0.5,
             "intelligence": intelligence,
         }
+
+        await self.redis_bus.publish("intel.signals", signal)
+
+        if signal["alert"]:
+            await self.redis_bus.publish("intel.alerts", signal)
+
+        return signal

@@ -44,7 +44,7 @@ class IntelligenceQueueWorker:
 
                 intelligence = await self.fabric.process_event(event)
 
-                signal = self.signal_generator.generate(intelligence)
+                signal = await self.signal_generator.generate(intelligence)
 
                 print("[GDE][INTEL SIGNAL]", signal)
 

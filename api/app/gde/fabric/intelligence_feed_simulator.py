@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 from app.gde.fabric.intelligence_queue_worker import IntelligenceQueueWorker
+from app.gde.fabric.redis_bus import RedisBus
 
 
 class IntelligenceFeedSimulator:
@@ -16,6 +17,7 @@ class IntelligenceFeedSimulator:
     def __init__(self, worker: IntelligenceQueueWorker):
         self.worker = worker
         self.running = False
+        self.redis_bus = RedisBus()
 
     async def start(self, interval: float = 1.0):
         """
@@ -27,6 +29,7 @@ class IntelligenceFeedSimulator:
         while self.running:
             event = self._generate_event()
             await self.worker.enqueue(event)
+            await self.redis_bus.publish("intel.events", event)
             print(f"[SIMULATOR] Emitted event: {event}")
             await asyncio.sleep(interval)
 

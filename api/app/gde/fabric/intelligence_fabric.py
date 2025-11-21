@@ -4,6 +4,7 @@ from app.gde.ingestion.entity_linker import EntityLinker
 from app.gde.ingestion.manipulation_detector import ManipulationRingDetector
 from app.gde.ingestion.behavioral_timeline import BehavioralTimeline
 from app.gde.ingestion.cross_event_correlator import CrossEventCorrelator
+from app.gde.fabric.redis_bus import RedisBus
 
 
 class IntelligenceFabric:
@@ -18,6 +19,7 @@ class IntelligenceFabric:
         self.ring_detector = ManipulationRingDetector()
         self.timeline = BehavioralTimeline()
         self.correlator = CrossEventCorrelator()
+        self.redis_bus = RedisBus()
 
     async def process_event(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -43,10 +45,14 @@ class IntelligenceFabric:
 
         self.correlator.record(event)
 
-        return {
+        intelligence = {
             "event": event,
             "entity": entity,
             "manipulation": self.ring_detector.detect_synchrony(),
             "timeline": self.timeline.summarize(entity.entity_id) if entity else None,
             "correlation": self.correlator.correlate(),
         }
+
+        await self.redis_bus.publish("intel.intelligence", intelligence)
+
+        return intelligence
