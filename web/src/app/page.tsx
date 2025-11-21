@@ -8,6 +8,7 @@ import TopMovers from '@/components/TopMovers'
 import SwipeTabs from '@/components/mobile/SwipeTabs'
 import TileCard from '@/components/mobile/TileCard'
 import SectionHeader from '@/components/mobile/SectionHeader'
+import BreakingAlerts from '@/components/live/BreakingAlerts'
 import { useIntelFeed } from '@/hooks/useIntelFeed'
 
 interface Signal {
@@ -190,6 +191,9 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Breaking Alerts Ticker */}
+      <BreakingAlerts />
 
       {/* Preview Tiles Section - Mobile First */}
       <div className="space-y-4">
