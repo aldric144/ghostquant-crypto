@@ -11,6 +11,7 @@ from app.gde.fabric import intelligence_api
 from app.gde.fabric.intelligence_feed_simulator import IntelligenceFeedSimulator
 from app.gde.fabric.intelligence_queue_worker import IntelligenceQueueWorker
 from app.gde.fabric.websocket_alert_engine import WebSocketAlertEngine
+from app.gde.fabric.socketio_gateway import SocketIOGateway
 from app.services.momentum_worker import start_worker, stop_worker
 from app.services.screener_worker import ScreenerWorker
 from app.services.websocket_server import get_ws_manager
@@ -20,6 +21,7 @@ screener_worker = ScreenerWorker()
 gde_worker = IntelligenceQueueWorker()
 gde_simulator = IntelligenceFeedSimulator(gde_worker)
 alert_engine = WebSocketAlertEngine()
+socketio_gateway = SocketIOGateway()
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +34,7 @@ async def lifespan(app: FastAPI):
     asyncio.create_task(start_worker())
     asyncio.create_task(screener_worker.start())
     asyncio.create_task(alert_engine.start_polling())
+    asyncio.create_task(socketio_gateway.start_polling())
     
     ws_manager = get_ws_manager()
     ws_manager.start()
@@ -44,6 +47,7 @@ async def lifespan(app: FastAPI):
     await stop_worker()
     await screener_worker.stop()
     await alert_engine.stop_polling()
+    await socketio_gateway.stop_polling()
     ws_manager.stop()
     await close_db_pool()
     logger.info("GhostQuant API shut down successfully")
@@ -54,6 +58,8 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan
 )
+
+app.mount("/socket.io", socketio_gateway.get_asgi_app())
 
 app.add_middleware(
     CORSMiddleware,
