@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import NavBar from '@/components/NavBar'
 import BottomNavBar from '@/components/mobile/BottomNavBar'
+import DebugConsole from '@/components/DebugConsole'
 
 export const metadata: Metadata = {
   title: 'GhostQuant',
@@ -21,6 +22,7 @@ export default function RootLayout({
           {children}
         </main>
         <BottomNavBar />
+        <DebugConsole />
       </body>
     </html>
   )
