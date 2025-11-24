@@ -9,6 +9,7 @@ from app.cache import init_redis
 from app.routers import health, assets, signals, metrics, screener, alerts, market, dashboard, insights, liquidity, whales, heatmap, notes, patterns, backtests
 from app.gde.fabric import intelligence_api
 from app.gde.predictor import predictor_api
+from app.gde.api import predict_api
 from app.gde.fabric.intelligence_feed_simulator import IntelligenceFeedSimulator
 from app.gde.fabric.intelligence_queue_worker import IntelligenceQueueWorker
 from app.gde.fabric.websocket_alert_engine import WebSocketAlertEngine
@@ -93,6 +94,7 @@ app.include_router(patterns.router, tags=["patterns"])
 app.include_router(backtests.router, tags=["backtests"])
 app.include_router(intelligence_api.router)
 app.include_router(predictor_api.router)
+app.include_router(predict_api.router, prefix="/predict", tags=["Prediction"])
 
 @app.post("/intel/sim/start")
 async def start_sim():
