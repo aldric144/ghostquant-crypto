@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { useIntelFeed } from '@/hooks/useIntelFeed'
+import { predictClient, PredictionResponse } from '@/lib/predictClient'
 
 interface Entity {
   id: string
@@ -35,6 +36,13 @@ export default function EntityExplorerPage() {
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>([])
   const [activities, setActivities] = useState<Activity[]>([])
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  
+  const [manipulationPrediction, setManipulationPrediction] = useState<PredictionResponse | null>(null)
+  const [manipulationLoading, setManipulationLoading] = useState(false)
+  const [behavioralPrediction, setBehavioralPrediction] = useState<PredictionResponse | null>(null)
+  const [behavioralLoading, setBehavioralLoading] = useState(false)
+  const [chainPrediction, setChainPrediction] = useState<PredictionResponse | null>(null)
+  const [chainLoading, setChainLoading] = useState(false)
   
   const { latestAlert, alertHistory, connectionStatus } = useIntelFeed()
 
@@ -339,6 +347,66 @@ export default function EntityExplorerPage() {
     return insights
   }
 
+  const handlePredictManipulation = async () => {
+    if (!selectedEntity) return
+    
+    setManipulationLoading(true)
+    setManipulationPrediction(null)
+    
+    const entityData = {
+      id: selectedEntity.id,
+      address: selectedEntity.address,
+      type: selectedEntity.type,
+      score: selectedEntity.score,
+      chain_count: selectedEntity.chains.size,
+      token_count: selectedEntity.tokens.size,
+      activity_count: selectedEntity.activityCount
+    }
+    
+    const result = await predictClient.predictEntity(entityData)
+    setManipulationPrediction(result)
+    setManipulationLoading(false)
+  }
+
+  const handlePredictBehavioral = async () => {
+    if (!selectedEntity) return
+    
+    setBehavioralLoading(true)
+    setBehavioralPrediction(null)
+    
+    const entityData = {
+      id: selectedEntity.id,
+      address: selectedEntity.address,
+      type: selectedEntity.type,
+      score: selectedEntity.score,
+      chain_count: selectedEntity.chains.size,
+      token_count: selectedEntity.tokens.size,
+      activity_count: selectedEntity.activityCount
+    }
+    
+    const result = await predictClient.predictEntity(entityData)
+    setBehavioralPrediction(result)
+    setBehavioralLoading(false)
+  }
+
+  const handlePredictChainPressure = async () => {
+    if (!selectedEntity) return
+    
+    setChainLoading(true)
+    setChainPrediction(null)
+    
+    const firstChain = Array.from(selectedEntity.chains)[0] || 'unknown'
+    const chainData = {
+      name: firstChain,
+      entity_count: 1,
+      activity_count: selectedEntity.activityCount
+    }
+    
+    const result = await predictClient.predictChain(chainData)
+    setChainPrediction(result)
+    setChainLoading(false)
+  }
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
@@ -551,6 +619,237 @@ export default function EntityExplorerPage() {
                       ))}
                     </div>
                   </div>
+                </div>
+
+                {/* Prediction Buttons */}
+                <div className="mt-6 space-y-3">
+                  <h4 className="text-sm font-semibold text-cyan-400 mb-3">🤖 AI Predictions</h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    <button
+                      onClick={handlePredictManipulation}
+                      disabled={manipulationLoading}
+                      className="px-4 py-2 bg-slate-800/50 border border-cyan-500/30 rounded-lg text-sm text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {manipulationLoading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Loading...
+                        </span>
+                      ) : (
+                        'Predict Manipulation Risk'
+                      )}
+                    </button>
+                    <button
+                      onClick={handlePredictBehavioral}
+                      disabled={behavioralLoading}
+                      className="px-4 py-2 bg-slate-800/50 border border-cyan-500/30 rounded-lg text-sm text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {behavioralLoading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Loading...
+                        </span>
+                      ) : (
+                        'Predict Behavioral Score'
+                      )}
+                    </button>
+                    <button
+                      onClick={handlePredictChainPressure}
+                      disabled={chainLoading}
+                      className="px-4 py-2 bg-slate-800/50 border border-cyan-500/30 rounded-lg text-sm text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {chainLoading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Loading...
+                        </span>
+                      ) : (
+                        'Predict Cross-Chain Pressure'
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Manipulation Risk Result */}
+                  {manipulationPrediction && (
+                    <div className={`mt-3 p-4 rounded-lg border ${
+                      manipulationPrediction.success 
+                        ? 'bg-slate-800/50 border-cyan-500/30' 
+                        : 'bg-red-900/20 border-red-500/50'
+                    }`}>
+                      {manipulationPrediction.success ? (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <h5 className="text-sm font-semibold text-cyan-400">Manipulation Risk Prediction</h5>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              manipulationPrediction.classification === 'high' ? 'bg-red-500/20 text-red-400' :
+                              manipulationPrediction.classification === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-green-500/20 text-green-400'
+                            }`}>
+                              {manipulationPrediction.classification?.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 text-xs">
+                            <div>
+                              <span className="text-gray-400">Risk Score:</span>
+                              <span className="text-cyan-400 ml-2 font-bold">
+                                {manipulationPrediction.risk_score?.toFixed(3)}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Confidence:</span>
+                              <span className="text-cyan-400 ml-2 font-bold">
+                                {manipulationPrediction.confidence?.toFixed(3)}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Model:</span>
+                              <span className="text-cyan-400 ml-2 font-medium">
+                                {manipulationPrediction.model_name} v{manipulationPrediction.version}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Timestamp:</span>
+                              <span className="text-cyan-400 ml-2 font-medium">
+                                {new Date().toLocaleTimeString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-red-400 text-sm">
+                          <span className="font-semibold">Error:</span> {manipulationPrediction.error}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Behavioral Score Result */}
+                  {behavioralPrediction && (
+                    <div className={`mt-3 p-4 rounded-lg border ${
+                      behavioralPrediction.success 
+                        ? 'bg-slate-800/50 border-cyan-500/30' 
+                        : 'bg-red-900/20 border-red-500/50'
+                    }`}>
+                      {behavioralPrediction.success ? (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h5 className="text-sm font-semibold text-cyan-400">Behavioral Score Prediction</h5>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              behavioralPrediction.behavioral_risk === 'high' ? 'bg-red-500/20 text-red-400' :
+                              behavioralPrediction.behavioral_risk === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-green-500/20 text-green-400'
+                            }`}>
+                              {behavioralPrediction.behavioral_risk?.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="space-y-2">
+                            <div>
+                              <div className="flex items-center justify-between text-xs mb-1">
+                                <span className="text-gray-400">Manipulation Probability</span>
+                                <span className="text-cyan-400 font-bold">
+                                  {((behavioralPrediction.manipulation_probability || 0) * 100).toFixed(1)}%
+                                </span>
+                              </div>
+                              <div className="h-2 bg-slate-900 rounded-full overflow-hidden">
+                                <div 
+                                  className={`h-full rounded-full ${
+                                    (behavioralPrediction.manipulation_probability || 0) >= 0.7 ? 'bg-red-500' :
+                                    (behavioralPrediction.manipulation_probability || 0) >= 0.4 ? 'bg-yellow-500' :
+                                    'bg-green-500'
+                                  }`}
+                                  style={{ width: `${(behavioralPrediction.manipulation_probability || 0) * 100}%` }}
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <div className="flex items-center justify-between text-xs mb-1">
+                                <span className="text-gray-400">Confidence</span>
+                                <span className="text-cyan-400 font-bold">
+                                  {((behavioralPrediction.confidence || 0) * 100).toFixed(1)}%
+                                </span>
+                              </div>
+                              <div className="h-2 bg-slate-900 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-cyan-500 rounded-full"
+                                  style={{ width: `${(behavioralPrediction.confidence || 0) * 100}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            Model: <span className="text-cyan-400">{behavioralPrediction.model_name} v{behavioralPrediction.version}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-red-400 text-sm">
+                          <span className="font-semibold">Error:</span> {behavioralPrediction.error}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Chain Pressure Result */}
+                  {chainPrediction && (
+                    <div className={`mt-3 p-4 rounded-lg border ${
+                      chainPrediction.success 
+                        ? 'bg-slate-800/50 border-cyan-500/30' 
+                        : 'bg-red-900/20 border-red-500/50'
+                    }`}>
+                      {chainPrediction.success ? (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <h5 className="text-sm font-semibold text-cyan-400">Cross-Chain Pressure Prediction</h5>
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              chainPrediction.classification === 'high' ? 'bg-red-500/20 text-red-400' :
+                              chainPrediction.classification === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-green-500/20 text-green-400'
+                            }`}>
+                              {chainPrediction.classification?.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 text-xs">
+                            <div>
+                              <span className="text-gray-400">Pressure Score:</span>
+                              <span className="text-cyan-400 ml-2 font-bold">
+                                {chainPrediction.pressure_score?.toFixed(3)}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Confidence:</span>
+                              <span className="text-cyan-400 ml-2 font-bold">
+                                {chainPrediction.confidence?.toFixed(3)}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Model:</span>
+                              <span className="text-cyan-400 ml-2 font-medium">
+                                {chainPrediction.model_name} v{chainPrediction.version}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Timestamp:</span>
+                              <span className="text-cyan-400 ml-2 font-medium">
+                                {new Date().toLocaleTimeString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-red-400 text-sm">
+                          <span className="font-semibold">Error:</span> {chainPrediction.error}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
