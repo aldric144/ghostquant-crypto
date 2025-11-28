@@ -4,16 +4,19 @@ Provides REST API access to behavioral DNA analysis capabilities.
 """
 
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter, HTTPException, Body, Path
 from pydantic import BaseModel, Field
 from datetime import datetime
 
 from .dna_analyzer import DNAAnalyzer
+from .entity_history_builder import EntityHistoryBuilder
 
 
 router = APIRouter()
 
 dna_analyzer = DNAAnalyzer()
+
+entity_history_builder = EntityHistoryBuilder(window_minutes=1440)
 
 
 
@@ -132,6 +135,22 @@ class FeatureDescriptionsResponse(BaseModel):
     analyzer_version: str
 
 
+class AnalyzeAddressRequest(BaseModel):
+    """Request model for entity address DNA analysis."""
+    entity_address: str = Field(
+        ...,
+        description="Entity address to analyze",
+        min_length=1
+    )
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "entity_address": "0xABC123..."
+            }
+        }
+
+
 
 @router.post("/analyze", response_model=AnalyzeResponse, tags=["Behavioral DNA"])
 async def analyze_entity_dna(request: AnalyzeRequest = Body(...)):
@@ -221,6 +240,130 @@ async def analyze_batch_dna(request: BatchAnalyzeRequest = Body(...)):
         raise
     except Exception as e:
         print(f"[BehavioralDNA API] Error in batch analyze endpoint: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
+
+
+@router.post("/analyze/address", tags=["Behavioral DNA"])
+async def analyze_entity_address(request: AnalyzeAddressRequest = Body(...)):
+    """
+    Analyze entity behavioral DNA from EntityHistoryBuilder.
+    
+    Uses the singleton EntityHistoryBuilder to retrieve and analyze entity history.
+    The history builder maintains a rolling 24-hour window of events.
+    
+    **Args:**
+    - entity_address: Entity address to analyze
+    
+    **Returns:**
+    - Full DNA analysis including archetype, DNA code, features, and signals
+    - Returns error if no history found for the entity
+    
+    **Note:**
+    Events must be added to the EntityHistoryBuilder via the add_event() method
+    before this endpoint can analyze them. This is typically done by the
+    intelligence alert system.
+    """
+    try:
+        print(f"[BehavioralDNA API] Received analyze address request for {request.entity_address[:10]}...")
+        
+        if not request.entity_address:
+            raise HTTPException(
+                status_code=400,
+                detail="entity_address cannot be empty"
+            )
+        
+        result = dna_analyzer.analyze_entity_address(
+            request.entity_address,
+            entity_history_builder
+        )
+        
+        if not result.get('success', False):
+            print(f"[BehavioralDNA API] Address analysis failed: {result.get('error', 'Unknown error')}")
+            raise HTTPException(
+                status_code=404,
+                detail=result.get('error', 'No history found for entity')
+            )
+        
+        print(f"[BehavioralDNA API] Address analysis successful: {result['archetype']} ({result['dna_code']})")
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[BehavioralDNA API] Error in analyze address endpoint: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
+
+
+@router.get("/history/{entity_address}", tags=["Behavioral DNA"])
+async def get_entity_history(
+    entity_address: str = Path(..., description="Entity address to retrieve history for")
+):
+    """
+    Get entity history and statistics from EntityHistoryBuilder.
+    
+    Returns the complete event history and computed statistics for an entity
+    from the singleton EntityHistoryBuilder's rolling 24-hour window.
+    
+    **Args:**
+    - entity_address: Entity address to retrieve history for
+    
+    **Returns:**
+    - address: Entity address
+    - events: List of enriched events with flags and metadata
+    - stats: Computed statistics (total_events, burstiness, anomaly_rate, etc.)
+    - timestamp: Current timestamp
+    
+    **Event Enrichments:**
+    - age_minutes: Age of event in minutes
+    - delta_from_last_event: Time since previous event (minutes)
+    - severity_score: Numeric severity (0.0-1.0)
+    - cross_chain_flag: Boolean indicating chain switch
+    - token_switch_flag: Boolean indicating token switch
+    - burst_activity_flag: Boolean indicating burst activity
+    - anomaly_flag: Boolean indicating anomalous behavior
+    
+    **Statistics:**
+    - total_events: Total number of events
+    - avg_delta: Average time between events (minutes)
+    - max_delta: Maximum time between events (minutes)
+    - burstiness_index: Coefficient of variation in event timing
+    - cross_chain_frequency: Frequency of chain switches
+    - token_diversity: Number of unique tokens
+    - avg_severity: Average severity score
+    - anomaly_rate: Proportion of anomalous events
+    - active_period_score: Events per hour over time span
+    """
+    try:
+        print(f"[BehavioralDNA API] Fetching history for {entity_address[:10]}...")
+        
+        if not entity_address:
+            raise HTTPException(
+                status_code=400,
+                detail="entity_address cannot be empty"
+            )
+        
+        summary = entity_history_builder.summarize_entity(entity_address)
+        
+        if not summary.get('success', False):
+            print(f"[BehavioralDNA API] History retrieval failed: {summary.get('error', 'Unknown error')}")
+            raise HTTPException(
+                status_code=404,
+                detail=summary.get('error', 'No history found for entity')
+            )
+        
+        print(f"[BehavioralDNA API] History retrieved: {len(summary['events'])} events")
+        return summary
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[BehavioralDNA API] Error in history endpoint: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"Internal server error: {str(e)}"
@@ -354,6 +497,8 @@ async def dna_api_info():
         "endpoints": {
             "POST /dna/analyze": "Analyze entity behavioral DNA",
             "POST /dna/analyze/batch": "Batch analyze multiple entities",
+            "POST /dna/analyze/address": "Analyze entity by address (from history builder)",
+            "GET /dna/history/{entity_address}": "Get entity history and statistics",
             "GET /dna/models": "Get archetype definitions",
             "GET /dna/features": "Get feature descriptions",
             "GET /dna/health": "Health check",

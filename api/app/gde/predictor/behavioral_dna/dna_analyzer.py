@@ -11,6 +11,7 @@ from .behavioral_dna_engine import (
     classify_archetype,
     generate_dna_code
 )
+from .entity_history_builder import EntityHistoryBuilder
 
 
 class DNAAnalyzer:
@@ -123,6 +124,68 @@ class DNAAnalyzer:
         except Exception as e:
             print(f"[BehavioralDNA] Error in batch analysis: {e}")
             return [self._error_response(f"Batch analysis error: {str(e)}")]
+    
+    def analyze_entity_address(self, entity_address: str, history_builder: EntityHistoryBuilder) -> Dict[str, Any]:
+        """
+        Analyze entity behavioral DNA from EntityHistoryBuilder.
+        
+        Args:
+            entity_address: Entity address to analyze
+            history_builder: EntityHistoryBuilder instance with event history
+            
+        Returns:
+            Complete analysis results with archetype, DNA code, features, and signals
+        """
+        try:
+            print(f"[BehavioralDNA] Analyzing entity address {entity_address[:10]}...")
+            
+            history = history_builder.build_history(entity_address)
+            
+            if not history:
+                return self._error_response(f"No history found for entity {entity_address}")
+            
+            features = extract_behavioral_features(history)
+            
+            if not features:
+                return self._error_response("Failed to extract features")
+            
+            classification = classify_archetype(features)
+            
+            if not classification:
+                return self._error_response("Failed to classify archetype")
+            
+            archetype = classification.get('classification_name', 'UNKNOWN')
+            archetype_score = classification.get('classification_score', 0.0)
+            top_signals = classification.get('top_signals', [])
+            supporting_features = classification.get('supporting_features', {})
+            all_scores = classification.get('all_scores', {})
+            
+            dna_code = generate_dna_code(features, archetype)
+            
+            result = {
+                "success": True,
+                "entity_address": entity_address,
+                "archetype": archetype,
+                "archetype_score": archetype_score,
+                "dna_code": dna_code,
+                "scores": all_scores,
+                "top_signals": top_signals,
+                "supporting_features": supporting_features,
+                "features": features,
+                "metadata": {
+                    "analyzer_version": self.version,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "events_analyzed": len(history),
+                    "features_extracted": len(features)
+                }
+            }
+            
+            print(f"[BehavioralDNA] Entity analysis complete: {archetype} ({dna_code})")
+            return result
+            
+        except Exception as e:
+            print(f"[BehavioralDNA] Error in entity address analysis: {e}")
+            return self._error_response(f"Entity analysis error: {str(e)}")
     
     def get_archetype_definitions(self) -> Dict[str, Dict[str, Any]]:
         """
