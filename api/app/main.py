@@ -12,6 +12,7 @@ from app.gde.predictor import predictor_api
 from app.gde.api import predict_api
 from app.gde.predictor.behavioral_dna import api_dna
 from app.gde.api import api_correlation
+from app.gde.api import api_fusion
 from app.gde.fabric.intelligence_feed_simulator import IntelligenceFeedSimulator
 from app.gde.fabric.intelligence_queue_worker import IntelligenceQueueWorker
 from app.gde.fabric.websocket_alert_engine import WebSocketAlertEngine
@@ -99,6 +100,7 @@ app.include_router(predictor_api.router)
 app.include_router(predict_api.router, prefix="/predict", tags=["Prediction"])
 app.include_router(api_dna.router, prefix="/dna", tags=["Behavioral DNA"])
 app.include_router(api_correlation.router, prefix="/correlation", tags=["Correlation"])
+app.include_router(api_fusion.router, prefix="/fusion", tags=["FusionEngine"])
 
 @app.post("/intel/sim/start")
 async def start_sim():
