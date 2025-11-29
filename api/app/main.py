@@ -17,6 +17,7 @@ from app.gde.api import api_radar
 from app.gde.intel.gw import api_ghostwriter
 from app.gde.intel.cluster import api_cluster
 from app.gde.threat_actor import api_threat_actor
+from app.gde.valkyrie import api_valkyrie
 from app.gde.fabric.intelligence_feed_simulator import IntelligenceFeedSimulator
 from app.gde.fabric.intelligence_queue_worker import IntelligenceQueueWorker
 from app.gde.fabric.websocket_alert_engine import WebSocketAlertEngine
@@ -109,6 +110,7 @@ app.include_router(api_radar.router, prefix="/radar", tags=["GlobalRadar"])
 app.include_router(api_ghostwriter.router, prefix="/gw", tags=["GhostWriter"])
 app.include_router(api_cluster.router, prefix="/cluster", tags=["Cluster Intelligence"])
 app.include_router(api_threat_actor.router, prefix="/actor", tags=["Threat Actor"])
+app.include_router(api_valkyrie.router, tags=["Valkyrie"])
 
 @app.post("/intel/sim/start")
 async def start_sim():
