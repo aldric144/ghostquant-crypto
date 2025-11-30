@@ -16,6 +16,7 @@ from app.gde.api import api_fusion
 from app.gde.api import api_radar
 from app.gde.intel.gw import api_ghostwriter
 from app.gde.intel.cluster import api_cluster
+from app.gde.intel.hydra import api_hydra
 from app.gde.threat_actor import api_threat_actor
 from app.gde.valkyrie import api_valkyrie
 from app.gde.phantom import api_phantom
@@ -112,6 +113,7 @@ app.include_router(api_fusion.router, prefix="/fusion", tags=["FusionEngine"])
 app.include_router(api_radar.router, prefix="/radar", tags=["GlobalRadar"])
 app.include_router(api_ghostwriter.router, prefix="/gw", tags=["GhostWriter"])
 app.include_router(api_cluster.router, prefix="/cluster", tags=["Cluster Intelligence"])
+app.include_router(api_hydra.router, tags=["OperationHydra"])
 app.include_router(api_threat_actor.router, prefix="/actor", tags=["Threat Actor"])
 app.include_router(api_valkyrie.router, tags=["Valkyrie"])
 app.include_router(api_phantom.router, tags=["Phantom"])
