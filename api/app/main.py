@@ -20,6 +20,7 @@ from app.gde.intel.hydra import api_hydra
 from app.gde.intelligence.constellation import api_constellation
 from app.gde.sentinel import api_sentinel
 from app.gde.cortex import api_cortex
+from app.gde.genesis import api_genesis
 from app.gde.threat_actor import api_threat_actor
 from app.gde.valkyrie import api_valkyrie
 from app.gde.phantom import api_phantom
@@ -120,6 +121,7 @@ app.include_router(api_hydra.router, tags=["OperationHydra"])
 app.include_router(api_constellation.router, tags=["Constellation"])
 app.include_router(api_sentinel.router, tags=["Sentinel"])
 app.include_router(api_cortex.router, tags=["Cortex"])
+app.include_router(api_genesis.router, tags=["Genesis"])
 app.include_router(api_threat_actor.router, prefix="/actor", tags=["Threat Actor"])
 app.include_router(api_valkyrie.router, tags=["Valkyrie"])
 app.include_router(api_phantom.router, tags=["Phantom"])
