@@ -1,0 +1,396 @@
+@import '../styles/colors.scss';
+@import '../styles/animations.scss';
+
+.hero {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: $black;
+}
+
+// Starfield Layers
+.starfieldLayer1,
+.starfieldLayer2,
+.starfieldLayer3 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.starfieldLayer1 {
+  background: 
+    radial-gradient(2px 2px at 20% 30%, white, transparent),
+    radial-gradient(2px 2px at 60% 70%, white, transparent),
+    radial-gradient(1px 1px at 50% 50%, white, transparent),
+    radial-gradient(1px 1px at 80% 10%, white, transparent),
+    radial-gradient(2px 2px at 90% 60%, white, transparent);
+  background-size: 200% 200%;
+  animation: starfield-drift 60s linear infinite;
+  opacity: 0.6;
+}
+
+.starfieldLayer2 {
+  background: 
+    radial-gradient(1px 1px at 33% 80%, $neon-cyan, transparent),
+    radial-gradient(1px 1px at 15% 90%, $electric-blue, transparent),
+    radial-gradient(1px 1px at 70% 20%, $violet-pulse, transparent),
+    radial-gradient(1px 1px at 45% 60%, $aurora-green, transparent);
+  background-size: 250% 250%;
+  animation: starfield-drift 80s linear infinite reverse;
+  opacity: 0.4;
+}
+
+.starfieldLayer3 {
+  background: 
+    radial-gradient(3px 3px at 10% 50%, $neon-cyan, transparent),
+    radial-gradient(2px 2px at 85% 30%, $electric-blue, transparent),
+    radial-gradient(2px 2px at 40% 90%, $violet-pulse, transparent);
+  background-size: 300% 300%;
+  animation: starfield-drift 100s linear infinite;
+  opacity: 0.3;
+}
+
+// Planet Ring Hologram
+.planetRing {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  opacity: 0.15;
+  pointer-events: none;
+  
+  @media (max-width: 768px) {
+    width: 400px;
+    height: 400px;
+  }
+}
+
+.ringOuter,
+.ringMiddle,
+.ringInner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotateX(75deg);
+  border-radius: 50%;
+  border: 2px solid;
+  animation: rotate 20s linear infinite;
+}
+
+.ringOuter {
+  width: 100%;
+  height: 100%;
+  border-color: $neon-cyan;
+  opacity: 0.3;
+}
+
+.ringMiddle {
+  width: 70%;
+  height: 70%;
+  border-color: $electric-blue;
+  opacity: 0.5;
+  animation-duration: 15s;
+}
+
+.ringInner {
+  width: 40%;
+  height: 40%;
+  border-color: $violet-pulse;
+  opacity: 0.7;
+  animation-duration: 10s;
+}
+
+.planetCore {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, $neon-cyan, transparent);
+  border-radius: 50%;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+// Grid Overlay
+.gridOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(rgba(34, 224, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 224, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  animation: grid-glow 4s ease-in-out infinite;
+}
+
+// Content
+.content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  max-width: 1200px;
+  padding: 0 24px;
+}
+
+.titleWrapper {
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 6rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+  
+  @media (max-width: 768px) {
+    font-size: 3.5rem;
+  }
+}
+
+.titleGhost {
+  color: $neon-cyan;
+  text-shadow: 
+    0 0 20px rgba(34, 224, 255, 0.8),
+    0 0 40px rgba(34, 224, 255, 0.5),
+    0 0 60px rgba(34, 224, 255, 0.3);
+  animation: neon-pulse 2s ease-in-out infinite;
+}
+
+.titleQuant {
+  color: $electric-blue;
+  text-shadow: 
+    0 0 20px rgba(58, 141, 255, 0.8),
+    0 0 40px rgba(58, 141, 255, 0.5),
+    0 0 60px rgba(58, 141, 255, 0.3);
+  animation: neon-pulse 2s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+.titleUnderline {
+  width: 200px;
+  height: 3px;
+  margin: 0 auto;
+  background: linear-gradient(90deg, transparent, $neon-cyan, $electric-blue, transparent);
+  animation: shimmer 3s linear infinite;
+}
+
+// Tagline
+.taglineWrapper {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.tagline {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: $aurora-green;
+  text-transform: uppercase;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+  
+  &.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  &.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+.mission {
+  font-size: 1.25rem;
+  line-height: 1.8;
+  color: $text-secondary;
+  max-width: 800px;
+  margin: 0 auto 48px;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+}
+
+// CTA Buttons
+.ctaButtons {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin-bottom: 64px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.primaryButton,
+.secondaryButton {
+  position: relative;
+  padding: 16px 40px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+.primaryButton {
+  background: transparent;
+  border: 2px solid $neon-cyan;
+  color: $neon-cyan;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $glow-cyan;
+    
+    .buttonGlow {
+      opacity: 1;
+    }
+  }
+}
+
+.buttonGlow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: $neon-cyan;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.primaryButton:hover .buttonText {
+  color: $black;
+  position: relative;
+  z-index: 1;
+}
+
+.secondaryButton {
+  background: transparent;
+  border: 2px solid $electric-blue;
+  color: $electric-blue;
+  
+  &:hover {
+    transform: translateY(-2px);
+    background: $electric-blue-10;
+    box-shadow: $glow-blue;
+  }
+}
+
+.buttonText {
+  position: relative;
+  z-index: 1;
+}
+
+// Intelligence Indicators
+.indicators {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+}
+
+.indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.indicatorDot {
+  width: 8px;
+  height: 8px;
+  background: $aurora-green;
+  border-radius: 50%;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    border-radius: 50%;
+    animation: pulse-ring 2s ease-out infinite;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+  }
+  100% {
+    width: 300%;
+    height: 300%;
+    opacity: 0;
+  }
+}
+
+.indicatorText {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: $text-secondary;
+  text-transform: uppercase;
+}
+
+// Scanline Effect
+.scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, $neon-cyan, transparent);
+  animation: scanline 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}

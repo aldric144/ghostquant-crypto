@@ -1,0 +1,243 @@
+@import '../styles/colors.scss';
+@import '../styles/animations.scss';
+
+.mapContainer {
+  position: relative;
+  width: 100%;
+  height: 600px;
+  background: $slate-950;
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  overflow: hidden;
+  
+  @media (max-width: 768px) {
+    height: 400px;
+  }
+}
+
+// Grid Background
+.gridBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(rgba(34, 224, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 224, 255, 0.05) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: grid-glow 4s ease-in-out infinite;
+}
+
+// Map SVG
+.mapSvg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// Connections
+.connections {
+  .connection {
+    transition: opacity 0.5s ease;
+    
+    &.active {
+      animation: connection-pulse 2s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes connection-pulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+// Arcs
+.arcs {
+  .arc {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: arc-draw 2s ease-in-out infinite;
+  }
+}
+
+@keyframes arc-draw {
+  0% {
+    stroke-dashoffset: 100;
+    opacity: 0;
+  }
+  50% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: -100;
+    opacity: 0;
+  }
+}
+
+// Nodes
+.nodes {
+  .nodeGroup {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      .node {
+        r: 1.5;
+      }
+      
+      .nodeGlow {
+        opacity: 0.6;
+      }
+    }
+  }
+  
+  .node {
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 5px currentColor);
+  }
+  
+  .nodeGlow {
+    filter: blur(3px);
+    transition: opacity 0.3s ease;
+  }
+  
+  .pulseRing {
+    animation: pulse-ring-map 2s ease-out infinite;
+  }
+}
+
+@keyframes pulse-ring-map {
+  0% {
+    r: 1;
+    opacity: 1;
+  }
+  100% {
+    r: 3;
+    opacity: 0;
+  }
+}
+
+// Labels
+.labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid $border-primary;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  
+  @media (max-width: 768px) {
+    padding: 4px 8px;
+  }
+}
+
+.mapContainer:hover .label {
+  opacity: 1;
+}
+
+.labelText {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $text-primary;
+  white-space: nowrap;
+  
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+  }
+}
+
+.labelThreat {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  
+  &.low {
+    background: $aurora-green-10;
+    color: $aurora-green;
+  }
+  
+  &.medium {
+    background: rgba(242, 95, 76, 0.1);
+    color: $warning-ember;
+  }
+  
+  &.high {
+    background: rgba(255, 30, 68, 0.1);
+    color: $critical-red;
+  }
+}
+
+// Stats Overlay
+.statsOverlay {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  
+  @media (max-width: 768px) {
+    top: 8px;
+    right: 8px;
+    gap: 8px;
+  }
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid $border-primary;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+  }
+}
+
+.statLabel {
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: $text-muted;
+  text-transform: uppercase;
+}
+
+.statValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $neon-cyan;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+}

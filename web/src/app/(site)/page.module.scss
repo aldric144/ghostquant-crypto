@@ -1,0 +1,448 @@
+@import '../../styles/colors.scss';
+@import '../../styles/animations.scss';
+@import '../../styles/layout.scss';
+
+.homePage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: $black;
+  overflow-x: hidden;
+}
+
+// Hero Section
+.heroSection {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+}
+
+// Aurora Section
+.auroraSection {
+  position: relative;
+  width: 100%;
+  margin: 80px 0;
+}
+
+// Intelligence Cards Section
+.intelligenceCardsSection {
+  position: relative;
+  padding: 80px 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.5) 50%, transparent 100%);
+}
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  
+  @media (max-width: 768px) {
+    padding: 0 16px;
+  }
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.sectionTitle {
+  font-size: 3rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+  
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+}
+
+.sectionSubtitle {
+  font-size: 1.25rem;
+  color: $text-secondary;
+  max-width: 700px;
+  margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Map Section
+.mapSection {
+  position: relative;
+  padding: 80px 0;
+}
+
+// Trust Section
+.trustSection {
+  position: relative;
+  padding: 80px 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.3) 50%, transparent 100%);
+}
+
+.trustGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  margin-bottom: 48px;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.trustItem {
+  text-align: center;
+  padding: 32px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    border-color: $neon-cyan-50;
+    box-shadow: $shadow-cyan;
+  }
+}
+
+.trustIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.trustTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin-bottom: 12px;
+}
+
+.trustDescription {
+  font-size: 1rem;
+  color: $text-secondary;
+  line-height: 1.6;
+}
+
+.complianceBadges {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 12px 24px;
+  background: $neon-cyan-10;
+  border: 1px solid $neon-cyan-20;
+  border-radius: 8px;
+  color: $neon-cyan;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: $neon-cyan-20;
+    box-shadow: $glow-cyan;
+  }
+}
+
+// API Section
+.apiSection {
+  position: relative;
+  padding: 80px 0;
+  background: $slate-950;
+}
+
+.apiContent {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+}
+
+.apiLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.apiTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+}
+
+.apiDescription {
+  font-size: 1.125rem;
+  color: $text-secondary;
+  line-height: 1.8;
+}
+
+.apiFeatures {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.apiFeature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $neon-cyan-50;
+    box-shadow: $shadow-cyan;
+  }
+}
+
+.apiFeatureIcon {
+  font-size: 1.5rem;
+}
+
+.apiFeatureText {
+  font-size: 1rem;
+  color: $text-primary;
+  font-weight: 600;
+}
+
+.apiButton {
+  padding: 16px 40px;
+  background: transparent;
+  border: 2px solid $neon-cyan;
+  border-radius: 8px;
+  color: $neon-cyan;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+  
+  &:hover {
+    background: $neon-cyan;
+    color: $black;
+    box-shadow: $glow-cyan;
+  }
+}
+
+.apiRight {
+  position: relative;
+}
+
+.codeBlock {
+  background: $slate-900;
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: $shadow-cyan;
+}
+
+.codeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: rgba(15, 23, 42, 0.8);
+  border-bottom: 1px solid $border-primary;
+}
+
+.codeLanguage {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $neon-cyan;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.codeCopy {
+  font-size: 0.875rem;
+  color: $text-secondary;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  
+  &:hover {
+    color: $neon-cyan;
+  }
+}
+
+.codeContent {
+  padding: 24px;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 0.875rem;
+  line-height: 1.8;
+  color: $aurora-green;
+  overflow-x: auto;
+  
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+    padding: 16px;
+  }
+}
+
+// Footer
+.footer {
+  position: relative;
+  padding: 80px 0 32px;
+  background: linear-gradient(180deg, transparent 0%, $slate-950 100%);
+  border-top: 1px solid $border-primary;
+}
+
+.footerContent {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 64px;
+  margin-bottom: 48px;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+}
+
+.footerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footerLogo {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.footerLogoGhost {
+  color: $neon-cyan;
+}
+
+.footerLogoQuant {
+  color: $electric-blue;
+}
+
+.footerTagline {
+  font-size: 1rem;
+  color: $text-secondary;
+  line-height: 1.6;
+}
+
+.footerCopyright {
+  font-size: 0.875rem;
+  color: $text-muted;
+}
+
+.footerLinks {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.footerColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footerColumnTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: $text-primary;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.footerLink {
+  font-size: 0.875rem;
+  color: $text-secondary;
+  transition: color 0.3s ease;
+  
+  &:hover {
+    color: $neon-cyan;
+  }
+}
+
+.footerBottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 32px;
+  border-top: 1px solid $border-primary;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.footerBottomLeft,
+.footerBottomRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footerStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: $text-secondary;
+}
+
+.footerStatusDot {
+  width: 8px;
+  height: 8px;
+  background: $aurora-green;
+  border-radius: 50%;
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+.footerSocial {
+  font-size: 0.875rem;
+  color: $text-secondary;
+}

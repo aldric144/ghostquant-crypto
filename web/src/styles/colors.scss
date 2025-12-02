@@ -1,0 +1,74 @@
+/**
+ * GhostQuant Color System
+ * Aurora Network Theme
+ */
+
+// Base Colors
+$black: #000000;
+$deep-space: #020617;
+$slate-950: #0f172a;
+$slate-900: #1e293b;
+$slate-800: #334155;
+
+// Neon Accents
+$neon-cyan: #22E0FF;
+$electric-blue: #3A8DFF;
+$violet-pulse: #7F5AF0;
+$aurora-green: #37FFB0;
+$warning-ember: #F25F4C;
+$critical-red: #FF1E44;
+
+// Semantic Colors
+$primary: $neon-cyan;
+$secondary: $electric-blue;
+$accent: $violet-pulse;
+$success: $aurora-green;
+$warning: $warning-ember;
+$danger: $critical-red;
+
+// Opacity Variants
+$neon-cyan-10: rgba(34, 224, 255, 0.1);
+$neon-cyan-20: rgba(34, 224, 255, 0.2);
+$neon-cyan-30: rgba(34, 224, 255, 0.3);
+$neon-cyan-50: rgba(34, 224, 255, 0.5);
+
+$electric-blue-10: rgba(58, 141, 255, 0.1);
+$electric-blue-20: rgba(58, 141, 255, 0.2);
+$electric-blue-50: rgba(58, 141, 255, 0.5);
+
+$violet-pulse-10: rgba(127, 90, 240, 0.1);
+$violet-pulse-20: rgba(127, 90, 240, 0.2);
+$violet-pulse-50: rgba(127, 90, 240, 0.5);
+
+$aurora-green-10: rgba(55, 255, 176, 0.1);
+$aurora-green-20: rgba(55, 255, 176, 0.2);
+$aurora-green-50: rgba(55, 255, 176, 0.5);
+
+// Text Colors
+$text-primary: #ffffff;
+$text-secondary: #94a3b8;
+$text-muted: #64748b;
+$text-dim: #475569;
+
+// Background Colors
+$bg-primary: $black;
+$bg-secondary: $deep-space;
+$bg-tertiary: $slate-950;
+$bg-card: $slate-900;
+
+// Border Colors
+$border-primary: $neon-cyan-20;
+$border-secondary: $electric-blue-20;
+$border-accent: $violet-pulse-20;
+
+// Glow Colors
+$glow-cyan: 0 0 20px rgba(34, 224, 255, 0.5);
+$glow-blue: 0 0 20px rgba(58, 141, 255, 0.5);
+$glow-violet: 0 0 20px rgba(127, 90, 240, 0.5);
+$glow-green: 0 0 20px rgba(55, 255, 176, 0.5);
+$glow-red: 0 0 20px rgba(255, 30, 68, 0.5);
+
+// Shadow Colors
+$shadow-cyan: 0 4px 20px rgba(34, 224, 255, 0.3);
+$shadow-blue: 0 4px 20px rgba(58, 141, 255, 0.3);
+$shadow-violet: 0 4px 20px rgba(127, 90, 240, 0.3);
