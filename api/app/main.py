@@ -29,6 +29,7 @@ from app.gde.api import api_ultrafusion
 from app.gde.security.keys import api_secrets
 from app.gde.security.config import api_config
 from app.gde.compliance.exporter import api_exporter
+from app.gde.compliance.binder import api_binder
 from app.gde.fabric.intelligence_feed_simulator import IntelligenceFeedSimulator
 from app.gde.fabric.intelligence_queue_worker import IntelligenceQueueWorker
 from app.gde.fabric.websocket_alert_engine import WebSocketAlertEngine
@@ -133,6 +134,7 @@ app.include_router(api_ultrafusion.router, prefix="/ultrafusion", tags=["UltraFu
 app.include_router(api_secrets.router, prefix="/secrets", tags=["Keys & Secrets"])
 app.include_router(api_config.router, prefix="/config", tags=["Configuration"])
 app.include_router(api_exporter.router, prefix="/exporter", tags=["Compliance Export"])
+app.include_router(api_binder.router, prefix="/binder", tags=["Audit Binder"])
 
 @app.post("/intel/sim/start")
 async def start_sim():
