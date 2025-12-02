@@ -1,0 +1,299 @@
+@import '../../../styles/colors.scss';
+@import '../../../styles/animations.scss';
+
+.ultrafusionPage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: $black;
+}
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heroSection {
+  padding: 120px 0 80px;
+  background: linear-gradient(180deg, $slate-950 0%, transparent 100%);
+}
+
+.heroContent {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.heroIcon {
+  font-size: 5rem;
+  margin-bottom: 24px;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+  
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+}
+
+.heroSubtitle {
+  font-size: 1.5rem;
+  color: $neon-cyan;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+}
+
+.heroDescription {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: $text-secondary;
+}
+
+.diagramSection {
+  padding: 80px 0;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 16px;
+}
+
+.sectionSubtitle {
+  font-size: 1.125rem;
+  color: $text-secondary;
+}
+
+.fusionDiagram {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    width: 400px;
+    height: 400px;
+  }
+}
+
+.engineRing {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  animation: rotate 60s linear infinite;
+}
+
+.engineNode {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 12px 20px;
+  background: $neon-cyan-10;
+  border: 2px solid $neon-cyan-20;
+  border-radius: 8px;
+  color: $neon-cyan;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  
+  &:nth-child(1) { transform: translate(-50%, -50%) rotate(0deg) translateY(-250px) rotate(0deg); }
+  &:nth-child(2) { transform: translate(-50%, -50%) rotate(33deg) translateY(-250px) rotate(-33deg); }
+  &:nth-child(3) { transform: translate(-50%, -50%) rotate(66deg) translateY(-250px) rotate(-66deg); }
+  &:nth-child(4) { transform: translate(-50%, -50%) rotate(99deg) translateY(-250px) rotate(-99deg); }
+  &:nth-child(5) { transform: translate(-50%, -50%) rotate(132deg) translateY(-250px) rotate(-132deg); }
+  &:nth-child(6) { transform: translate(-50%, -50%) rotate(165deg) translateY(-250px) rotate(-165deg); }
+  &:nth-child(7) { transform: translate(-50%, -50%) rotate(198deg) translateY(-250px) rotate(-198deg); }
+  &:nth-child(8) { transform: translate(-50%, -50%) rotate(231deg) translateY(-250px) rotate(-231deg); }
+  &:nth-child(9) { transform: translate(-50%, -50%) rotate(264deg) translateY(-250px) rotate(-264deg); }
+  &:nth-child(10) { transform: translate(-50%, -50%) rotate(297deg) translateY(-250px) rotate(-297deg); }
+  &:nth-child(11) { transform: translate(-50%, -50%) rotate(330deg) translateY(-250px) rotate(-330deg); }
+  
+  @media (max-width: 768px) {
+    &:nth-child(1) { transform: translate(-50%, -50%) rotate(0deg) translateY(-170px) rotate(0deg); }
+    &:nth-child(2) { transform: translate(-50%, -50%) rotate(33deg) translateY(-170px) rotate(-33deg); }
+    &:nth-child(3) { transform: translate(-50%, -50%) rotate(66deg) translateY(-170px) rotate(-66deg); }
+    &:nth-child(4) { transform: translate(-50%, -50%) rotate(99deg) translateY(-170px) rotate(-99deg); }
+    &:nth-child(5) { transform: translate(-50%, -50%) rotate(132deg) translateY(-170px) rotate(-132deg); }
+    &:nth-child(6) { transform: translate(-50%, -50%) rotate(165deg) translateY(-170px) rotate(-165deg); }
+    &:nth-child(7) { transform: translate(-50%, -50%) rotate(198deg) translateY(-170px) rotate(-198deg); }
+    &:nth-child(8) { transform: translate(-50%, -50%) rotate(231deg) translateY(-170px) rotate(-231deg); }
+    &:nth-child(9) { transform: translate(-50%, -50%) rotate(264deg) translateY(-170px) rotate(-264deg); }
+    &:nth-child(10) { transform: translate(-50%, -50%) rotate(297deg) translateY(-170px) rotate(-297deg); }
+    &:nth-child(11) { transform: translate(-50%, -50%) rotate(330deg) translateY(-170px) rotate(-330deg); }
+  }
+}
+
+.fusionCore {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(34, 224, 255, 0.2) 0%, transparent 70%);
+  border: 3px solid $neon-cyan;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.fusionCoreIcon {
+  font-size: 4rem;
+}
+
+.fusionCoreLabel {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $neon-cyan;
+}
+
+.signalsSection {
+  padding: 80px 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.5) 50%, transparent 100%);
+}
+
+.signalsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.signalCard {
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.signalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.signalName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.signalValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.signalBar {
+  width: 100%;
+  height: 8px;
+  background: $slate-900;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.signalBarFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.apiSection {
+  padding: 80px 0;
+}
+
+.codeBlock {
+  background: $slate-900;
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.codeHeader {
+  padding: 16px 24px;
+  background: rgba(15, 23, 42, 0.8);
+  border-bottom: 1px solid $border-primary;
+}
+
+.codeLanguage {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $neon-cyan;
+  text-transform: uppercase;
+}
+
+.codeContent {
+  padding: 24px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.875rem;
+  line-height: 1.8;
+  color: $aurora-green;
+  overflow-x: auto;
+}
+
+.ctaSection {
+  padding: 80px 0;
+}
+
+.ctaContent {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.ctaTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+}
+
+.ctaDescription {
+  font-size: 1.125rem;
+  color: $text-secondary;
+  margin-bottom: 48px;
+}
+
+.ctaButton {
+  padding: 16px 48px;
+  background: transparent;
+  border: 2px solid $neon-cyan;
+  border-radius: 8px;
+  color: $neon-cyan;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: $neon-cyan;
+    color: $black;
+    box-shadow: $glow-cyan;
+  }
+}

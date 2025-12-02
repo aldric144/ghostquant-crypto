@@ -1,0 +1,359 @@
+@import '../../../styles/colors.scss';
+@import '../../../styles/animations.scss';
+
+.compliancePage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: $black;
+}
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heroSection {
+  padding: 120px 0 80px;
+  background: linear-gradient(180deg, $slate-950 0%, transparent 100%);
+}
+
+.heroContent {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.heroIcon {
+  font-size: 5rem;
+  margin-bottom: 24px;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+  
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+}
+
+.heroSubtitle {
+  font-size: 1.5rem;
+  color: $aurora-green;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+}
+
+.heroDescription {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: $text-secondary;
+}
+
+.badgesSection {
+  padding: 80px 0;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 16px;
+}
+
+.sectionSubtitle {
+  font-size: 1.125rem;
+  color: $text-secondary;
+}
+
+.badgesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.badgeCard {
+  padding: 32px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px solid $border-primary;
+  border-radius: 12px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $aurora-green;
+    box-shadow: $glow-green;
+    transform: translateY(-4px);
+  }
+}
+
+.badgeName {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 12px;
+}
+
+.badgeDescription {
+  font-size: 0.875rem;
+  color: $text-secondary;
+  margin-bottom: 16px;
+}
+
+.badgeStatus {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  
+  &.certified {
+    background: rgba(55, 255, 176, 0.2);
+    color: $aurora-green;
+  }
+  
+  &.compliant {
+    background: rgba(58, 141, 255, 0.2);
+    color: $electric-blue;
+  }
+  
+  &.in-progress {
+    background: rgba(127, 90, 240, 0.2);
+    color: $violet-pulse;
+  }
+}
+
+.zeroTrustSection {
+  padding: 80px 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.5) 50%, transparent 100%);
+}
+
+.architectureDiagram {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  margin-bottom: 48px;
+}
+
+.architectureLayer {
+  width: 100%;
+  max-width: 600px;
+  padding: 24px;
+  background: $slate-900;
+  border: 2px solid $aurora-green;
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: $glow-green;
+    transform: scale(1.02);
+  }
+}
+
+.layerTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $aurora-green;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.layerContent {
+  font-size: 0.875rem;
+  color: $text-secondary;
+  line-height: 1.6;
+}
+
+.architectureArrow {
+  font-size: 2rem;
+  color: $aurora-green;
+  animation: shimmer 2s linear infinite;
+}
+
+.principlesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.principleCard {
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $aurora-green;
+    box-shadow: $glow-green;
+  }
+}
+
+.principleTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin-bottom: 12px;
+}
+
+.principleDescription {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: $text-secondary;
+}
+
+.governanceSection {
+  padding: 80px 0;
+}
+
+.governanceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.governanceCard {
+  padding: 32px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $electric-blue;
+    box-shadow: $glow-blue;
+  }
+}
+
+.governanceIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.governanceTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin-bottom: 12px;
+}
+
+.governanceDescription {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: $text-secondary;
+}
+
+.regulatorySection {
+  padding: 80px 0;
+}
+
+.regulatoryPanel {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  padding: 48px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 24px;
+  }
+}
+
+.regulatoryMetric {
+  text-align: center;
+}
+
+.metricValue {
+  font-size: 3rem;
+  font-weight: 900;
+  color: $aurora-green;
+  margin-bottom: 8px;
+}
+
+.metricLabel {
+  font-size: 0.875rem;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.ctaSection {
+  padding: 80px 0;
+}
+
+.ctaContent {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.ctaTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+}
+
+.ctaDescription {
+  font-size: 1.125rem;
+  color: $text-secondary;
+  margin-bottom: 48px;
+}
+
+.ctaButton {
+  padding: 16px 48px;
+  background: transparent;
+  border: 2px solid $aurora-green;
+  border-radius: 8px;
+  color: $aurora-green;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: $aurora-green;
+    color: $black;
+    box-shadow: $glow-green;
+  }
+}

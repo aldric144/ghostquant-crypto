@@ -1,0 +1,335 @@
+@import '../../../styles/colors.scss';
+@import '../../../styles/animations.scss';
+
+.cortexPage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: $black;
+}
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heroSection {
+  padding: 120px 0 80px;
+  background: linear-gradient(180deg, $slate-950 0%, transparent 100%);
+}
+
+.heroContent {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.heroIcon {
+  font-size: 5rem;
+  margin-bottom: 24px;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+  
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+}
+
+.heroSubtitle {
+  font-size: 1.5rem;
+  color: $violet-pulse;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+}
+
+.heroDescription {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: $text-secondary;
+}
+
+.timelineSection {
+  padding: 80px 0;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 16px;
+}
+
+.sectionSubtitle {
+  font-size: 1.125rem;
+  color: $text-secondary;
+}
+
+.timelineChart {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  gap: 24px;
+  padding: 48px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  min-height: 400px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    min-height: auto;
+  }
+}
+
+.timelinePoint {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.timelineBar {
+  width: 60px;
+  height: 200px;
+  background: $slate-900;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 60px;
+  }
+}
+
+.timelineBarFill {
+  width: 100%;
+  background: linear-gradient(180deg, $violet-pulse 0%, $neon-cyan 100%);
+  border-radius: 8px;
+  transition: height 0.5s ease;
+  
+  @media (max-width: 768px) {
+    height: 100% !important;
+    width: var(--width, 50%);
+  }
+}
+
+.timelineLabel {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: $text-primary;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.timelineStats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  
+  @media (max-width: 768px) {
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
+  }
+}
+
+.timelineStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.timelineStatValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $violet-pulse;
+}
+
+.timelineStatLabel {
+  font-size: 0.75rem;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.patternsSection {
+  padding: 80px 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.5) 50%, transparent 100%);
+}
+
+.patternsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.patternCard {
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $violet-pulse;
+    box-shadow: $glow-violet;
+  }
+}
+
+.patternHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.patternName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.patternFrequency {
+  padding: 4px 12px;
+  background: rgba(127, 90, 240, 0.2);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: $violet-pulse;
+  text-transform: uppercase;
+}
+
+.patternConfidence {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.confidenceLabel {
+  font-size: 0.875rem;
+  color: $text-muted;
+  min-width: 80px;
+}
+
+.confidenceBar {
+  flex: 1;
+  height: 8px;
+  background: $slate-900;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.confidenceBarFill {
+  height: 100%;
+  background: $violet-pulse;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.confidenceValue {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: $violet-pulse;
+  min-width: 40px;
+  text-align: right;
+}
+
+.apiSection {
+  padding: 80px 0;
+}
+
+.codeBlock {
+  background: $slate-900;
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.codeHeader {
+  padding: 16px 24px;
+  background: rgba(15, 23, 42, 0.8);
+  border-bottom: 1px solid $border-primary;
+}
+
+.codeLanguage {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $violet-pulse;
+  text-transform: uppercase;
+}
+
+.codeContent {
+  padding: 24px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.875rem;
+  line-height: 1.8;
+  color: $aurora-green;
+  overflow-x: auto;
+}
+
+.ctaSection {
+  padding: 80px 0;
+}
+
+.ctaContent {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.ctaTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+}
+
+.ctaDescription {
+  font-size: 1.125rem;
+  color: $text-secondary;
+  margin-bottom: 48px;
+}
+
+.ctaButton {
+  padding: 16px 48px;
+  background: transparent;
+  border: 2px solid $violet-pulse;
+  border-radius: 8px;
+  color: $violet-pulse;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: $violet-pulse;
+    color: $black;
+    box-shadow: $glow-violet;
+  }
+}
