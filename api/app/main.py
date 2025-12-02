@@ -31,6 +31,7 @@ from app.gde.security.config import api_config
 from app.gde.compliance.exporter import api_exporter
 from app.gde.compliance.binder import api_binder
 from app.gde.compliance import api_executive_report
+from app.gde.rfp import api_rfp
 from app.gde.fabric.intelligence_feed_simulator import IntelligenceFeedSimulator
 from app.gde.fabric.intelligence_queue_worker import IntelligenceQueueWorker
 from app.gde.fabric.websocket_alert_engine import WebSocketAlertEngine
@@ -137,6 +138,7 @@ app.include_router(api_config.router, prefix="/config", tags=["Configuration"])
 app.include_router(api_exporter.router, prefix="/exporter", tags=["Compliance Export"])
 app.include_router(api_binder.router, prefix="/binder", tags=["Audit Binder"])
 app.include_router(api_executive_report.router, prefix="/compliance", tags=["Executive Report"])
+app.include_router(api_rfp.router, tags=["RFP Generator"])
 
 @app.post("/intel/sim/start")
 async def start_sim():
