@@ -26,6 +26,7 @@ from app.gde.valkyrie import api_valkyrie
 from app.gde.phantom import api_phantom
 from app.gde.oracle_eye import api_oracle
 from app.gde.api import api_ultrafusion
+from app.gde.security.keys import api_secrets
 from app.gde.fabric.intelligence_feed_simulator import IntelligenceFeedSimulator
 from app.gde.fabric.intelligence_queue_worker import IntelligenceQueueWorker
 from app.gde.fabric.websocket_alert_engine import WebSocketAlertEngine
@@ -127,6 +128,7 @@ app.include_router(api_valkyrie.router, tags=["Valkyrie"])
 app.include_router(api_phantom.router, tags=["Phantom"])
 app.include_router(api_oracle.router, prefix="/oracle", tags=["OracleEye"])
 app.include_router(api_ultrafusion.router, prefix="/ultrafusion", tags=["UltraFusion"])
+app.include_router(api_secrets.router, prefix="/secrets", tags=["Keys & Secrets"])
 
 @app.post("/intel/sim/start")
 async def start_sim():
