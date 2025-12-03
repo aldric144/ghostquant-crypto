@@ -5,12 +5,15 @@ FastAPI endpoints for pitch deck generation.
 """
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import Response
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 from .pitchdeck_engine import PitchDeckEngine
+from .pitchdeck_themes import list_themes
 
 
 router = APIRouter(prefix="/pitchdeck")
+deck_router = APIRouter(prefix="/deck")
 engine = PitchDeckEngine()
 
 
@@ -352,3 +355,310 @@ async def get_info() -> Dict[str, Any]:
             'success': False,
             'error': f'Failed to get info: {str(e)}'
         }
+
+
+
+class DeckBuildRequest(BaseModel):
+    """Request model for deck building"""
+    deck_type: str = "investor"
+    company_name: str = "GhostQuant"
+    theme: str = "ghostquant_dark_fusion"
+
+
+@deck_router.get("/")
+async def get_deck_root() -> Dict[str, Any]:
+    """
+    Get deck builder information
+    
+    Returns:
+        Deck builder metadata
+    """
+    return {
+        'success': True,
+        'system': 'GhostQuant Investor Pitch Deck Builder™',
+        'version': engine.VERSION,
+        'endpoints': [
+            'GET /deck/',
+            'GET /deck/summary',
+            'GET /deck/slides',
+            'GET /deck/slide/{name}',
+            'GET /deck/themes',
+            'POST /deck/build',
+            'POST /deck/export/html',
+            'POST /deck/export/md',
+            'POST /deck/export/json',
+            'POST /deck/export/pdf',
+            'GET /deck/health'
+        ]
+    }
+
+
+@deck_router.get("/summary")
+async def get_deck_builder_summary() -> Dict[str, Any]:
+    """
+    Get summary of deck builder capabilities
+    
+    Returns:
+        Summary information
+    """
+    try:
+        return {
+            'success': True,
+            'templates': {
+                'investor': len(engine.investor_templates),
+                'government': len(engine.government_templates)
+            },
+            'themes': len(list_themes()),
+            'export_formats': ['html', 'markdown', 'json', 'pdf'],
+            'features': [
+                'Interactive deck builder',
+                'Live slide preview',
+                'Theme customization',
+                'Multi-format export',
+                'PDF-ready HTML'
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@deck_router.get("/slides")
+async def get_all_slides(deck_type: str = "investor") -> Dict[str, Any]:
+    """
+    Get list of all available slides
+    
+    Args:
+        deck_type: Type of deck (investor or government)
+    
+    Returns:
+        List of slide templates
+    """
+    try:
+        if deck_type == "investor":
+            templates = engine.investor_templates
+        else:
+            templates = engine.government_templates
+        
+        slides = []
+        for template_id, template in templates.items():
+            slides.append({
+                'id': template_id,
+                'title': template.get('headline', ''),
+                'subtitle': template.get('subtitle', ''),
+                'bullet_count': len(template.get('bullets', [])),
+                'has_narrative': bool(template.get('narrative_template', '')),
+                'visual_count': len(template.get('visuals', []))
+            })
+        
+        return {
+            'success': True,
+            'deck_type': deck_type,
+            'slides': slides,
+            'total': len(slides)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@deck_router.get("/slide/{name}")
+async def get_single_slide(name: str, deck_type: str = "investor") -> Dict[str, Any]:
+    """
+    Get a single slide template by name
+    
+    Args:
+        name: Template name
+        deck_type: Type of deck
+    
+    Returns:
+        Slide template data
+    """
+    try:
+        slide = engine.build_slide(name, {'company_name': 'GhostQuant'})
+        
+        if not slide:
+            raise HTTPException(status_code=404, detail=f"Slide '{name}' not found")
+        
+        return {
+            'success': True,
+            'slide': slide.to_dict()
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@deck_router.get("/themes")
+async def get_available_themes() -> Dict[str, Any]:
+    """
+    Get all available themes
+    
+    Returns:
+        List of themes
+    """
+    try:
+        themes = list_themes()
+        
+        return {
+            'success': True,
+            'themes': themes,
+            'total': len(themes)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@deck_router.post("/build")
+async def build_deck(request: DeckBuildRequest) -> Dict[str, Any]:
+    """
+    Build a complete deck
+    
+    Args:
+        request: Deck build request
+    
+    Returns:
+        Complete deck with all slides
+    """
+    try:
+        engine.apply_theme(request.theme)
+        
+        result = engine.build_full_deck(request.deck_type, request.company_name)
+        
+        if not result.get('success'):
+            raise HTTPException(status_code=500, detail=result.get('error', 'Failed to build deck'))
+        
+        return {
+            'success': True,
+            'deck': result['deck'],
+            'export_package': result['export_package'],
+            'theme': request.theme
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@deck_router.post("/export/html")
+async def export_html(deck: Dict[str, Any]) -> Response:
+    """
+    Export deck to HTML slideshow
+    
+    Args:
+        deck: Deck dictionary
+    
+    Returns:
+        HTML content
+    """
+    try:
+        html = engine.assemble_html_deck(deck)
+        
+        return Response(
+            content=html,
+            media_type="text/html",
+            headers={
+                "Content-Disposition": "attachment; filename=pitch_deck.html"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@deck_router.post("/export/md")
+async def export_markdown(deck: Dict[str, Any]) -> Response:
+    """
+    Export deck to Markdown
+    
+    Args:
+        deck: Deck dictionary
+    
+    Returns:
+        Markdown content
+    """
+    try:
+        markdown = engine.assemble_markdown_deck(deck)
+        
+        return Response(
+            content=markdown,
+            media_type="text/markdown",
+            headers={
+                "Content-Disposition": "attachment; filename=pitch_deck.md"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@deck_router.post("/export/json")
+async def export_json(deck: Dict[str, Any]) -> Response:
+    """
+    Export deck to JSON
+    
+    Args:
+        deck: Deck dictionary
+    
+    Returns:
+        JSON content
+    """
+    try:
+        json_str = engine.assemble_json_deck(deck)
+        
+        return Response(
+            content=json_str,
+            media_type="application/json",
+            headers={
+                "Content-Disposition": "attachment; filename=pitch_deck.json"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@deck_router.post("/export/pdf")
+async def export_pdf(deck: Dict[str, Any]) -> Response:
+    """
+    Export deck to PDF-ready HTML
+    
+    Args:
+        deck: Deck dictionary
+    
+    Returns:
+        PDF-ready HTML content
+    """
+    try:
+        pdf_html = engine.generate_pdf_ready_html(deck)
+        
+        return Response(
+            content=pdf_html,
+            media_type="text/html",
+            headers={
+                "Content-Disposition": "attachment; filename=pitch_deck_pdf.html"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@deck_router.get("/health")
+async def deck_health_check() -> Dict[str, Any]:
+    """
+    Health check for deck builder
+    
+    Returns:
+        Health status
+    """
+    try:
+        health = engine.health()
+        
+        return {
+            'success': True,
+            'status': health['status'],
+            'version': health['version'],
+            'themes': len(list_themes()),
+            'templates': {
+                'investor': health['investor_templates'],
+                'government': health['government_templates']
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

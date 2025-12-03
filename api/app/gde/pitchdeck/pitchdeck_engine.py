@@ -13,7 +13,9 @@ from .pitchdeck_schema import (
     DeckMetadata,
     InvestorDeck,
     GovernmentDeck,
-    DeckExportPackage
+    DeckExportPackage,
+    DeckTheme,
+    DeckOutput
 )
 from .pitchdeck_templates import (
     INVESTOR_TEMPLATES,
@@ -21,6 +23,8 @@ from .pitchdeck_templates import (
     get_investor_template,
     get_government_template
 )
+from .pitchdeck_themes import get_theme, list_themes
+from .pitchdeck_exporter import DeckExporter
 
 
 class PitchDeckEngine:
@@ -41,6 +45,8 @@ class PitchDeckEngine:
     def __init__(self):
         self.investor_templates = INVESTOR_TEMPLATES
         self.government_templates = GOVERNMENT_TEMPLATES
+        self.exporter = DeckExporter()
+        self.current_theme = "ghostquant_dark_fusion"
     
     
     def generate_investor_deck(self, company_profile: Dict[str, Any]) -> Dict[str, Any]:
@@ -795,3 +801,161 @@ With proven effectiveness in real-world operations, alignment with CJIS/NIST/Fed
             'investor_templates': list(self.investor_templates.keys()),
             'government_templates': list(self.government_templates.keys())
         }
+    
+    def build_slide(self, template_name: str, overrides: Dict[str, Any] = None) -> Optional[DeckSlide]:
+        """
+        Build a single slide from template with optional overrides.
+        
+        Args:
+            template_name: Template identifier
+            overrides: Optional data overrides
+        
+        Returns:
+            DeckSlide or None
+        """
+        data = overrides or {}
+        return self.generate_slide(template_name, data, 'investor')
+    
+    def build_full_deck(self, deck_type: str = 'investor', company_name: str = 'GhostQuant') -> Dict[str, Any]:
+        """
+        Build a complete deck with all slides.
+        
+        Args:
+            deck_type: Type of deck (investor or government)
+            company_name: Company/agency name
+        
+        Returns:
+            Complete deck dictionary
+        """
+        if deck_type == 'investor':
+            return self.generate_investor_deck({'company_name': company_name})
+        else:
+            return self.generate_government_deck({'agency_name': company_name})
+    
+    def assemble_html_deck(self, deck_dict: Dict[str, Any]) -> str:
+        """
+        Assemble HTML slideshow from deck dictionary.
+        
+        Args:
+            deck_dict: Deck dictionary
+        
+        Returns:
+            HTML string
+        """
+        theme = get_theme(self.current_theme)
+        theme_css = theme.to_css()
+        return self.exporter.export_html(deck_dict, theme_css)
+    
+    def assemble_markdown_deck(self, deck_dict: Dict[str, Any]) -> str:
+        """
+        Assemble Markdown document from deck dictionary.
+        
+        Args:
+            deck_dict: Deck dictionary
+        
+        Returns:
+            Markdown string
+        """
+        return self.exporter.export_markdown(deck_dict)
+    
+    def assemble_json_deck(self, deck_dict: Dict[str, Any]) -> str:
+        """
+        Assemble JSON from deck dictionary.
+        
+        Args:
+            deck_dict: Deck dictionary
+        
+        Returns:
+            JSON string
+        """
+        return self.exporter.export_json(deck_dict)
+    
+    def generate_pdf_ready_html(self, deck_dict: Dict[str, Any]) -> str:
+        """
+        Generate PDF-ready HTML with print optimization.
+        
+        Args:
+            deck_dict: Deck dictionary
+        
+        Returns:
+            PDF-ready HTML string
+        """
+        theme = get_theme(self.current_theme)
+        theme_css = theme.to_css()
+        return self.exporter.export_pdf_html(deck_dict, theme_css)
+    
+    def apply_theme(self, theme_name: str) -> bool:
+        """
+        Apply a theme to the deck generator.
+        
+        Args:
+            theme_name: Theme identifier
+        
+        Returns:
+            Success flag
+        """
+        try:
+            theme = get_theme(theme_name)
+            if theme:
+                self.current_theme = theme_name
+                return True
+            return False
+        except Exception:
+            return False
+    
+    def summarize_for_investors(self, deck_dict: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generate investor-focused summary of deck.
+        
+        Args:
+            deck_dict: Deck dictionary
+        
+        Returns:
+            Summary dictionary
+        """
+        metadata = deck_dict.get('metadata', {})
+        slides = []
+        for section in deck_dict.get('sections', []):
+            slides.extend(section.get('slides', []))
+        
+        key_slides = [s for s in slides if s.get('title') in [
+            'Market Opportunity', 'The GhostQuant Solution', 'Traction & Milestones',
+            'Business Model', 'The Ask'
+        ]]
+        
+        return {
+            'company': metadata.get('company_name', 'Unknown'),
+            'deck_type': metadata.get('deck_type', 'investor'),
+            'total_slides': len(slides),
+            'key_highlights': [s.get('title') for s in key_slides],
+            'executive_summary': deck_dict.get('executive_summary', ''),
+            'generated_at': metadata.get('generated_at', ''),
+        }
+    
+    def list_slides(self, deck_dict: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        List all slides in a deck with metadata.
+        
+        Args:
+            deck_dict: Deck dictionary
+        
+        Returns:
+            List of slide summaries
+        """
+        slides = []
+        slide_number = 1
+        
+        for section in deck_dict.get('sections', []):
+            for slide in section.get('slides', []):
+                slides.append({
+                    'number': slide_number,
+                    'title': slide.get('title', ''),
+                    'subtitle': slide.get('subtitle', ''),
+                    'bullet_count': len(slide.get('bullets', [])),
+                    'has_narrative': bool(slide.get('narrative', '')),
+                    'visual_count': len(slide.get('visuals', [])),
+                    'section': section.get('name', ''),
+                })
+                slide_number += 1
+        
+        return slides

@@ -36,6 +36,7 @@ from app.gde.licensing import api_license
 from app.gde.pricing import api_pricing
 from app.gde.billing import api_billing
 from app.gde.pitchdeck import api_pitchdeck
+from app.gde.pitchdeck.api_pitchdeck import deck_router
 from app.gde.demo.demo_routes import demo_router
 from app.gde.sales.api_sales import router as sales_router
 from app.gde.apidocs.api_apidocs import router as apidocs_router
@@ -150,6 +151,7 @@ app.include_router(api_license.router, tags=["API Licensing"])
 app.include_router(api_pricing.router, tags=["Pricing Engine"])
 app.include_router(api_billing.router, tags=["Billing System"])
 app.include_router(api_pitchdeck.router, tags=["Pitch Deck Generator"])
+app.include_router(deck_router, tags=["Deck Builder"])
 app.include_router(demo_router)
 app.include_router(sales_router)
 app.include_router(apidocs_router)

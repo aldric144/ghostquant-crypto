@@ -7,6 +7,7 @@ Dataclass definitions for pitch deck generation.
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+import base64
 
 
 @dataclass
@@ -216,3 +217,69 @@ class DeckExportPackage:
             'table_of_contents': self.table_of_contents,
             'summary': self.summary
         }
+
+
+@dataclass
+class DeckTheme:
+    """
+    Visual theme for pitch deck
+    
+    Attributes:
+        name: Theme name
+        primary_color: Primary color
+        secondary_color: Secondary color
+        accent_color: Accent color
+        background_color: Background color
+        text_color: Text color
+        font_family: Font family
+    """
+    name: str
+    primary_color: str
+    secondary_color: str
+    accent_color: str
+    background_color: str
+    text_color: str
+    font_family: str
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary"""
+        return {
+            'name': self.name,
+            'primary_color': self.primary_color,
+            'secondary_color': self.secondary_color,
+            'accent_color': self.accent_color,
+            'background_color': self.background_color,
+            'text_color': self.text_color,
+            'font_family': self.font_family
+        }
+
+
+@dataclass
+class DeckOutput:
+    """
+    Deck output in multiple formats
+    
+    Attributes:
+        html: HTML slideshow
+        markdown: Markdown document
+        json: JSON data
+        pdf_html: PDF-ready HTML
+        bundle_bytes: ZIP bundle bytes (optional)
+    """
+    html: str
+    markdown: str
+    json: str
+    pdf_html: str
+    bundle_bytes: Optional[bytes] = None
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary"""
+        result = {
+            'html': self.html,
+            'markdown': self.markdown,
+            'json': self.json,
+            'pdf_html': self.pdf_html,
+        }
+        if self.bundle_bytes:
+            result['bundle_base64'] = base64.b64encode(self.bundle_bytes).decode('utf-8')
+        return result
