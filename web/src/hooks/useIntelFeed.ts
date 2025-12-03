@@ -6,6 +6,7 @@ interface Alert {
   score: number;
   alert: boolean;
   intelligence: any;
+  type?: string;
   [key: string]: any;
 }
 

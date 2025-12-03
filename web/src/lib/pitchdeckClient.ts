@@ -48,6 +48,8 @@ export interface Deck {
   clearance_required?: string;
 }
 
+export type PitchDeck = Deck;
+
 export interface DeckExportPackage {
   deck_json: Record<string, any>;
   deck_markdown: string;

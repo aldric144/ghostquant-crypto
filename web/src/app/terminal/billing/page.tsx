@@ -100,7 +100,7 @@ export default function BillingConsolePage() {
     }
   }
 
-  const handleCreateSubscription = async () {
+  const handleCreateSubscription = async () => {
     if (!selectedCustomerId) {
       setError('Please create a customer first')
       return

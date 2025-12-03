@@ -162,6 +162,21 @@ export interface DemoAccessRequest {
   questions?: string;
 }
 
+export interface DemoToken {
+  token_id: string;
+  symbol: string;
+  name: string;
+  chain: string;
+  price: number;
+  market_cap: number;
+  volume_24h: number;
+  change_24h: number;
+  risk_score: number;
+  liquidity_score: number;
+  whale_activity: number;
+  metadata: Record<string, any>;
+}
+
 class DemoClient {
   private baseUrl: string;
 

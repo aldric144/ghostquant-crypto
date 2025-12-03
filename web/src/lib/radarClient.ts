@@ -2,7 +2,7 @@
  * Radar Client - TypeScript client for Global Manipulation Radar Heatmap API
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export interface RadarHeatmap {
   success: boolean;

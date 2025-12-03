@@ -191,7 +191,7 @@ export default function CompliancePage() {
               <div className={styles.metricLabel}>Security Monitoring</div>
             </div>
             <div className={styles.regulatoryMetric}>
-              <div className={styles.metricValue}>< 1hr</div>
+              <div className={styles.metricValue}>{'< 1hr'}</div>
               <div className={styles.metricLabel}>Incident Response</div>
             </div>
           </div>

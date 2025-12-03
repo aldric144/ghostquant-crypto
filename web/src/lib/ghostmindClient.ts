@@ -1,6 +1,6 @@
 
 interface Alert {
-  type: string
+  type?: string
   score: number
   intelligence?: any
 }
@@ -33,7 +33,7 @@ export class GhostMindClient {
     const mediumRisk = alerts.filter(a => a.score >= 0.4 && a.score < 0.7).length
     const lowRisk = alerts.filter(a => a.score < 0.4).length
 
-    const types = alerts.map(a => a.type.toLowerCase())
+    const types = alerts.map(a => (a.type || '').toLowerCase())
     const manipulationCount = types.filter(t => t.includes('manipulation')).length
     const whaleCount = types.filter(t => t.includes('whale')).length
     const darkpoolCount = types.filter(t => t.includes('darkpool')).length
@@ -160,7 +160,7 @@ export class GhostMindClient {
       explanation += `🔴 **Alert:** ${chain.toUpperCase()} showing elevated risk activity. Multiple high-severity events detected.\n\n`
     }
 
-    const types = chainAlerts.map(a => a.type.toLowerCase())
+    const types = chainAlerts.map(a => (a.type || '').toLowerCase())
     const manipulationCount = types.filter(t => t.includes('manipulation')).length
     const whaleCount = types.filter(t => t.includes('whale')).length
 
@@ -210,7 +210,7 @@ export class GhostMindClient {
 
   generateInsight(alert: Alert): string {
     const score = alert.score
-    const type = alert.type.toLowerCase()
+    const type = (alert.type || '').toLowerCase()
 
     let insight = ''
 
@@ -253,7 +253,7 @@ export class GhostMindClient {
     }
 
     if (q.includes('manipulation')) {
-      const manipAlerts = alerts.filter(a => a.type.toLowerCase().includes('manipulation'))
+      const manipAlerts = alerts.filter(a => (a.type || '').toLowerCase().includes('manipulation'))
       if (manipAlerts.length === 0) {
         return 'No active manipulation threats detected at this time.'
       }
@@ -261,7 +261,7 @@ export class GhostMindClient {
     }
 
     if (q.includes('whale')) {
-      const whaleAlerts = alerts.filter(a => a.type.toLowerCase().includes('whale'))
+      const whaleAlerts = alerts.filter(a => (a.type || '').toLowerCase().includes('whale'))
       if (whaleAlerts.length === 0) {
         return 'No significant whale activity detected at this time.'
       }
