@@ -1,0 +1,314 @@
+// Demo Grid Layout
+@import '../colors.scss';
+
+.demoGrid {
+  display: grid;
+  grid-template-columns: 300px 1fr 350px;
+  gap: 24px;
+  margin-bottom: 24px;
+  
+  @media (max-width: 1400px) {
+    grid-template-columns: 250px 1fr 300px;
+  }
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.demoLeftSidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  
+  @media (max-width: 1024px) {
+    order: 2;
+  }
+}
+
+.demoCenterPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  
+  @media (max-width: 1024px) {
+    order: 1;
+  }
+}
+
+.demoRightPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  
+  @media (max-width: 1024px) {
+    order: 3;
+  }
+}
+
+.demoPanelsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.demoRiskGauge {
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px solid $neon-cyan;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: $glow-cyan;
+}
+
+.riskGaugeTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-primary;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.riskGaugeCircle {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 20px;
+}
+
+.riskGaugeSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.riskGaugeValue {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.riskGaugeNumber {
+  font-size: 3rem;
+  font-weight: 900;
+  color: $neon-cyan;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.riskGaugeLabel {
+  font-size: 0.875rem;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.riskGaugeStats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.riskStat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 6px;
+  border-left: 3px solid $neon-cyan;
+}
+
+.riskStatLabel {
+  font-size: 0.875rem;
+  color: $text-muted;
+}
+
+.riskStatValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-primary;
+}
+
+.demoAlerts {
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px solid $critical-red;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: $glow-red;
+}
+
+.alertsTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $critical-red;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.alertsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.alertItem {
+  padding: 12px;
+  background: rgba(255, 30, 68, 0.1);
+  border-left: 3px solid $critical-red;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: $text-secondary;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(255, 30, 68, 0.2);
+  }
+}
+
+.alertSeverity {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-right: 8px;
+  
+  &.critical {
+    background: rgba(255, 30, 68, 0.3);
+    color: $critical-red;
+  }
+  
+  &.high {
+    background: rgba(242, 95, 76, 0.3);
+    color: $warning-ember;
+  }
+}
+
+.demoFeed {
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px solid $electric-blue;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: $glow-blue;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.feedTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $electric-blue;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.feedLive {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: $aurora-green;
+}
+
+.liveDot {
+  width: 8px;
+  height: 8px;
+  background: $aurora-green;
+  border-radius: 50%;
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.feedList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feedCard {
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.4);
+  border-left: 3px solid $electric-blue;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  animation: slow-fade 0.5s ease;
+  
+  &:hover {
+    background: rgba(15, 23, 42, 0.6);
+    transform: translateX(4px);
+  }
+  
+  &.critical {
+    border-left-color: $critical-red;
+  }
+  
+  &.high {
+    border-left-color: $warning-ember;
+  }
+  
+  &.medium {
+    border-left-color: $electric-blue;
+  }
+  
+  &.low {
+    border-left-color: $aurora-green;
+  }
+}
+
+.feedCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.feedCardType {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.feedCardTime {
+  font-size: 0.75rem;
+  color: $text-muted;
+}
+
+.feedCardContent {
+  font-size: 0.875rem;
+  color: $text-secondary;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.feedCardMeta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: $text-muted;
+}
+
+.feedCardMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
