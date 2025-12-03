@@ -34,7 +34,12 @@ Thumbs.db
 # Artifacts
 artifacts/
 *.csv
-*.json
+
+# Allow package.json and tsconfig.json but ignore other JSON
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.*.json
 
 # Database
 *.db
