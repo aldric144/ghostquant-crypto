@@ -38,6 +38,7 @@ from app.gde.billing import api_billing
 from app.gde.pitchdeck import api_pitchdeck
 from app.gde.demo.demo_routes import demo_router
 from app.gde.sales.api_sales import router as sales_router
+from app.gde.apidocs.api_apidocs import router as apidocs_router
 from app.gde.fabric.intelligence_feed_simulator import IntelligenceFeedSimulator
 from app.gde.fabric.intelligence_queue_worker import IntelligenceQueueWorker
 from app.gde.fabric.websocket_alert_engine import WebSocketAlertEngine
@@ -151,6 +152,7 @@ app.include_router(api_billing.router, tags=["Billing System"])
 app.include_router(api_pitchdeck.router, tags=["Pitch Deck Generator"])
 app.include_router(demo_router)
 app.include_router(sales_router)
+app.include_router(apidocs_router)
 
 @app.post("/intel/sim/start")
 async def start_sim():
