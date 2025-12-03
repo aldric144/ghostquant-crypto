@@ -66,30 +66,63 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     import asyncio
+    import os
     logger.info("Starting GhostQuant API...")
-    await init_db_pool()
     
-    asyncio.create_task(start_worker())
-    asyncio.create_task(screener_worker.start())
-    asyncio.create_task(alert_engine.start_polling())
-    asyncio.create_task(socketio_gateway.start_polling())
-    await background_worker.start()
+    # Check if we're in serverless/demo mode (no DB required)
+    serverless_mode = os.getenv("SERVERLESS_MODE", "false").lower() == "true"
     
-    ws_manager = get_ws_manager()
-    ws_manager.start()
+    db_initialized = False
+    workers_started = False
+    
+    if not serverless_mode:
+        try:
+            await init_db_pool()
+            db_initialized = True
+            logger.info("Database pool initialized")
+        except Exception as e:
+            logger.warning(f"Database initialization failed (running in limited mode): {e}")
+        
+        try:
+            asyncio.create_task(start_worker())
+            asyncio.create_task(screener_worker.start())
+            asyncio.create_task(alert_engine.start_polling())
+            asyncio.create_task(socketio_gateway.start_polling())
+            await background_worker.start()
+            
+            ws_manager = get_ws_manager()
+            ws_manager.start()
+            workers_started = True
+            logger.info("Background workers started")
+        except Exception as e:
+            logger.warning(f"Worker initialization failed (running in limited mode): {e}")
+    else:
+        logger.info("Running in serverless mode - skipping DB and workers")
     
     logger.info("GhostQuant API started successfully")
     
     yield
     
     logger.info("Shutting down GhostQuant API...")
-    await stop_worker()
-    await screener_worker.stop()
-    await alert_engine.stop_polling()
-    await socketio_gateway.stop_polling()
-    await background_worker.stop()
-    ws_manager.stop()
-    await close_db_pool()
+    
+    if workers_started:
+        try:
+            await stop_worker()
+            await screener_worker.stop()
+            await alert_engine.stop_polling()
+            await socketio_gateway.stop_polling()
+            await background_worker.stop()
+            ws_manager = get_ws_manager()
+            ws_manager.stop()
+        except Exception as e:
+            logger.warning(f"Worker shutdown error: {e}")
+    
+    if db_initialized:
+        try:
+            await close_db_pool()
+        except Exception as e:
+            logger.warning(f"Database shutdown error: {e}")
+    
     logger.info("GhostQuant API shut down successfully")
 
 app = FastAPI(
