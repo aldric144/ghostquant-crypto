@@ -1,0 +1,385 @@
+@import '../../../styles/colors.scss';
+@import '../../../styles/animations.scss';
+
+.genesisPage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: $black;
+}
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heroSection {
+  padding: 120px 0 80px;
+  background: linear-gradient(180deg, $slate-950 0%, transparent 100%);
+}
+
+.heroContent {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.heroIcon {
+  font-size: 5rem;
+  margin-bottom: 24px;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+  
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+}
+
+.heroSubtitle {
+  font-size: 1.5rem;
+  color: $aurora-green;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+}
+
+.heroDescription {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: $text-secondary;
+}
+
+.ledgerSection {
+  padding: 80px 0;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 16px;
+}
+
+.sectionSubtitle {
+  font-size: 1.125rem;
+  color: $text-secondary;
+}
+
+.ledgerChain {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  overflow-x: auto;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    padding: 24px;
+  }
+}
+
+.ledgerBlock {
+  min-width: 200px;
+  background: $slate-900;
+  border: 2px solid $aurora-green;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: $glow-green;
+    transform: scale(1.05);
+  }
+}
+
+.blockHeader {
+  padding: 12px 16px;
+  background: rgba(55, 255, 176, 0.1);
+  border-bottom: 1px solid $aurora-green;
+}
+
+.blockNumber {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: $aurora-green;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.blockContent {
+  padding: 16px;
+}
+
+.blockField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.blockFieldLabel {
+  font-size: 0.75rem;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.blockFieldValue {
+  font-size: 0.875rem;
+  color: $text-primary;
+  font-family: monospace;
+}
+
+.blockConnector {
+  font-size: 2rem;
+  color: $aurora-green;
+  animation: shimmer 2s linear infinite;
+  
+  @media (max-width: 768px) {
+    transform: rotate(90deg);
+  }
+}
+
+.verificationSection {
+  padding: 80px 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.5) 50%, transparent 100%);
+}
+
+.verificationPanel {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.verificationStep {
+  display: flex;
+  gap: 20px;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $aurora-green;
+    box-shadow: $glow-green;
+  }
+}
+
+.stepNumber {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(55, 255, 176, 0.1);
+  border: 2px solid $aurora-green;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $aurora-green;
+  flex-shrink: 0;
+}
+
+.stepContent {
+  flex: 1;
+}
+
+.stepTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin-bottom: 8px;
+}
+
+.stepDescription {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: $text-secondary;
+}
+
+.chainSection {
+  padding: 80px 0;
+}
+
+.chainVisualization {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 48px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  overflow-x: auto;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    padding: 24px;
+  }
+}
+
+.chainBlock {
+  min-width: 200px;
+  padding: 20px;
+  background: $slate-900;
+  border: 2px solid $aurora-green;
+  border-radius: 12px;
+}
+
+.chainBlockTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: $aurora-green;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.chainBlockField {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: $text-secondary;
+  margin-bottom: 8px;
+  font-family: monospace;
+  
+  span:last-child {
+    color: $text-primary;
+  }
+}
+
+.chainBlockHash {
+  font-size: 0.75rem;
+  color: $aurora-green;
+  font-family: monospace;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid $border-primary;
+}
+
+.chainArrow {
+  font-size: 2rem;
+  color: $aurora-green;
+  animation: shimmer 2s linear infinite;
+  
+  @media (max-width: 768px) {
+    transform: rotate(90deg);
+  }
+}
+
+.governanceSection {
+  padding: 80px 0;
+}
+
+.governanceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.governanceCard {
+  padding: 32px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $aurora-green;
+    box-shadow: $glow-green;
+    transform: translateY(-4px);
+  }
+}
+
+.governanceIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.governanceTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin-bottom: 12px;
+}
+
+.governanceDescription {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: $text-secondary;
+}
+
+.ctaSection {
+  padding: 80px 0;
+}
+
+.ctaContent {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.ctaTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+}
+
+.ctaDescription {
+  font-size: 1.125rem;
+  color: $text-secondary;
+  margin-bottom: 48px;
+}
+
+.ctaButton {
+  padding: 16px 48px;
+  background: transparent;
+  border: 2px solid $aurora-green;
+  border-radius: 8px;
+  color: $aurora-green;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: $aurora-green;
+    color: $black;
+    box-shadow: $glow-green;
+  }
+}

@@ -1,0 +1,389 @@
+@import '../../../styles/colors.scss';
+@import '../../../styles/animations.scss';
+
+.hydraPage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: $black;
+}
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heroSection {
+  padding: 120px 0 80px;
+  background: linear-gradient(180deg, $slate-950 0%, transparent 100%);
+}
+
+.heroContent {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.heroIcon {
+  font-size: 5rem;
+  margin-bottom: 24px;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+  
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+}
+
+.heroSubtitle {
+  font-size: 1.5rem;
+  color: $critical-red;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+}
+
+.heroDescription {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: $text-secondary;
+}
+
+.headsSection {
+  padding: 80px 0;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 16px;
+}
+
+.sectionSubtitle {
+  font-size: 1.125rem;
+  color: $text-secondary;
+}
+
+.headsVisualization {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 80px 0;
+}
+
+.hydraCore {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(255, 30, 68, 0.2) 0%, transparent 70%);
+  border: 3px solid $critical-red;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  animation: glow-pulse 3s ease-in-out infinite;
+  z-index: 10;
+}
+
+.hydraCoreIcon {
+  font-size: 3rem;
+}
+
+.hydraCoreLabel {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $critical-red;
+}
+
+.hydraHeads {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.hydraHead {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  background: rgba(255, 30, 68, 0.1);
+  border: 2px solid rgba(255, 30, 68, 0.3);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $critical-red;
+    box-shadow: $glow-red;
+    transform: translateX(8px);
+  }
+}
+
+.headIcon {
+  font-size: 2rem;
+}
+
+.headLabel {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.diagramSection {
+  padding: 80px 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.5) 50%, transparent 100%);
+}
+
+.relayDiagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 48px;
+  padding: 48px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  overflow-x: auto;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    padding: 24px;
+  }
+}
+
+.relayNode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  background: $slate-900;
+  border: 2px solid $critical-red;
+  border-radius: 12px;
+  min-width: 120px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: $glow-red;
+    transform: scale(1.05);
+  }
+}
+
+.relayNodeLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $text-primary;
+  text-transform: uppercase;
+}
+
+.relayNodeAddress {
+  font-size: 0.75rem;
+  color: $text-muted;
+  font-family: monospace;
+}
+
+.relayArrow {
+  font-size: 2rem;
+  color: $critical-red;
+  animation: shimmer 2s linear infinite;
+  
+  @media (max-width: 768px) {
+    transform: rotate(90deg);
+  }
+}
+
+.relayStats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.relayStat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.relayStatLabel {
+  font-size: 0.875rem;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.relayStatValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $critical-red;
+}
+
+.signaturesSection {
+  padding: 80px 0;
+}
+
+.signaturesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.signatureCard {
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $critical-red;
+    box-shadow: $glow-red;
+  }
+}
+
+.signatureHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.signatureName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.signatureSeverity {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  
+  &.critical {
+    background: rgba(255, 30, 68, 0.2);
+    color: $critical-red;
+  }
+  
+  &.high {
+    background: rgba(242, 95, 76, 0.2);
+    color: $warning-ember;
+  }
+  
+  &.medium {
+    background: rgba(58, 141, 255, 0.2);
+    color: $electric-blue;
+  }
+}
+
+.signatureConfidence {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.confidenceLabel {
+  font-size: 0.875rem;
+  color: $text-muted;
+  min-width: 80px;
+}
+
+.confidenceBar {
+  flex: 1;
+  height: 8px;
+  background: $slate-900;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.confidenceBarFill {
+  height: 100%;
+  background: $critical-red;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.confidenceValue {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: $critical-red;
+  min-width: 40px;
+  text-align: right;
+}
+
+.ctaSection {
+  padding: 80px 0;
+}
+
+.ctaContent {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.ctaTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+}
+
+.ctaDescription {
+  font-size: 1.125rem;
+  color: $text-secondary;
+  margin-bottom: 48px;
+}
+
+.ctaButton {
+  padding: 16px 48px;
+  background: transparent;
+  border: 2px solid $critical-red;
+  border-radius: 8px;
+  color: $critical-red;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: $critical-red;
+    color: $black;
+    box-shadow: $glow-red;
+  }
+}

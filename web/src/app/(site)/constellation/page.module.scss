@@ -1,0 +1,328 @@
+@import '../../../styles/colors.scss';
+@import '../../../styles/animations.scss';
+
+.constellationPage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: $black;
+}
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heroSection {
+  padding: 120px 0 80px;
+  background: linear-gradient(180deg, $slate-950 0%, transparent 100%);
+}
+
+.heroContent {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.heroIcon {
+  font-size: 5rem;
+  margin-bottom: 24px;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+  
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+}
+
+.heroSubtitle {
+  font-size: 1.5rem;
+  color: $violet-pulse;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+}
+
+.heroDescription {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: $text-secondary;
+}
+
+.viewerSection {
+  padding: 80px 0;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 16px;
+}
+
+.sectionSubtitle {
+  font-size: 1.125rem;
+  color: $text-secondary;
+}
+
+.constellationViewer {
+  position: relative;
+  width: 100%;
+  height: 600px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  overflow: hidden;
+  
+  @media (max-width: 768px) {
+    height: 400px;
+  }
+}
+
+.viewerOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.8) 100%);
+}
+
+.viewerStats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+.viewerStat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: $violet-pulse;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.clustersSection {
+  padding: 80px 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.5) 50%, transparent 100%);
+}
+
+.clustersGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.clusterCard {
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $violet-pulse;
+    box-shadow: $glow-violet;
+    transform: translateY(-4px);
+  }
+}
+
+.clusterHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.clusterIcon {
+  font-size: 2.5rem;
+}
+
+.clusterInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.clusterName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text-primary;
+}
+
+.clusterType {
+  font-size: 0.875rem;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.clusterStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.clusterStat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.clusterStatLabel {
+  font-size: 0.75rem;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.clusterStatValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text-primary;
+}
+
+.gaugeSection {
+  padding: 80px 0;
+}
+
+.riskGauge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 64px;
+  padding: 48px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 32px;
+    padding: 32px;
+  }
+}
+
+.gaugeCircle {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.gaugeSvg {
+  width: 100%;
+  height: 100%;
+}
+
+.gaugeValue {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.gaugeNumber {
+  font-size: 3rem;
+  font-weight: 900;
+  color: $critical-red;
+}
+
+.gaugeLabel {
+  font-size: 0.875rem;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.gaugeDescription {
+  flex: 1;
+  max-width: 500px;
+  
+  p {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: $text-secondary;
+  }
+}
+
+.ctaSection {
+  padding: 80px 0;
+}
+
+.ctaContent {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.ctaTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+}
+
+.ctaDescription {
+  font-size: 1.125rem;
+  color: $text-secondary;
+  margin-bottom: 48px;
+}
+
+.ctaButton {
+  padding: 16px 48px;
+  background: transparent;
+  border: 2px solid $violet-pulse;
+  border-radius: 8px;
+  color: $violet-pulse;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: $violet-pulse;
+    color: $black;
+    box-shadow: $glow-violet;
+  }
+}

@@ -87,15 +87,54 @@ export default function NativeScreenerPage() {
       setLoading(true);
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: "50",
+        per_page: "50",
       });
-      if (minScore !== null) params.append("min_score", minScore.toString());
-      if (search) params.append("search", search);
+      if (minScore !== null) params.append("min_market_cap", (minScore * 1000000).toString());
+      if (search) params.append("sort_by", "market_cap");
 
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
-      const response = await fetch(`${API_BASE}/screener/list?${params}`);
-      if (!response.ok) throw new Error("Failed to fetch screener data");
-      const json = await response.json();
+      
+      // Try new market API first, fall back to legacy screener
+      let response = await fetch(`${API_BASE}/market/screener?${params}`);
+      let json;
+      
+      if (response.ok) {
+        const result = await response.json();
+        // Transform new API response to expected format
+        json = {
+          page: result.data?.page || page,
+          limit: result.data?.per_page || 50,
+          total: result.data?.total || 0,
+          total_pages: Math.ceil((result.data?.total || 0) / 50),
+          results: (result.data?.results || []).map((c: any) => ({
+            id: c.id,
+            symbol: c.symbol?.toUpperCase() || '',
+            name: c.name || '',
+            image: c.image || '',
+            current_price: c.price || 0,
+            market_cap: c.market_cap || 0,
+            market_cap_rank: c.rank || 0,
+            total_volume: c.volume_24h || 0,
+            price_change_percentage_1h: c.change_1h || 0,
+            price_change_percentage_24h: c.change_24h || 0,
+            price_change_percentage_7d: c.change_7d || 0,
+            score: Math.abs(c.change_24h || 0) * 10,
+            confidence: Math.min(Math.abs(c.change_24h || 0) / 10, 1),
+            top_features: [],
+            risk_flags: [],
+            why: c.change_24h > 0 ? 'Bullish momentum' : 'Bearish momentum',
+            liquidity_score: Math.min((c.volume_24h || 0) / 1000000, 100),
+            cross_exchange_count: 5,
+            sparkline_7d: []
+          })),
+          timestamp: new Date().toISOString()
+        };
+      } else {
+        // Fall back to legacy screener endpoint
+        response = await fetch(`${API_BASE}/screener/list?page=${page}&limit=50`);
+        if (!response.ok) throw new Error("Failed to fetch screener data");
+        json = await response.json();
+      }
       
       const normalized = {
         ...json,
@@ -122,9 +161,49 @@ export default function NativeScreenerPage() {
   const fetchTopCoins = async () => {
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
-      const response = await fetch(`${API_BASE}/screener/top_coins?limit=10`);
-      if (!response.ok) throw new Error("Failed to fetch top coins");
-      const json = await response.json();
+      
+      // Try new market API first, fall back to legacy screener
+      let response = await fetch(`${API_BASE}/market/top-movers?limit=20`);
+      let json;
+      
+      if (response.ok) {
+        const result = await response.json();
+        // Transform new API response to expected format
+        const allCoins = [...(result.data?.gainers || []), ...(result.data?.losers || [])];
+        json = {
+          count: allCoins.length,
+          results: allCoins.slice(0, 10).map((c: any) => ({
+            id: c.id,
+            symbol: c.symbol?.toUpperCase() || '',
+            name: c.name || '',
+            image: c.image || '',
+            current_price: c.price || 0,
+            market_cap: c.market_cap || 0,
+            market_cap_rank: c.rank || 0,
+            total_volume: c.volume_24h || 0,
+            price_change_percentage_1h: c.change_1h || 0,
+            price_change_percentage_24h: c.change_24h || 0,
+            price_change_percentage_7d: c.change_7d || 0,
+            score: Math.abs(c.change_24h || 0) * 10,
+            confidence: Math.min(Math.abs(c.change_24h || 0) / 10, 1),
+            top_features: [],
+            risk_flags: [],
+            why: c.change_24h > 0 ? 'Strong bullish momentum' : 'Bearish pressure',
+            liquidity_score: Math.min((c.volume_24h || 0) / 1000000, 100),
+            cross_exchange_count: 5,
+            sparkline_7d: [],
+            trade_readiness: Math.abs(c.change_24h || 0) > 5 ? 'Ready' : 'Watch',
+            suggested_pair: { exchange: 'Binance', pair: `${c.symbol}/USDT` }
+          })),
+          filters: {},
+          timestamp: new Date().toISOString()
+        };
+      } else {
+        // Fall back to legacy screener endpoint
+        response = await fetch(`${API_BASE}/screener/top_coins?limit=10`);
+        if (!response.ok) throw new Error("Failed to fetch top coins");
+        json = await response.json();
+      }
       
       const normalized = {
         ...json,

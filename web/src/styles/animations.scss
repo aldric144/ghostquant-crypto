@@ -1,0 +1,291 @@
+/**
+ * GhostQuant Animation System
+ * Aurora Network Animations
+ */
+
+@import './colors.scss';
+
+// Neon Pulse Animation
+@keyframes neon-pulse {
+  0%, 100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.8;
+    filter: brightness(1.2);
+  }
+}
+
+.neon-pulse {
+  animation: neon-pulse 2s ease-in-out infinite;
+}
+
+// Hover Lift Animation
+@keyframes hover-lift {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-8px);
+  }
+}
+
+.hover-lift {
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    animation: hover-lift 0.3s ease forwards;
+  }
+}
+
+// Slow Fade Animation
+@keyframes slow-fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.slow-fade {
+  animation: slow-fade 1.5s ease-in;
+}
+
+// Scanline Animation
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.scanline {
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, $neon-cyan, transparent);
+    animation: scanline 3s linear infinite;
+  }
+}
+
+// Grid Glow Animation
+@keyframes grid-glow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.grid-glow {
+  animation: grid-glow 4s ease-in-out infinite;
+}
+
+// Starfield Drift Animation
+@keyframes starfield-drift {
+  0% {
+    transform: translateY(0) translateX(0);
+  }
+  100% {
+    transform: translateY(100px) translateX(50px);
+  }
+}
+
+.starfield-drift {
+  animation: starfield-drift 60s linear infinite;
+}
+
+// Aurora Waves Animation
+@keyframes aurora-waves {
+  0% {
+    transform: translateX(-50%) translateY(0) scaleX(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateX(-50%) translateY(-20px) scaleX(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(-50%) translateY(0) scaleX(1);
+    opacity: 0.5;
+  }
+}
+
+.aurora-waves {
+  animation: aurora-waves 8s ease-in-out infinite;
+}
+
+// Glow Pulse Animation
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: $glow-cyan;
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(34, 224, 255, 0.8);
+  }
+}
+
+.glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+// Rotate Animation
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.rotate {
+  animation: rotate 20s linear infinite;
+}
+
+// Float Animation
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+
+// Shimmer Animation
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(34, 224, 255, 0.3) 50%,
+    transparent 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+// Flicker Animation
+@keyframes flicker {
+  0%, 100% {
+    opacity: 1;
+  }
+  41%, 43% {
+    opacity: 0.8;
+  }
+  45%, 47% {
+    opacity: 0.9;
+  }
+  49% {
+    opacity: 0.85;
+  }
+}
+
+.flicker {
+  animation: flicker 5s linear infinite;
+}
+
+// Slide In From Left
+@keyframes slide-in-left {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-left {
+  animation: slide-in-left 0.8s ease-out;
+}
+
+// Slide In From Right
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-right {
+  animation: slide-in-right 0.8s ease-out;
+}
+
+// Scale In Animation
+@keyframes scale-in {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.scale-in {
+  animation: scale-in 0.5s ease-out;
+}
+
+// Typing Animation
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.typing {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typing 3s steps(40, end);
+}
+
+// Border Glow Animation
+@keyframes border-glow {
+  0%, 100% {
+    border-color: $neon-cyan-20;
+    box-shadow: 0 0 10px rgba(34, 224, 255, 0.3);
+  }
+  50% {
+    border-color: $neon-cyan-50;
+    box-shadow: 0 0 20px rgba(34, 224, 255, 0.6);
+  }
+}
+
+.border-glow {
+  animation: border-glow 2s ease-in-out infinite;
+}

@@ -1,0 +1,382 @@
+@import '../../../styles/colors.scss';
+@import '../../../styles/animations.scss';
+
+.pricingPage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: $black;
+}
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heroSection {
+  padding: 120px 0 80px;
+  background: linear-gradient(180deg, $slate-950 0%, transparent 100%);
+}
+
+.heroContent {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+  
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+}
+
+.heroSubtitle {
+  font-size: 1.5rem;
+  color: $neon-cyan;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+}
+
+.heroDescription {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: $text-secondary;
+}
+
+.tiersSection {
+  padding: 80px 0;
+}
+
+.tiersGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tierCard {
+  position: relative;
+  padding: 32px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px solid $border-primary;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $neon-cyan;
+    box-shadow: $glow-cyan;
+    transform: translateY(-8px);
+  }
+  
+  &.highlighted {
+    border-color: $neon-cyan;
+    box-shadow: $glow-cyan;
+  }
+}
+
+.popularBadge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 16px;
+  background: $neon-cyan;
+  color: $black;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 12px;
+}
+
+.tierHeader {
+  text-align: center;
+  margin-bottom: 32px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid $border-primary;
+}
+
+.tierName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin-bottom: 16px;
+}
+
+.tierPrice {
+  margin-bottom: 16px;
+}
+
+.priceAmount {
+  font-size: 3rem;
+  font-weight: 900;
+  color: $neon-cyan;
+}
+
+.pricePeriod {
+  font-size: 1rem;
+  color: $text-muted;
+}
+
+.tierDescription {
+  font-size: 0.875rem;
+  color: $text-secondary;
+  line-height: 1.6;
+}
+
+.tierFeatures {
+  margin-bottom: 32px;
+}
+
+.tierFeature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid $border-primary;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.featureIcon {
+  color: $aurora-green;
+  font-weight: 700;
+}
+
+.featureText {
+  font-size: 0.875rem;
+  color: $text-secondary;
+}
+
+.tierButton {
+  width: 100%;
+  padding: 16px;
+  background: transparent;
+  border: 2px solid $neon-cyan;
+  border-radius: 8px;
+  color: $neon-cyan;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: $neon-cyan;
+    color: $black;
+  }
+}
+
+.comparisonSection {
+  padding: 80px 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.5) 50%, transparent 100%);
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 16px;
+}
+
+.sectionSubtitle {
+  font-size: 1.125rem;
+  color: $text-secondary;
+}
+
+.comparisonTable {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.comparisonRow {
+  display: grid;
+  grid-template-columns: 2fr repeat(4, 1fr);
+  border-bottom: 1px solid $border-primary;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.comparisonFeature {
+  padding: 20px 24px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $text-primary;
+  background: rgba(15, 23, 42, 0.8);
+  
+  @media (max-width: 768px) {
+    border-bottom: 1px solid $border-primary;
+  }
+}
+
+.comparisonValue {
+  padding: 20px 24px;
+  font-size: 0.875rem;
+  color: $text-secondary;
+  text-align: center;
+  border-left: 1px solid $border-primary;
+  
+  @media (max-width: 768px) {
+    border-left: none;
+    border-bottom: 1px solid $border-primary;
+    text-align: left;
+  }
+}
+
+.volumeSection {
+  padding: 80px 0;
+}
+
+.volumeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.volumeCard {
+  padding: 32px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $electric-blue;
+    box-shadow: $glow-blue;
+    transform: translateY(-4px);
+  }
+}
+
+.volumeAmount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin-bottom: 12px;
+}
+
+.volumeDiscount {
+  font-size: 2rem;
+  font-weight: 900;
+  color: $electric-blue;
+}
+
+.apiSection {
+  padding: 80px 0;
+}
+
+.apiPricing {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.apiTier {
+  padding: 32px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $violet-pulse;
+    box-shadow: $glow-violet;
+  }
+}
+
+.apiTierName {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $text-primary;
+  margin-bottom: 16px;
+}
+
+.apiTierPrice {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $violet-pulse;
+}
+
+.ctaSection {
+  padding: 80px 0;
+}
+
+.ctaContent {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.ctaTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+}
+
+.ctaDescription {
+  font-size: 1.125rem;
+  color: $text-secondary;
+  margin-bottom: 48px;
+}
+
+.ctaButton {
+  padding: 16px 48px;
+  background: $neon-cyan;
+  border: 2px solid $neon-cyan;
+  border-radius: 8px;
+  color: $black;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: $glow-cyan;
+  
+  &:hover {
+    background: transparent;
+    color: $neon-cyan;
+  }
+}

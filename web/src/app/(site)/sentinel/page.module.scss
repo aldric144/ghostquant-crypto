@@ -1,0 +1,362 @@
+@import '../../../styles/colors.scss';
+@import '../../../styles/animations.scss';
+
+.sentinelPage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: $black;
+}
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heroSection {
+  padding: 120px 0 80px;
+  background: linear-gradient(180deg, $slate-950 0%, transparent 100%);
+}
+
+.heroContent {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.heroIcon {
+  font-size: 5rem;
+  margin-bottom: 24px;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+  
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+}
+
+.heroSubtitle {
+  font-size: 1.5rem;
+  color: $electric-blue;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+}
+
+.heroDescription {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: $text-secondary;
+}
+
+.monitoringSection {
+  padding: 80px 0;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 16px;
+}
+
+.sectionSubtitle {
+  font-size: 1.125rem;
+  color: $text-secondary;
+}
+
+.engineGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.engineCard {
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $electric-blue;
+    box-shadow: $glow-blue;
+  }
+}
+
+.engineHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.engineName {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-primary;
+}
+
+.engineStatus {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  
+  &.active {
+    background: rgba(55, 255, 176, 0.2);
+    color: $aurora-green;
+  }
+}
+
+.engineMetrics {
+  display: flex;
+  gap: 16px;
+}
+
+.engineMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metricLabel {
+  font-size: 0.75rem;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.metricValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $electric-blue;
+}
+
+.alertsSection {
+  padding: 80px 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.5) 50%, transparent 100%);
+}
+
+.alertsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.alertCard {
+  padding: 32px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.alertLevel {
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.alertCount {
+  font-size: 3rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.alertLabel {
+  font-size: 0.875rem;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.screenshotSection {
+  padding: 80px 0;
+}
+
+.consoleMock {
+  background: $slate-900;
+  border: 2px solid $electric-blue;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: $glow-blue;
+}
+
+.consoleHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: rgba(58, 141, 255, 0.1);
+  border-bottom: 1px solid $electric-blue;
+}
+
+.consoleTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $electric-blue;
+  letter-spacing: 2px;
+}
+
+.consoleTime {
+  font-size: 0.875rem;
+  color: $text-muted;
+  font-family: monospace;
+}
+
+.consoleBody {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  padding: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.consolePanel {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.panelTitle {
+  padding: 12px 16px;
+  background: rgba(58, 141, 255, 0.1);
+  border-bottom: 1px solid $border-primary;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: $electric-blue;
+  letter-spacing: 1px;
+}
+
+.panelContent {
+  padding: 16px;
+}
+
+.threatMetric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid $border-primary;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  span {
+    font-size: 0.875rem;
+    color: $text-secondary;
+  }
+}
+
+.threatValue {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: $electric-blue !important;
+}
+
+.alertItem {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid $border-primary;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.alertTime {
+  font-size: 0.75rem;
+  color: $text-muted;
+  font-family: monospace;
+  min-width: 70px;
+}
+
+.alertText {
+  font-size: 0.875rem;
+  color: $text-secondary;
+}
+
+.ctaSection {
+  padding: 80px 0;
+}
+
+.ctaContent {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.ctaTitle {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+}
+
+.ctaDescription {
+  font-size: 1.125rem;
+  color: $text-secondary;
+  margin-bottom: 48px;
+}
+
+.ctaButton {
+  padding: 16px 48px;
+  background: transparent;
+  border: 2px solid $electric-blue;
+  border-radius: 8px;
+  color: $electric-blue;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: $electric-blue;
+    color: $black;
+    box-shadow: $glow-blue;
+  }
+}

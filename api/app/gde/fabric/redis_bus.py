@@ -1,0 +1,124 @@
+import os
+import json
+import httpx
+from typing import Dict, Any, Optional, Callable
+from datetime import datetime
+
+
+class RedisBus:
+    """
+    Redis message bus for GhostQuant intelligence distribution.
+    Uses Upstash Redis REST API for pub/sub messaging.
+    
+    Channels:
+    - intel.events: Raw market events
+    - intel.intelligence: Processed intelligence
+    - intel.signals: AI-generated signals
+    - intel.alerts: High-priority alerts
+    - intel.manipulation: Manipulation detection results
+    - intel.timeline: Behavioral timeline updates
+    """
+    
+    def __init__(self):
+        self.rest_url = os.getenv("REDIS_REST_URL")
+        self.rest_token = os.getenv("REDIS_REST_TOKEN")
+        
+        if not self.rest_url or not self.rest_token:
+            raise ValueError("REDIS_REST_URL and REDIS_REST_TOKEN must be set in environment")
+        
+        self.headers = {
+            "Authorization": f"Bearer {self.rest_token}",
+            "Content-Type": "application/json"
+        }
+        
+        self.channels = [
+            "intel.events",
+            "intel.intelligence",
+            "intel.signals",
+            "intel.alerts",
+            "intel.manipulation",
+            "intel.timeline"
+        ]
+    
+    async def publish(self, channel: str, message: Dict[str, Any]) -> bool:
+        """
+        Publish a message to a Redis channel via REST API.
+        
+        Args:
+            channel: Channel name (e.g., "intel.signals")
+            message: Message payload (will be JSON-serialized)
+        
+        Returns:
+            bool: True if published successfully
+        """
+        try:
+            if "timestamp" not in message:
+                message["timestamp"] = datetime.utcnow().isoformat()
+            
+            payload = json.dumps(message)
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{self.rest_url}/publish/{channel}",
+                    headers=self.headers,
+                    json={"message": payload}
+                )
+                
+                if response.status_code == 200:
+                    print(f"[RedisBus] Published to {channel}")
+                    return True
+                else:
+                    print(f"[RedisBus] Failed to publish to {channel}: {response.status_code}")
+                    return False
+                    
+        except Exception as e:
+            print(f"[RedisBus] Error publishing to {channel}: {str(e)}")
+            return False
+    
+    async def subscribe(self, channel: str, callback: Callable[[Dict[str, Any]], None]) -> None:
+        """
+        Subscribe to a Redis channel (placeholder for future implementation).
+        
+        Note: Upstash REST API doesn't support long-polling subscriptions.
+        For real-time subscriptions, we'll need to use Redis native protocol
+        or implement polling-based subscription.
+        
+        Args:
+            channel: Channel name
+            callback: Function to call when message received
+        """
+        print(f"[RedisBus] Subscribe to {channel} - not yet implemented (requires Redis native protocol)")
+        pass
+    
+    async def get_latest(self, channel: str, count: int = 10) -> list:
+        """
+        Get latest messages from a channel (using Redis LIST operations).
+        This is a workaround for subscription until we implement native Redis protocol.
+        
+        Args:
+            channel: Channel name
+            count: Number of messages to retrieve
+        
+        Returns:
+            list: Latest messages
+        """
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{self.rest_url}/lrange/{channel}/0/{count-1}",
+                    headers=self.headers
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    return data.get("result", [])
+                else:
+                    return []
+                    
+        except Exception as e:
+            print(f"[RedisBus] Error getting latest from {channel}: {str(e)}")
+            return []
+    
+    def get_channels(self) -> list:
+        """Get list of available channels."""
+        return self.channels

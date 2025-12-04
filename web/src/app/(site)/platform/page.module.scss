@@ -1,0 +1,390 @@
+@import '../../../styles/colors.scss';
+@import '../../../styles/animations.scss';
+@import '../../../styles/layout.scss';
+
+.platformPage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: $black;
+  overflow-x: hidden;
+}
+
+// Hero Section
+.heroSection {
+  position: relative;
+  padding: 120px 0 80px;
+  background: linear-gradient(180deg, $slate-950 0%, transparent 100%);
+}
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heroContent {
+  position: relative;
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.heroHologram {
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(34, 224, 255, 0.2) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: glow-pulse 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.heroTitle {
+  font-size: 4rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+  
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+}
+
+.titleGhost {
+  color: $neon-cyan;
+  text-shadow: $glow-cyan;
+  animation: neon-pulse 2s ease-in-out infinite;
+}
+
+.titleQuant {
+  color: $electric-blue;
+  text-shadow: $glow-blue;
+  animation: neon-pulse 2s ease-in-out infinite;
+  animation-delay: 0.3s;
+}
+
+.titlePlatform {
+  display: block;
+  color: $violet-pulse;
+  text-shadow: $glow-violet;
+  font-size: 0.6em;
+  margin-top: 16px;
+  letter-spacing: 0.2em;
+}
+
+.heroSubtitle {
+  font-size: 1.5rem;
+  color: $aurora-green;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  
+  @media (max-width: 768px) {
+    font-size: 1.125rem;
+  }
+}
+
+.heroDescription {
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: $text-secondary;
+  margin-bottom: 48px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.heroButton {
+  padding: 16px 48px;
+  background: transparent;
+  border: 2px solid $neon-cyan;
+  border-radius: 8px;
+  color: $neon-cyan;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: $neon-cyan;
+    color: $black;
+    box-shadow: $glow-cyan;
+    transform: translateY(-2px);
+  }
+}
+
+// Modules Section
+.modulesSection {
+  padding: 80px 0;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.sectionTitle {
+  font-size: 3rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 16px;
+  
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+}
+
+.sectionSubtitle {
+  font-size: 1.25rem;
+  color: $text-secondary;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.modulesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Flow Section
+.flowSection {
+  padding: 80px 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.5) 50%, transparent 100%);
+}
+
+.flowDiagram {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  padding: 48px;
+  backdrop-filter: blur(10px);
+  
+  @media (max-width: 768px) {
+    padding: 24px;
+  }
+}
+
+.flowLayer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 48px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.flowNode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  background: $slate-900;
+  border: 2px solid $neon-cyan-20;
+  border-radius: 12px;
+  min-width: 150px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $neon-cyan;
+    box-shadow: $glow-cyan;
+    transform: translateY(-4px);
+  }
+}
+
+.flowNodeIcon {
+  font-size: 2rem;
+}
+
+.flowNodeLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $text-primary;
+  text-align: center;
+}
+
+.flowArrow {
+  font-size: 2rem;
+  color: $neon-cyan;
+  animation: shimmer 2s linear infinite;
+  
+  @media (max-width: 768px) {
+    transform: rotate(90deg);
+  }
+}
+
+.flowEngines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.flowEngine {
+  padding: 8px 16px;
+  background: $neon-cyan-10;
+  border: 1px solid $neon-cyan-20;
+  border-radius: 20px;
+  color: $neon-cyan;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: $neon-cyan-20;
+    box-shadow: $glow-cyan;
+  }
+}
+
+// Features Section
+.featuresSection {
+  padding: 80px 0;
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.featureCard {
+  padding: 32px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    border-color: $neon-cyan-50;
+    box-shadow: $shadow-cyan;
+  }
+}
+
+.featureIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.featureTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin-bottom: 12px;
+}
+
+.featureDescription {
+  font-size: 1rem;
+  color: $text-secondary;
+  line-height: 1.6;
+}
+
+// CTA Section
+.ctaSection {
+  padding: 80px 0;
+  background: linear-gradient(180deg, transparent 0%, $slate-950 100%);
+}
+
+.ctaContent {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.ctaTitle {
+  font-size: 3rem;
+  font-weight: 900;
+  color: $text-primary;
+  margin-bottom: 24px;
+  
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+}
+
+.ctaDescription {
+  font-size: 1.25rem;
+  color: $text-secondary;
+  margin-bottom: 48px;
+}
+
+.ctaButtons {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.ctaPrimary,
+.ctaSecondary {
+  padding: 16px 40px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+.ctaPrimary {
+  background: transparent;
+  border: 2px solid $neon-cyan;
+  color: $neon-cyan;
+  
+  &:hover {
+    background: $neon-cyan;
+    color: $black;
+    box-shadow: $glow-cyan;
+  }
+}
+
+.ctaSecondary {
+  background: transparent;
+  border: 2px solid $electric-blue;
+  color: $electric-blue;
+  
+  &:hover {
+    background: $electric-blue-10;
+    box-shadow: $glow-blue;
+  }
+}

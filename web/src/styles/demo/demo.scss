@@ -1,0 +1,322 @@
+// Demo Terminal Base Styles
+@import '../colors.scss';
+@import '../animations.scss';
+
+.demoTerminal {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: $black;
+  color: $text-primary;
+  overflow-x: hidden;
+}
+
+.demoHeader {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 16px 24px;
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 2px solid $neon-cyan;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(34, 224, 255, 0.3);
+}
+
+.demoHeaderContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.demoTitle {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: $neon-cyan;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  animation: neon-pulse 2s ease-in-out infinite;
+}
+
+.demoBadge {
+  padding: 6px 16px;
+  background: rgba(34, 224, 255, 0.2);
+  border: 1px solid $neon-cyan;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: $neon-cyan;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.demoContainer {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.demoDisclaimer {
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  background: rgba(255, 30, 68, 0.1);
+  border: 2px solid $critical-red;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.disclaimerText {
+  font-size: 0.875rem;
+  color: $text-secondary;
+  
+  strong {
+    color: $critical-red;
+    font-weight: 700;
+  }
+}
+
+.demoConversionButton {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  padding: 16px 32px;
+  background: $neon-cyan;
+  border: 2px solid $neon-cyan;
+  border-radius: 8px;
+  color: $black;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: $glow-cyan;
+  transition: all 0.3s ease;
+  animation: glow-pulse 3s ease-in-out infinite;
+  
+  &:hover {
+    background: transparent;
+    color: $neon-cyan;
+    transform: scale(1.05);
+  }
+}
+
+.tourTooltip {
+  position: absolute;
+  z-index: 10000;
+  padding: 16px 20px;
+  background: rgba(15, 23, 42, 0.98);
+  border: 2px solid $neon-cyan;
+  border-radius: 12px;
+  box-shadow: $glow-cyan;
+  max-width: 300px;
+  animation: slow-fade 0.3s ease;
+}
+
+.tourTooltipContent {
+  margin-bottom: 12px;
+  
+  h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: $neon-cyan;
+    margin-bottom: 8px;
+  }
+  
+  p {
+    font-size: 0.875rem;
+    color: $text-secondary;
+    line-height: 1.6;
+  }
+}
+
+.tourTooltipActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.tourButton {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid $neon-cyan;
+  border-radius: 6px;
+  color: $neon-cyan;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: $neon-cyan;
+    color: $black;
+  }
+  
+  &.primary {
+    background: $neon-cyan;
+    color: $black;
+    
+    &:hover {
+      background: transparent;
+      color: $neon-cyan;
+    }
+  }
+}
+
+.conversionModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  animation: slow-fade 0.3s ease;
+}
+
+.conversionModalContent {
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 48px;
+  background: $slate-900;
+  border: 2px solid $neon-cyan;
+  border-radius: 16px;
+  box-shadow: $glow-cyan;
+  animation: scale-in 0.3s ease;
+  
+  @media (max-width: 768px) {
+    padding: 32px;
+    max-width: 90%;
+  }
+}
+
+.conversionModalHeader {
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.conversionModalTitle {
+  font-size: 2rem;
+  font-weight: 900;
+  color: $neon-cyan;
+  margin-bottom: 12px;
+}
+
+.conversionModalSubtitle {
+  font-size: 1rem;
+  color: $text-secondary;
+}
+
+.conversionForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $text-primary;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.formInput,
+.formTextarea,
+.formSelect {
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px solid $border-primary;
+  border-radius: 8px;
+  color: $text-primary;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: $neon-cyan;
+    box-shadow: $glow-cyan;
+  }
+}
+
+.formTextarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.formActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.formButton {
+  flex: 1;
+  padding: 14px 24px;
+  border: 2px solid $neon-cyan;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &.primary {
+    background: $neon-cyan;
+    color: $black;
+    
+    &:hover {
+      background: transparent;
+      color: $neon-cyan;
+    }
+  }
+  
+  &.secondary {
+    background: transparent;
+    color: $neon-cyan;
+    
+    &:hover {
+      background: $neon-cyan;
+      color: $black;
+    }
+  }
+}
+
+.conversionSuccess {
+  text-align: center;
+  padding: 48px 24px;
+  
+  .successIcon {
+    font-size: 4rem;
+    margin-bottom: 24px;
+    animation: scale-in 0.5s ease;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $aurora-green;
+    margin-bottom: 12px;
+  }
+  
+  p {
+    font-size: 1rem;
+    color: $text-secondary;
+    line-height: 1.6;
+  }
+}

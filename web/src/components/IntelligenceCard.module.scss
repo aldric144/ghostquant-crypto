@@ -1,0 +1,262 @@
+@import '../styles/colors.scss';
+@import '../styles/animations.scss';
+
+.card {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 23, 42, 0.8) 0%,
+    rgba(30, 41, 59, 0.6) 100%
+  );
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  padding: 32px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  cursor: pointer;
+  
+  &:hover {
+    transform: translateY(-8px);
+    border-color: $neon-cyan-50;
+    box-shadow: $shadow-cyan;
+    
+    .borderGlow {
+      opacity: 1;
+    }
+    
+    .shimmer {
+      animation: shimmer 2s linear infinite;
+    }
+    
+    .iconGlow {
+      opacity: 1;
+    }
+  }
+}
+
+// Variant Styles
+.intel {
+  border-color: $neon-cyan-20;
+  
+  &:hover {
+    border-color: $neon-cyan;
+    box-shadow: $shadow-cyan;
+  }
+  
+  .statusDot {
+    background: $neon-cyan;
+  }
+}
+
+.risk {
+  border-color: rgba(242, 95, 76, 0.2);
+  
+  &:hover {
+    border-color: $warning-ember;
+    box-shadow: 0 4px 20px rgba(242, 95, 76, 0.3);
+  }
+  
+  .statusDot {
+    background: $warning-ember;
+  }
+}
+
+.system {
+  border-color: $aurora-green-20;
+  
+  &:hover {
+    border-color: $aurora-green;
+    box-shadow: $glow-green;
+  }
+  
+  .statusDot {
+    background: $aurora-green;
+  }
+}
+
+// Border Glow
+.borderGlow {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, $neon-cyan, $electric-blue);
+  border-radius: inherit;
+  opacity: 0;
+  z-index: -1;
+  filter: blur(10px);
+  transition: opacity 0.3s ease;
+}
+
+// Corner Accents
+.cornerTopLeft,
+.cornerTopRight,
+.cornerBottomLeft,
+.cornerBottomRight {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid $neon-cyan;
+  opacity: 0.5;
+}
+
+.cornerTopLeft {
+  top: 8px;
+  left: 8px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.cornerTopRight {
+  top: 8px;
+  right: 8px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.cornerBottomLeft {
+  bottom: 8px;
+  left: 8px;
+  border-right: none;
+  border-top: none;
+}
+
+.cornerBottomRight {
+  bottom: 8px;
+  right: 8px;
+  border-left: none;
+  border-top: none;
+}
+
+// Content
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.iconWrapper {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 24px;
+}
+
+.icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: $neon-cyan;
+  background: $neon-cyan-10;
+  border: 2px solid $neon-cyan-20;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.iconGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  background: $neon-cyan;
+  border-radius: 12px;
+  opacity: 0;
+  filter: blur(20px);
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $text-primary;
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+
+.description {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: $text-secondary;
+  margin-bottom: 24px;
+}
+
+// Status Bar
+.statusBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid $border-primary;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    border-radius: 50%;
+    animation: pulse-ring 2s ease-out infinite;
+  }
+}
+
+.statusText {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: $text-muted;
+  text-transform: uppercase;
+}
+
+// Hologram Shimmer
+.shimmer {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(34, 224, 255, 0.1) 50%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+// Scanline
+.scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, $neon-cyan, transparent);
+  animation: scanline-move 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes scanline-move {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(400px);
+  }
+}

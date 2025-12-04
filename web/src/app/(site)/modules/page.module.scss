@@ -1,0 +1,267 @@
+@import '../../../styles/colors.scss';
+@import '../../../styles/animations.scss';
+@import '../../../styles/layout.scss';
+
+.modulesPage {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background: $black;
+  overflow-x: hidden;
+}
+
+// Hero Section
+.heroSection {
+  padding: 120px 0 60px;
+  background: linear-gradient(180deg, $slate-950 0%, transparent 100%);
+}
+
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heroTitle {
+  font-size: 3.5rem;
+  font-weight: 900;
+  text-align: center;
+  color: $text-primary;
+  margin-bottom: 24px;
+  
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+}
+
+.heroSubtitle {
+  font-size: 1.25rem;
+  text-align: center;
+  color: $text-secondary;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+// Filters Section
+.filtersSection {
+  padding: 40px 0;
+  background: rgba(15, 23, 42, 0.3);
+}
+
+.filters {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.filterButton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 2px solid $border-primary;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $neon-cyan-50;
+    box-shadow: $shadow-cyan;
+    transform: translateY(-2px);
+  }
+  
+  &.active {
+    background: $neon-cyan-10;
+    border-color: $neon-cyan;
+    box-shadow: $glow-cyan;
+  }
+}
+
+.filterLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.filterCount {
+  padding: 4px 8px;
+  background: $neon-cyan-20;
+  border-radius: 12px;
+  color: $neon-cyan;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+// Modules Section
+.modulesSection {
+  padding: 80px 0;
+}
+
+.modulesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+  
+  > div {
+    cursor: pointer;
+  }
+}
+
+// Modal
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: slow-fade 0.3s ease-in;
+}
+
+.modalContent {
+  position: relative;
+  max-width: 700px;
+  width: 90%;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+  border: 2px solid $neon-cyan-50;
+  border-radius: 16px;
+  padding: 48px;
+  box-shadow: $glow-cyan;
+  animation: scale-in 0.3s ease-out;
+  
+  @media (max-width: 768px) {
+    padding: 32px;
+  }
+}
+
+.modalClose {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 2px solid $border-primary;
+  border-radius: 50%;
+  color: $text-primary;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $critical-red;
+    color: $critical-red;
+    transform: rotate(90deg);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.modalIcon {
+  font-size: 3rem;
+}
+
+.modalTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text-primary;
+}
+
+.modalCategories {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.modalCategory {
+  padding: 6px 12px;
+  background: $neon-cyan-10;
+  border: 1px solid $neon-cyan-20;
+  border-radius: 16px;
+  color: $neon-cyan;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.modalDescription {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: $text-primary;
+  margin-bottom: 16px;
+}
+
+.modalDetails {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: $text-secondary;
+  margin-bottom: 32px;
+}
+
+.modalActions {
+  display: flex;
+  gap: 16px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.modalButton,
+.modalButtonSecondary {
+  flex: 1;
+  padding: 14px 28px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modalButton {
+  background: transparent;
+  border: 2px solid $neon-cyan;
+  color: $neon-cyan;
+  
+  &:hover {
+    background: $neon-cyan;
+    color: $black;
+    box-shadow: $glow-cyan;
+  }
+}
+
+.modalButtonSecondary {
+  background: transparent;
+  border: 2px solid $electric-blue;
+  color: $electric-blue;
+  
+  &:hover {
+    background: $electric-blue-10;
+    box-shadow: $glow-blue;
+  }
+}

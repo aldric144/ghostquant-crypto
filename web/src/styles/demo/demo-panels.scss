@@ -1,0 +1,310 @@
+// Demo Panel Styles
+@import '../colors.scss';
+@import '../animations.scss';
+
+.demoPanel {
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px solid $border-primary;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  
+  &:hover {
+    border-color: $neon-cyan;
+    box-shadow: $glow-cyan;
+  }
+  
+  &.critical {
+    border-color: $critical-red;
+    
+    &:hover {
+      box-shadow: $glow-red;
+    }
+  }
+  
+  &.high {
+    border-color: $warning-ember;
+    
+    &:hover {
+      box-shadow: 0 0 20px rgba(242, 95, 76, 0.4);
+    }
+  }
+  
+  &.medium {
+    border-color: $electric-blue;
+    
+    &:hover {
+      box-shadow: $glow-blue;
+    }
+  }
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid $border-primary;
+}
+
+.panelTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-primary;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.panelBadge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  
+  &.critical {
+    background: rgba(255, 30, 68, 0.2);
+    color: $critical-red;
+  }
+  
+  &.high {
+    background: rgba(242, 95, 76, 0.2);
+    color: $warning-ember;
+  }
+  
+  &.medium {
+    background: rgba(58, 141, 255, 0.2);
+    color: $electric-blue;
+  }
+  
+  &.low {
+    background: rgba(55, 255, 176, 0.2);
+    color: $aurora-green;
+  }
+  
+  &.active {
+    background: rgba(34, 224, 255, 0.2);
+    color: $neon-cyan;
+    animation: neon-pulse 2s ease-in-out infinite;
+  }
+}
+
+.panelContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panelMetric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 8px;
+  border: 1px solid $border-primary;
+}
+
+.metricLabel {
+  font-size: 0.875rem;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.metricValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text-primary;
+  
+  &.critical {
+    color: $critical-red;
+  }
+  
+  &.high {
+    color: $warning-ember;
+  }
+  
+  &.medium {
+    color: $electric-blue;
+  }
+  
+  &.low {
+    color: $aurora-green;
+  }
+  
+  &.cyan {
+    color: $neon-cyan;
+  }
+}
+
+.panelChart {
+  width: 100%;
+  height: 120px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 8px;
+  border: 1px solid $border-primary;
+  display: flex;
+  align-items: flex-end;
+  padding: 12px;
+  gap: 4px;
+}
+
+.chartBar {
+  flex: 1;
+  background: linear-gradient(180deg, $neon-cyan 0%, $electric-blue 100%);
+  border-radius: 4px 4px 0 0;
+  transition: all 0.3s ease;
+  animation: shimmer 2s linear infinite;
+  
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.panelList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.listItem {
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 6px;
+  border-left: 3px solid $neon-cyan;
+  font-size: 0.875rem;
+  color: $text-secondary;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(15, 23, 42, 0.6);
+    border-left-color: $electric-blue;
+  }
+  
+  &.critical {
+    border-left-color: $critical-red;
+  }
+  
+  &.high {
+    border-left-color: $warning-ember;
+  }
+}
+
+.panelGauge {
+  position: relative;
+  width: 100%;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gaugeCircle {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.gaugeSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.gaugeValue {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.gaugeNumber {
+  font-size: 2rem;
+  font-weight: 900;
+  color: $neon-cyan;
+}
+
+.gaugeLabel {
+  font-size: 0.75rem;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.panelActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.panelButton {
+  flex: 1;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid $neon-cyan;
+  border-radius: 6px;
+  color: $neon-cyan;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: $neon-cyan;
+    color: $black;
+  }
+}
+
+.panelRefresh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid $border-primary;
+  border-radius: 6px;
+  color: $text-muted;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    border-color: $neon-cyan;
+    color: $neon-cyan;
+    transform: rotate(180deg);
+  }
+}
+
+.panelLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid $border-primary;
+    border-top-color: $neon-cyan;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

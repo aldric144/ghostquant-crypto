@@ -1,0 +1,181 @@
+@import '../styles/colors.scss';
+@import '../styles/animations.scss';
+
+.switchContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid $border-primary;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+// Mode Selector
+.modeSelector {
+  display: flex;
+  gap: 16px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.modeButton {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 2px solid $border-primary;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    border-color: var(--mode-color);
+    box-shadow: 0 4px 20px rgba(var(--mode-color), 0.3);
+  }
+  
+  &.active {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: var(--mode-color);
+    box-shadow: 0 0 30px rgba(var(--mode-color), 0.4);
+    
+    .modeIcon {
+      transform: scale(1.2);
+    }
+    
+    .modeLabel {
+      color: var(--mode-color);
+    }
+  }
+}
+
+.modeIcon {
+  font-size: 2rem;
+  transition: transform 0.3s ease;
+}
+
+.modeInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.modeLabel {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-primary;
+  transition: color 0.3s ease;
+}
+
+.modeDescription {
+  font-size: 0.875rem;
+  color: $text-secondary;
+}
+
+.activeIndicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  background: var(--mode-color);
+  border-radius: 50%;
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+// Current Mode Display
+.currentMode {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid $border-primary;
+  border-radius: 12px;
+}
+
+.currentModeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid $border-primary;
+}
+
+.currentModeLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: $text-muted;
+  text-transform: uppercase;
+}
+
+.currentModeBadge {
+  padding: 6px 12px;
+  background: $neon-cyan-10;
+  border: 1px solid $neon-cyan-20;
+  border-radius: 20px;
+  color: $neon-cyan;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.currentModeDetails {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detailLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: $text-muted;
+  text-transform: uppercase;
+}
+
+.detailValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-primary;
+}
+
+// Security Notice
+.securityNotice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(34, 224, 255, 0.05);
+  border: 1px solid $neon-cyan-20;
+  border-radius: 8px;
+}
+
+.noticeIcon {
+  font-size: 1.5rem;
+}
+
+.noticeText {
+  font-size: 0.875rem;
+  color: $text-secondary;
+  line-height: 1.6;
+}
