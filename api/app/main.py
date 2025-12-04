@@ -44,6 +44,7 @@ from app.gde.contracts import router as contracts_router
 from app.gde.demo.demo_routes import demo_router
 from app.gde.sales.api_sales import router as sales_router
 from app.gde.apidocs.api_apidocs import router as apidocs_router
+from app.gde.marketdata.api_marketdata import router as marketdata_router
 from app.gde.fabric.intelligence_feed_simulator import IntelligenceFeedSimulator
 from app.gde.fabric.intelligence_queue_worker import IntelligenceQueueWorker
 from app.gde.fabric.websocket_alert_engine import WebSocketAlertEngine
@@ -196,6 +197,7 @@ app.include_router(contracts_router, tags=["Channel Partner Contracts"])
 app.include_router(demo_router)
 app.include_router(sales_router)
 app.include_router(apidocs_router)
+app.include_router(marketdata_router, prefix="/market", tags=["Market Data"])
 
 @app.post("/intel/sim/start")
 async def start_sim():

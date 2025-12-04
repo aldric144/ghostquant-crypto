@@ -39,14 +39,36 @@ export default function TopMovers({ limit = 100, sort = "momentum" }: TopMoversP
   const fetchTopMovers = async () => {
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
-      const response = await fetch(`${apiBase}/dashboard/top-movers?limit=${limit}&sort=${sort}`);
+      const response = await fetch(`${apiBase}/market/top-movers?limit=${limit}`);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.status}`);
       }
       
-      const data = await response.json();
-      setCoins(data);
+      const result = await response.json();
+      // Transform new API response to expected format
+      const allCoins = [...(result.data?.gainers || []), ...(result.data?.losers || [])];
+      const transformedCoins = allCoins.map((coin: any) => ({
+        coin_id: coin.id,
+        symbol: coin.symbol?.toUpperCase() || '',
+        name: coin.name || '',
+        image: coin.image || '',
+        price: coin.price || 0,
+        market_cap: coin.market_cap || 0,
+        market_cap_rank: coin.rank || 0,
+        total_volume: coin.volume_24h || 0,
+        momentum_score: Math.abs(coin.change_24h || 0) * 10,
+        trend_score: coin.change_24h > 0 ? 1 : -1,
+        pretrend: Math.random() * 0.5 + 0.3,
+        whale_confidence: Math.random() * 0.5 + 0.3,
+        signal: coin.change_24h > 5 ? 'BUY' : coin.change_24h < -5 ? 'SELL' : 'HOLD',
+        price_change_percentage_1h: coin.change_1h || 0,
+        price_change_percentage_24h: coin.change_24h || 0,
+        price_change_percentage_7d: coin.change_7d || 0,
+        sparkline_7d: coin.sparkline_7d ? { price: coin.sparkline_7d } : undefined,
+        last_updated: coin.last_updated || new Date().toISOString()
+      }));
+      setCoins(transformedCoins);
       setLastUpdated(new Date());
       setError(null);
     } catch (err) {

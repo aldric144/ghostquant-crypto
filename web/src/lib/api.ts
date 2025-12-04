@@ -55,13 +55,37 @@ export async function fetchAllAssets(params?: {
   sort?: string;
 }): Promise<Asset[]> {
   const { limit = 500, sort = 'momentum' } = params || {};
-  const response = await fetch(`${API_BASE}/dashboard/top-movers?limit=${limit}&sort=${sort}`);
+  const response = await fetch(`${API_BASE}/market/top-movers?limit=${limit}`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch assets: ${response.status}`);
   }
   
-  return response.json();
+  const result = await response.json();
+  // Handle new API response format
+  if (result.data) {
+    const gainers = result.data.gainers || [];
+    const losers = result.data.losers || [];
+    return [...gainers, ...losers].map((coin: any) => ({
+      coin_id: coin.id,
+      symbol: coin.symbol,
+      name: coin.name,
+      image: coin.image || '',
+      price: coin.price || 0,
+      market_cap: coin.market_cap || 0,
+      market_cap_rank: coin.rank || 0,
+      total_volume: coin.volume_24h || 0,
+      momentum_score: Math.abs(coin.change_24h || 0) * 10,
+      trend_score: coin.change_24h > 0 ? 1 : -1,
+      pretrend: 0,
+      whale_confidence: 0.5,
+      signal: coin.change_24h > 0 ? 'bullish' : 'bearish',
+      price_change_percentage_24h: coin.change_24h,
+      price_change_percentage_7d: coin.change_7d,
+      last_updated: coin.last_updated || new Date().toISOString()
+    }));
+  }
+  return result;
 }
 
 export async function fetchWhaleExplain(symbol: string): Promise<WhaleExplainResponse> {

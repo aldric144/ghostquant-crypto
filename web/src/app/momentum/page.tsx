@@ -74,7 +74,38 @@ export default function MomentumPage() {
       if (!response.ok) throw new Error("Failed to fetch momentum data");
 
       const data = await response.json();
-      setCoins(data.results || []);
+      // Handle new API response format
+      const results = data.results || [];
+      const transformedCoins = results.map((coin: any) => ({
+        id: coin.id || coin.coin_id,
+        symbol: coin.symbol?.toUpperCase() || '',
+        name: coin.name || '',
+        image: coin.image || '',
+        current_price: coin.price || coin.current_price || 0,
+        market_cap: coin.market_cap || 0,
+        market_cap_rank: coin.rank || coin.market_cap_rank || 0,
+        total_volume: coin.volume_24h || coin.total_volume || 0,
+        price_change_percentage_1h: coin.change_1h || coin.price_change_percentage_1h || 0,
+        price_change_percentage_24h: coin.change_24h || coin.price_change_percentage_24h || 0,
+        price_change_percentage_7d: coin.change_7d || coin.price_change_percentage_7d || 0,
+        momentum_score: coin.momentum_score || Math.abs(coin.change_24h || 0) * 10,
+        sub_scores: coin.sub_scores || {
+          price_momentum: Math.abs(coin.change_24h || 0) * 5,
+          volume_spike: 0,
+          rsi_signal: 50,
+          ma_cross: 0,
+          pretrend_bonus: 0,
+          whale_bonus: 0
+        },
+        whale_confidence: coin.whale_confidence || 0.5,
+        pretrend_prob: coin.pretrend_prob || 0,
+        sparkline_7d: coin.sparkline_7d || [],
+        action: coin.change_24h > 0 ? 'BUY' : 'SELL',
+        confidence: Math.min(Math.abs(coin.change_24h || 0) / 10, 1),
+        cluster_id: coin.cluster_id,
+        cluster_label: coin.cluster_label
+      }));
+      setCoins(transformedCoins);
       setTotalPages(data.total_pages || 1);
       setError(null);
     } catch (err) {
