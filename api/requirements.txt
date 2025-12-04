@@ -5,14 +5,5 @@ python-multipart
 jinja2
 pydantic-settings
 python-dotenv
-numpy
-scikit-learn
 aiohttp
-apscheduler
-websockets
 httpx
-redis
-psycopg[binary,pool]
-asyncpg
-python-socketio
-rq
