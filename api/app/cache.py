@@ -1,9 +1,10 @@
 """
 Redis caching utilities for expensive endpoints.
 Transparent caching with configurable TTL.
+
+Uses lazy imports to allow the app to start in serverless mode without redis installed.
 """
 import json
-import redis
 import os
 from typing import Optional, Any, Callable
 from functools import wraps
@@ -11,16 +12,31 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-redis_client: Optional[redis.Redis] = None
+# Redis client - initialized lazily
+redis_client: Optional[Any] = None
+
+def _is_serverless_mode():
+    """Check if running in serverless mode (no Redis required)."""
+    return os.getenv("SERVERLESS_MODE", "false").lower() == "true"
 
 def init_redis():
-    """Initialize Redis connection."""
+    """Initialize Redis connection. No-op in serverless mode."""
     global redis_client
+    
+    if _is_serverless_mode():
+        logger.info("Running in serverless mode - Redis cache disabled")
+        return
+    
     try:
+        # Lazy import - only import when actually needed
+        import redis as redis_lib
         redis_url = os.getenv("REDIS_URL", "redis://redis:6379/0")
-        redis_client = redis.from_url(redis_url, decode_responses=True)
+        redis_client = redis_lib.from_url(redis_url, decode_responses=True)
         redis_client.ping()
         logger.info("Redis cache initialized successfully")
+    except ImportError:
+        logger.warning("Redis package not installed. Caching disabled.")
+        redis_client = None
     except Exception as e:
         logger.warning(f"Redis cache initialization failed: {e}. Caching disabled.")
         redis_client = None
