@@ -2,13 +2,22 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN pip install poetry
+# Install system dependencies for numpy/scikit-learn
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml ./
-RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi
+# Copy and install Python dependencies
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy application code
 COPY app ./app
 
-EXPOSE 8080
+# Railway uses PORT env variable
+ENV PORT=8000
+EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Use shell form to expand $PORT variable
+CMD uvicorn app.main:app --host 0.0.0.0 --port $PORT
