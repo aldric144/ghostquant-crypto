@@ -1,5 +1,5 @@
 fastapi
-uvicorn
+uvicorn[standard]
 pydantic
 python-multipart
 jinja2
@@ -7,3 +7,10 @@ pydantic-settings
 python-dotenv
 aiohttp
 httpx
+psycopg[binary]
+psycopg-pool
+asyncpg
+redis
+numpy
+scikit-learn
+python-socketio
