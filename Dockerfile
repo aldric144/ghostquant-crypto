@@ -8,9 +8,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install Python dependencies from api folder
-COPY api/requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+# Copy and install Python dependencies from api folder (using requirements_railway.txt to force cache bust)
+COPY api/requirements_railway.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code from api folder
 COPY api/app ./app
