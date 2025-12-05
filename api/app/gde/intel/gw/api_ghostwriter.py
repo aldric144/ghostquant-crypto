@@ -493,13 +493,5 @@ async def api_info():
         }
 
 
-@router.exception_handler(Exception)
-async def global_exception_handler(request, exc):
-    """Global exception handler for GhostWriter API"""
-    logger.error(f"[GhostWriterAPI] Unhandled exception: {exc}")
-    return {
-        "success": False,
-        "error": "Internal server error",
-        "detail": str(exc),
-        "timestamp": datetime.utcnow().isoformat() + "Z"
-    }
+# Note: Global exception handlers must be registered on the main FastAPI app, not on routers.
+# Each endpoint above already has its own try/except handling for graceful error responses.
