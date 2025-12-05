@@ -4,6 +4,11 @@ Transparent caching with configurable TTL.
 
 Uses lazy imports to allow the app to start in serverless mode without redis installed.
 """
+try:
+    import redis
+except ImportError:
+    redis = None
+
 import json
 import os
 from typing import Optional, Any, Callable
@@ -41,7 +46,7 @@ def init_redis():
         logger.warning(f"Redis cache initialization failed: {e}. Caching disabled.")
         redis_client = None
 
-def get_redis() -> Optional[redis.Redis]:
+def get_redis() -> Optional[Any]:
     """Get Redis client instance."""
     return redis_client
 
