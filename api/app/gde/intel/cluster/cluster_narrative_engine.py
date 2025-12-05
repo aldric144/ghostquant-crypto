@@ -1146,7 +1146,6 @@ class ClusterNarrativeEngine:
             consensus_3="aligned behavioral profiles",
             conflict_1="minor variance in individual risk scores",
             conflict_interpretation="expected variation within coordinated structure",
-            fusion_confidence=75,
             confidence_reasoning="strong cross-domain validation",
             agreement_level=85,
             agreement_interpretation="high consensus across intelligence domains"
