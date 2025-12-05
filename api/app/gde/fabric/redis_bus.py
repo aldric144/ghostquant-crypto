@@ -22,9 +22,10 @@ class RedisBus:
     def __init__(self):
         self.rest_url = os.getenv("REDIS_REST_URL")
         self.rest_token = os.getenv("REDIS_REST_TOKEN")
+        self.enabled = bool(self.rest_url and self.rest_token)
         
-        if not self.rest_url or not self.rest_token:
-            raise ValueError("REDIS_REST_URL and REDIS_REST_TOKEN must be set in environment")
+        if not self.enabled:
+            print("[RedisBus] REDIS_REST_URL and REDIS_REST_TOKEN not set - RedisBus disabled")
         
         self.headers = {
             "Authorization": f"Bearer {self.rest_token}",
@@ -51,6 +52,9 @@ class RedisBus:
         Returns:
             bool: True if published successfully
         """
+        if not self.enabled:
+            return False
+        
         try:
             if "timestamp" not in message:
                 message["timestamp"] = datetime.utcnow().isoformat()
@@ -102,6 +106,9 @@ class RedisBus:
         Returns:
             list: Latest messages
         """
+        if not self.enabled:
+            return []
+        
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
