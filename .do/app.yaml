@@ -1,0 +1,39 @@
+name: ghostquant-backend
+region: nyc
+
+services:
+  - name: api
+    github:
+      repo: aldric144/ghostquant-crypto
+      branch: phase8-commercial
+      deploy_on_push: true
+    dockerfile_path: api/Dockerfile
+    source_dir: api
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 10
+      period_seconds: 30
+      timeout_seconds: 5
+      success_threshold: 1
+      failure_threshold: 3
+    envs:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PORT
+        value: "8080"
+      - key: SERVERLESS_MODE
+        value: "true"
+      - key: REDIS_URL
+        value: ""
+        type: GENERAL
+      - key: REDIS_REST_URL
+        value: ""
+        type: GENERAL
+      - key: REDIS_REST_TOKEN
+        value: ""
+        type: SECRET
+    routes:
+      - path: /
