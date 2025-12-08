@@ -292,6 +292,10 @@ class ExportManifest:
 # Alias for backward compatibility
 ExportResult = ComplianceExportResult
 
+# Constants for backward compatibility with __init__.py imports
+COMPLIANCE_FRAMEWORKS = list(DocumentType)
+EXPORT_FORMATS = list(ExportFormat)
+
 
 DOCUMENT_TYPE_METADATA = {
     DocumentType.CJIS: {
