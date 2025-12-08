@@ -92,7 +92,7 @@ export default function NativeScreenerPage() {
       if (minScore !== null) params.append("min_market_cap", (minScore * 1000000).toString());
       if (search) params.append("sort_by", "market_cap");
 
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://ghostquant-mewzi.ondigitalocean.app';
       
       // Try new market API first, fall back to legacy screener
       let response = await fetch(`${API_BASE}/market/screener?${params}`);
@@ -160,7 +160,7 @@ export default function NativeScreenerPage() {
 
   const fetchTopCoins = async () => {
     try {
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
+      const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://ghostquant-mewzi.ondigitalocean.app';
       
       // Try new market API first, fall back to legacy screener
       let response = await fetch(`${API_BASE}/market/top-movers?limit=20`);

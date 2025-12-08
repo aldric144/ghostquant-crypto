@@ -52,7 +52,7 @@ export default function MomentumPage() {
   const [sortBy, setSortBy] = useState("momentum_score");
   const [showClusters, setShowClusters] = useState(false);
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
 
   const { isConnected, lastMessage } = useWebSocket(`${apiBase.replace('http', 'ws')}/ws/momentum`);
 

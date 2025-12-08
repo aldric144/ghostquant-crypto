@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://api:8080'
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://ghostquant-mewzi.ondigitalocean.app'
 
 export async function GET() {
   try {

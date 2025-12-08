@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server'
 
 export async function GET(request: NextRequest) {
   try {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://api:8080'
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://ghostquant-mewzi.ondigitalocean.app'
     const searchParams = request.nextUrl.searchParams
     const queryString = searchParams.toString()
     const url = queryString ? `${apiBase}/backtests?${queryString}` : `${apiBase}/backtests`
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://api:8080'
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://ghostquant-mewzi.ondigitalocean.app'
     const body = await request.json()
     
     const response = await fetch(`${apiBase}/backtests`, {

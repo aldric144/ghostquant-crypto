@@ -5,7 +5,7 @@
  * Never throws errors - always returns {success: false, error: "..."} on failure
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
 export interface BillingCustomer {
   id: string

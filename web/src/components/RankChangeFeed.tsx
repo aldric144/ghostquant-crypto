@@ -19,7 +19,7 @@ export default function RankChangeFeed() {
   const [loading, setLoading] = useState(true);
   const [timeWindow, setTimeWindow] = useState("15m");
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
 
   const fetchRankChanges = async () => {
     try {

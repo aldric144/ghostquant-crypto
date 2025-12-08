@@ -90,7 +90,7 @@ class SentinelClient {
   private baseUrl: string;
 
   constructor(baseUrl?: string) {
-    this.baseUrl = baseUrl || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    this.baseUrl = baseUrl || process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app';
   }
 
   /**
