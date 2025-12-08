@@ -54,7 +54,7 @@ export async function fetchAllAssets(params?: {
   limit?: number;
   sort?: string;
 }): Promise<Asset[]> {
-  const { limit = 500, sort = 'momentum' } = params || {};
+  const { limit = 200, sort = 'momentum' } = params || {};
   const response = await fetch(`${API_BASE}/market/top-movers?limit=${limit}`);
   
   if (!response.ok) {
