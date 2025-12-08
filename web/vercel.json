@@ -1,0 +1,7 @@
+{
+  "public": true,
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://ghostquant-mewzi.ondigitalocean.app",
+    "NEXT_PUBLIC_API_BASE": "https://ghostquant-mewzi.ondigitalocean.app"
+  }
+}
