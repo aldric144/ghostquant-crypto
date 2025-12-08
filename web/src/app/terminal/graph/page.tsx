@@ -44,22 +44,7 @@ export default function InfluenceGraphPage() {
   const [showAlertPanel, setShowAlertPanel] = useState(true)
   const [recentAlerts, setRecentAlerts] = useState<any[]>([])
   const [pulsingNodes, setPulsingNodes] = useState<Set<string>>(new Set())
-  const [aframeLoaded, setAframeLoaded] = useState(false)
-  
   const { latestAlert, alertHistory, connectionStatus } = useIntelFeed()
-
-  // Load AFRAME on mount for react-globe.gl dependency
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !(window as any).AFRAME) {
-      const script = document.createElement('script')
-      script.src = 'https://aframe.io/releases/1.4.0/aframe.min.js'
-      script.async = true
-      script.onload = () => setAframeLoaded(true)
-      document.head.appendChild(script)
-    } else {
-      setAframeLoaded(true)
-    }
-  }, [])
 
   const nodeConfig = {
     whale: { color: '#06b6d4', size: 12 }, // cyan
