@@ -289,6 +289,10 @@ class ExportManifest:
         }
 
 
+# Alias for backward compatibility
+ExportResult = ComplianceExportResult
+
+
 DOCUMENT_TYPE_METADATA = {
     DocumentType.CJIS: {
         "name": "CJIS Security Policy Compliance",
