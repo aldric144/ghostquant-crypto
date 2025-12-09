@@ -121,22 +121,11 @@ export function ConstellationLabelsPanel() {
   // Update from WebSocket if available
   useEffect(() => {
     if (wsContext?.latestLabelUpdate) {
-      const update = wsContext.latestLabelUpdate;
-      setLabelsData(prev => ({
-        entity_classifications: {
-          ...prev?.entity_classifications,
-          ...update.entity_classifications,
-        },
-        cluster_classifications: {
-          ...prev?.cluster_classifications,
-          ...update.cluster_classifications,
-        },
-        entity_type_counts: prev?.entity_type_counts || {},
-        cluster_label_counts: prev?.cluster_label_counts || {},
-      }));
+      // WebSocket updates trigger a fresh fetch to get complete data
+      fetchLabelsData();
       setLoading(false);
     }
-  }, [wsContext?.latestLabelUpdate]);
+  }, [wsContext?.latestLabelUpdate, fetchLabelsData]);
   
   // Initial fetch and polling
   useEffect(() => {
