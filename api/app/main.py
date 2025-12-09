@@ -199,6 +199,9 @@ app.include_router(sales_router)
 app.include_router(apidocs_router)
 app.include_router(marketdata_router, prefix="/market", tags=["Market Data"])
 
+from app.gde.whale_intel import router as whale_intel_router
+app.include_router(whale_intel_router)
+
 @app.post("/intel/sim/start")
 async def start_sim():
     """Start the intelligence feed simulator."""
