@@ -4,7 +4,7 @@
  * Frontend client for Pricing Engine & Revenue Model Generator
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
 export interface PricingTier {
   name: string

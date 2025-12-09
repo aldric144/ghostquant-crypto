@@ -92,7 +92,7 @@ class GlobalConstellationClient {
   private baseUrl: string;
 
   constructor(baseUrl?: string) {
-    this.baseUrl = baseUrl || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    this.baseUrl = baseUrl || process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app';
   }
 
   /**
@@ -100,7 +100,7 @@ class GlobalConstellationClient {
    */
   async ingest(intelligence: Record<string, any>): Promise<IngestResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/constellation/ingest`, {
+      const response = await fetch(`${this.baseUrl}/constellation/constellation/ingest`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ class GlobalConstellationClient {
    */
   async getMap(): Promise<MapResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/constellation/map`, {
+      const response = await fetch(`${this.baseUrl}/constellation/constellation/map`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ class GlobalConstellationClient {
    */
   async getSummary(): Promise<SummaryResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/constellation/summary`, {
+      const response = await fetch(`${this.baseUrl}/constellation/constellation/summary`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -198,7 +198,7 @@ class GlobalConstellationClient {
    */
   async getNodes(): Promise<NodesResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/constellation/nodes`, {
+      const response = await fetch(`${this.baseUrl}/constellation/constellation/nodes`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -231,7 +231,7 @@ class GlobalConstellationClient {
    */
   async getEdges(): Promise<EdgesResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/constellation/edges`, {
+      const response = await fetch(`${this.baseUrl}/constellation/constellation/edges`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -264,7 +264,7 @@ class GlobalConstellationClient {
    */
   async health(): Promise<HealthResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/constellation/health`, {
+      const response = await fetch(`${this.baseUrl}/constellation/constellation/health`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

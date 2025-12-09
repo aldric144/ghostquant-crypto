@@ -32,7 +32,7 @@ export default function BuyModal({ coin, onClose }: BuyModalProps) {
   const [liquidity, setLiquidity] = useState<LiquidityData | null>(null);
   const [liquidityLoading, setLiquidityLoading] = useState(true);
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
 
   useEffect(() => {
     const loadLiquidity = async () => {

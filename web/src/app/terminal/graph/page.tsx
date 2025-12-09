@@ -44,7 +44,6 @@ export default function InfluenceGraphPage() {
   const [showAlertPanel, setShowAlertPanel] = useState(true)
   const [recentAlerts, setRecentAlerts] = useState<any[]>([])
   const [pulsingNodes, setPulsingNodes] = useState<Set<string>>(new Set())
-  
   const { latestAlert, alertHistory, connectionStatus } = useIntelFeed()
 
   const nodeConfig = {

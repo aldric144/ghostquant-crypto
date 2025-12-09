@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import './globals.css'
 import NavBar from '@/components/NavBar'
 import BottomNavBar from '@/components/mobile/BottomNavBar'
@@ -16,6 +17,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <Script
+          src="https://aframe.io/releases/1.4.0/aframe.min.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className="bg-slate-900 text-gray-100">
         <NavBar />
         <main className="max-w-7xl mx-auto px-6 py-8">

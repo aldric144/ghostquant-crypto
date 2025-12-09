@@ -178,10 +178,9 @@ class InvoiceRecord:
     total: float
     amount_due: float
     amount_paid: float
+    due_date: str
     
     line_items: List[Dict[str, Any]] = field(default_factory=list)
-    
-    due_date: str
     paid_at: Optional[str] = None
     
     payment_intent_id: Optional[str] = None

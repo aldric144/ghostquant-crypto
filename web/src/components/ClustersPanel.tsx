@@ -15,7 +15,7 @@ export default function ClustersPanel() {
   const [clusters, setClusters] = useState<Cluster[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
 
   const fetchClusters = async () => {
     try {

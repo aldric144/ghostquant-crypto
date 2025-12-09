@@ -5,7 +5,7 @@
  * Provides methods for event, entity, token, ring, and chain predictions.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://ghostquant-mewzi.ondigitalocean.app';
 
 export interface PredictionResponse {
   success: boolean;

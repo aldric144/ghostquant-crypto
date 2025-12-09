@@ -5,7 +5,7 @@
  * Provides methods for generating investor and government pitch decks.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app';
 
 
 export interface DeckSlide {

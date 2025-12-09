@@ -27,8 +27,8 @@ interface UseIntelFeedReturn {
 }
 
 const MAX_HISTORY_SIZE = 50;
-const WEBSOCKET_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:8000/ws/alerts';
-const SOCKETIO_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const WEBSOCKET_URL = process.env.REACT_APP_WS_URL || 'wss://ghostquant-mewzi.ondigitalocean.app/ws/alerts';
+const SOCKETIO_URL = process.env.REACT_APP_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app';
 
 export const useIntelFeed = (): UseIntelFeedReturn => {
   const [latestAlert, setLatestAlert] = useState<Alert | null>(null);

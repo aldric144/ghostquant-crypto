@@ -49,7 +49,7 @@ export default function AllAssetsPage() {
         return;
       }
 
-      const data = await fetchAllAssets({ limit: 500, sort: sortBy });
+      const data = await fetchAllAssets({ limit: 200, sort: sortBy });
       setAssets(data);
       assetsCache.set('all-assets', data);
       setLastUpdated(new Date());
