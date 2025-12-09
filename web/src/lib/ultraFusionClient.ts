@@ -116,7 +116,7 @@ export class UltraFusionClient {
    */
   async analyze(input: SupervisorInput): Promise<AnalyzeResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/ultrafusion/analyze`, {
+      const response = await fetch(`${this.baseUrl}/ultrafusion/ultrafusion/analyze`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ export class UltraFusionClient {
     events?: Array<Record<string, any>>
   ): Promise<AnalyzeResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/ultrafusion/entity`, {
+      const response = await fetch(`${this.baseUrl}/ultrafusion/ultrafusion/entity`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -188,7 +188,7 @@ export class UltraFusionClient {
     events?: Array<Record<string, any>>
   ): Promise<AnalyzeResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/ultrafusion/token`, {
+      const response = await fetch(`${this.baseUrl}/ultrafusion/ultrafusion/token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -223,7 +223,7 @@ export class UltraFusionClient {
     events?: Array<Record<string, any>>
   ): Promise<AnalyzeResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/ultrafusion/chain`, {
+      const response = await fetch(`${this.baseUrl}/ultrafusion/ultrafusion/chain`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -260,7 +260,7 @@ export class UltraFusionClient {
     token?: string
   ): Promise<AnalyzeResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/ultrafusion/image`, {
+      const response = await fetch(`${this.baseUrl}/ultrafusion/ultrafusion/image`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -294,7 +294,7 @@ export class UltraFusionClient {
    */
   async health(): Promise<HealthResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/ultrafusion/health`, {
+      const response = await fetch(`${this.baseUrl}/ultrafusion/ultrafusion/health`, {
         method: 'GET',
       });
 
@@ -321,7 +321,7 @@ export class UltraFusionClient {
    */
   async info(): Promise<Record<string, any>> {
     try {
-      const response = await fetch(`${this.baseUrl}/ultrafusion/info`, {
+      const response = await fetch(`${this.baseUrl}/ultrafusion/ultrafusion/info`, {
         method: 'GET',
       });
 

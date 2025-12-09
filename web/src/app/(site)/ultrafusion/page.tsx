@@ -1,11 +1,13 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import AuroraStream from '@/components/AuroraStream';
 import StarfieldBackground from '@/components/StarfieldBackground';
 import styles from './page.module.scss';
 
 export default function UltraFusionPage() {
+  const router = useRouter();
   const metaSignals = [
     { name: 'Behavioral Anomaly Score', value: 87, color: '#F25F4C' },
     { name: 'Network Threat Level', value: 62, color: '#22E0FF' },
@@ -159,7 +161,7 @@ const analysis = await ghostquant.ultrafusion.analyze({
             <p className={styles.ctaDescription}>
               Experience the power of unified intelligence across all detection engines
             </p>
-            <button className={styles.ctaButton}>Launch UltraFusion Console</button>
+            <button className={styles.ctaButton} onClick={() => router.push('/terminal/ultrafusion')}>Launch UltraFusion Console</button>
           </div>
         </div>
       </section>
