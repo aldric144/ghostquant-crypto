@@ -96,11 +96,11 @@ class GlobalConstellationClient {
   }
 
   /**
-   * Ingest multi-domain intelligence
+   * Ingest multi-domain intelligence via Fusion Pipeline
    */
   async ingest(intelligence: Record<string, any>): Promise<IngestResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/constellation/constellation/ingest`, {
+      const response = await fetch(`${this.baseUrl}/gde/constellation/constellation/ingest`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -128,11 +128,11 @@ class GlobalConstellationClient {
   }
 
   /**
-   * Get full constellation map
+   * Get full constellation map from Fusion Pipeline
    */
   async getMap(): Promise<MapResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/constellation/constellation/map`, {
+      const response = await fetch(`${this.baseUrl}/gde/constellation/graph`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -161,11 +161,11 @@ class GlobalConstellationClient {
   }
 
   /**
-   * Get constellation summary
+   * Get constellation summary/metrics from Fusion Pipeline
    */
   async getSummary(): Promise<SummaryResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/constellation/constellation/summary`, {
+      const response = await fetch(`${this.baseUrl}/gde/constellation/metrics`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -194,11 +194,11 @@ class GlobalConstellationClient {
   }
 
   /**
-   * Get constellation nodes only
+   * Get constellation nodes only from Fusion Pipeline
    */
   async getNodes(): Promise<NodesResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/constellation/constellation/nodes`, {
+      const response = await fetch(`${this.baseUrl}/gde/constellation/constellation/nodes`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -227,11 +227,11 @@ class GlobalConstellationClient {
   }
 
   /**
-   * Get constellation edges only
+   * Get constellation edges only from Fusion Pipeline
    */
   async getEdges(): Promise<EdgesResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/constellation/constellation/edges`, {
+      const response = await fetch(`${this.baseUrl}/gde/constellation/constellation/edges`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -260,11 +260,11 @@ class GlobalConstellationClient {
   }
 
   /**
-   * Health check
+   * Health check for Fusion Pipeline
    */
   async health(): Promise<HealthResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/constellation/constellation/health`, {
+      const response = await fetch(`${this.baseUrl}/gde/constellation/health`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
