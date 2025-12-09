@@ -205,6 +205,16 @@ app.include_router(whale_intel_router)
 from app.gde.constellation_fusion import fusion_router
 app.include_router(fusion_router)
 
+# Phase 10: Constellation Advanced Features (additive only)
+from app.gde.constellation_fusion_stream import router as stream_router
+from app.gde.constellation_risk import router as risk_router
+from app.gde.constellation_ai import router as ai_router
+from app.gde.constellation_timeline import router as timeline_router
+app.include_router(stream_router)
+app.include_router(risk_router)
+app.include_router(ai_router)
+app.include_router(timeline_router)
+
 @app.post("/intel/sim/start")
 async def start_sim():
     """Start the intelligence feed simulator."""
