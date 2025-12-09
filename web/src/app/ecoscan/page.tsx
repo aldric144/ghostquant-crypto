@@ -82,7 +82,7 @@ export default function EcoscanPage() {
       setLoading(true);
       setError(null);
 
-      const summaryRes = await fetch('/ecoscan/summary');
+      const summaryRes = await fetch('/api/ecoscan/summary');
       if (!summaryRes.ok) throw new Error("Failed to fetch Ecoscan summary");
       const summary = await summaryRes.json();
 

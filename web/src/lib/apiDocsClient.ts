@@ -3,7 +3,7 @@
  * TypeScript client for GhostQuant API Documentation Portal
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app';
 
 export enum HTTPMethod {
   GET = 'GET',

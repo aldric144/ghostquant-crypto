@@ -4,7 +4,7 @@
  * Purpose: API client for executive compliance reports
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app';
 
 export interface ExecutiveSummary {
   title: string;

@@ -38,7 +38,7 @@ export default function WhaleExplainModal({ symbol, onClose }: WhaleExplainModal
           (window as any).analytics.track('whale_explain_opened', { symbol });
         }
 
-        const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://ghostquant-mewzi.ondigitalocean.app';
         const encodedSymbol = encodeURIComponent(symbol);
         
         let response = await fetch(`${apiBase}/insights/whale-explain?symbol=${encodedSymbol}`);

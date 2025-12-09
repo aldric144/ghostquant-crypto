@@ -11,7 +11,7 @@ FROM base AS builder
 WORKDIR /app
 
 # Accept build args
-ARG NEXT_PUBLIC_API_BASE=http://localhost:8080
+ARG NEXT_PUBLIC_API_BASE=https://ghostquant-mewzi.ondigitalocean.app
 ARG NEXT_PUBLIC_ALPHABRAIN_API=http://localhost:8081
 ARG NEXT_PUBLIC_ECOSCAN_API=http://localhost:8082
 

@@ -3,7 +3,7 @@
  * API client for GhostQuant Enterprise Sales Pipeline
  */
 
-const SALES_API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const SALES_API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app';
 
 export enum LeadSource {
   DEMO = 'demo',

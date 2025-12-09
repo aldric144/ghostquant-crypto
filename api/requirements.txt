@@ -1,7 +1,8 @@
 fastapi
 uvicorn[standard]
-pydantic
+pydantic[email]
 python-multipart
+email-validator
 jinja2
 pydantic-settings
 python-dotenv

@@ -3,7 +3,7 @@
  * API client for GhostQuant Demo Terminal
  */
 
-const DEMO_API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const DEMO_API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app';
 
 export interface DemoEvent {
   event_id: string;

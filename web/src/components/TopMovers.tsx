@@ -38,7 +38,7 @@ export default function TopMovers({ limit = 100, sort = "momentum" }: TopMoversP
   const [whaleModalSymbol, setWhaleModalSymbol] = useState<string | null>(null);
   const fetchTopMovers = async () => {
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
       const response = await fetch(`${apiBase}/market/top-movers?limit=${limit}`);
       
       if (!response.ok) {

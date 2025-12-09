@@ -138,8 +138,7 @@ class BacktestResult(BaseModel):
 @router.get("/coins", response_model=Dict[str, Any])
 async def get_coins(
     page: int = Query(1, ge=1, description="Page number"),
-    per_page: int = Query(250, ge=1, le=250, description="Results per page"),
-    db=Depends(get_database)
+    per_page: int = Query(250, ge=1, le=250, description="Results per page")
 ):
     """
     Get paginated list of all coins from CoinGecko.
@@ -193,8 +192,7 @@ async def get_momentum(
     sort: str = Query("momentum_score", description="Sort field"),
     min_marketcap: Optional[float] = Query(None, description="Minimum market cap filter"),
     whale_only: bool = Query(False, description="Show only whale movers"),
-    cluster_id: Optional[int] = Query(None, description="Filter by cluster ID"),
-    db=Depends(get_database)
+    cluster_id: Optional[int] = Query(None, description="Filter by cluster ID")
 ):
     """
     Get paginated momentum screener results with full scoring.
@@ -261,8 +259,7 @@ async def get_momentum(
 
 @router.get("/coin/{coin_id}", response_model=CoinDetail)
 async def get_coin_detail(
-    coin_id: str,
-    db=Depends(get_database)
+    coin_id: str
 ):
     """
     Get detailed momentum analysis for a specific coin.
@@ -303,17 +300,25 @@ async def get_coin_detail(
 @router.get("/rank-changes", response_model=Dict[str, Any])
 async def get_rank_changes(
     since: str = Query("15m", description="Time window: 15m, 1h, 24h"),
-    limit: int = Query(25, ge=1, le=100, description="Number of results"),
-    db=Depends(get_database)
+    limit: int = Query(25, ge=1, le=100, description="Number of results")
 ):
     """
     Get coins with biggest rank changes in the specified time window.
+    Returns empty list in serverless mode (no database).
     """
     try:
         time_map = {"15m": 15, "1h": 60, "24h": 1440}
         minutes = time_map.get(since, 15)
         
-        changes = await rank_tracker.get_rank_changes(minutes=minutes, limit=limit)
+        # In serverless mode, return empty changes (no database for rank tracking)
+        serverless_mode = os.getenv("SERVERLESS_MODE", "false").lower() == "true"
+        if serverless_mode:
+            changes = []
+        else:
+            try:
+                changes = await rank_tracker.get_rank_changes(minutes=minutes, limit=limit)
+            except Exception:
+                changes = []
         
         result = {
             "since": since,
@@ -372,9 +377,7 @@ async def create_alert(
 
 
 @router.get("/clusters", response_model=Dict[str, Any])
-async def get_clusters(
-    db=Depends(get_database)
-):
+async def get_clusters():
     """
     Get auto-generated coin clusters grouped by chain/sector/behavior.
     """

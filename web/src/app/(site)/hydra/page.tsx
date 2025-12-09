@@ -1,11 +1,13 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import AuroraStream from '@/components/AuroraStream';
 import StarfieldBackground from '@/components/StarfieldBackground';
 import styles from './page.module.scss';
 
 export default function HydraPage() {
+  const router = useRouter();
   const attackSignatures = [
     { name: 'Coordinated Relay Attack', severity: 'critical', confidence: 94 },
     { name: 'Multi-Hop Proxy Chain', severity: 'high', confidence: 87 },
@@ -183,7 +185,7 @@ export default function HydraPage() {
             <p className={styles.ctaDescription}>
               Deploy Hydra to identify multi-entity coordination and relay network manipulation
             </p>
-            <button className={styles.ctaButton}>Launch Hydra Detection</button>
+            <button className={styles.ctaButton} onClick={() => router.push('/terminal/hydra')}>Launch Hydra Detection</button>
           </div>
         </div>
       </section>

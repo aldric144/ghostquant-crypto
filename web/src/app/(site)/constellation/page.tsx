@@ -1,12 +1,14 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import AuroraStream from '@/components/AuroraStream';
 import StarfieldBackground from '@/components/StarfieldBackground';
 import AnimatedMap from '@/components/AnimatedMap';
 import styles from './page.module.scss';
 
 export default function ConstellationPage() {
+  const router = useRouter();
   const threatClusters = [
     { name: 'Supernova Alpha', type: 'supernova', entities: 47, risk: 94, region: 'Global' },
     { name: 'Wormhole Beta', type: 'wormhole', entities: 23, risk: 87, region: 'Asia-Pacific' },
@@ -178,7 +180,7 @@ export default function ConstellationPage() {
             <p className={styles.ctaDescription}>
               Access the complete 3D constellation viewer in the Terminal
             </p>
-            <button className={styles.ctaButton}>Launch Terminal Viewer</button>
+            <button className={styles.ctaButton} onClick={() => router.push('/terminal/constellation')}>Launch Terminal Viewer</button>
           </div>
         </div>
       </section>
