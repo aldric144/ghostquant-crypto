@@ -19,6 +19,31 @@ export type { TextToSpeechEngine, TTSCallbacks, VoiceOption } from './TextToSpee
 export { processQuestion, generateGreeting } from './CopilotBrain';
 export type { CopilotAnswer } from './CopilotBrain';
 
+// Personality Engine
+export {
+  detectUserTone,
+  determineResponseDepth,
+  interpretVagueQuestion,
+  generateFriendlyFallback,
+  generatePersonalityConfig,
+  shapeResponse,
+  generatePersonalizedGreeting,
+  isVagueQuestion,
+  getAcknowledgment,
+  getBeginnerIntro,
+  getAdvancedIntro,
+  getFollowUp,
+  getClarificationRequest,
+  getHumorLine,
+} from './CopilotPersonality';
+export type {
+  UserTone,
+  ResponseDepth,
+  PersonalityConfig,
+  InterpretedQuestion,
+  ShapedResponse,
+} from './CopilotPersonality';
+
 // Context
 export {
   createInitialContext,
