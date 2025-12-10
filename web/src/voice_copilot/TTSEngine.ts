@@ -21,9 +21,17 @@ import { getVoiceMode, getCurrentVoiceId } from './voice/VoiceModeManager';
 export type TTSProvider = 'elevenlabs' | 'openai' | 'browser' | 'auto';
 
 // Get configured provider from environment
+// Default to 'elevenlabs' when ElevenLabs API key is available
 const getConfiguredProvider = (): TTSProvider => {
-  const provider = process.env.NEXT_PUBLIC_TTS_PROVIDER || process.env.TTS_PROVIDER || 'auto';
-  return provider as TTSProvider;
+  const envProvider = process.env.NEXT_PUBLIC_TTS_PROVIDER || process.env.TTS_PROVIDER;
+  if (envProvider) {
+    return envProvider as TTSProvider;
+  }
+  // Auto-select elevenlabs if API key is available, otherwise auto
+  if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY) {
+    return 'elevenlabs';
+  }
+  return 'auto';
 };
 
 // TTS Result interface
