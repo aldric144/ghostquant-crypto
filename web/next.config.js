@@ -2,18 +2,21 @@
 const nextConfig = {
   output: 'standalone',
   async rewrites() {
+    // Use environment variable for backend URL, fallback to DigitalOcean production URL
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE || 'https://ghostquant-mewzi.ondigitalocean.app';
+    
     return [
       {
         source: '/api/:path*',
-        destination: 'http://api:8080/:path*',
+        destination: `${backendUrl}/:path*`,
       },
       {
         source: '/alphabrain/:path*',
-        destination: 'http://alphabrain:8081/alphabrain/:path*',
+        destination: `${backendUrl}/alphabrain/:path*`,
       },
       {
         source: '/ecoscan/:path*',
-        destination: 'http://ecoscan:8082/ecoscan/:path*',
+        destination: `${backendUrl}/ecoscan/:path*`,
       },
     ];
   },
