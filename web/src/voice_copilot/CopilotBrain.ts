@@ -1,12 +1,20 @@
 /**
- * CopilotBrain - The intelligence layer for GhostQuant Voice Copilot
- * Contains GhostQuant-specific knowledge and generates natural language responses
+ * CopilotBrain - The Orchestrator for GhostQuant Voice Copilot Cognitive Engine
  * 
- * Integrated with CopilotPersonality for:
- * - Hybrid personality (conversational + professional)
- * - Vague question interpretation
- * - Context-aware responses
- * - Adaptive tone and depth
+ * This is the central intelligence layer that coordinates all cognitive modules:
+ * 
+ * Pipeline: Answer = ToneEngine(Personality(KnowledgeBase(Intent(Context))))
+ * 
+ * Modules Integrated:
+ * 1. CopilotKnowledgeBase - Comprehensive GhostQuant knowledge repository
+ * 2. CopilotIntentModel - Natural language intent recognition
+ * 3. CopilotPersonality - Hybrid personality engine
+ * 4. CopilotToneEngine - Dynamic tone selection and transformation
+ * 5. CopilotContextEngine - Contextual awareness system
+ * 6. CopilotErrorRecovery - Intelligent error recovery
+ * 7. CopilotTrainingDataset - 100+ Q&A examples for semantic matching
+ * 8. CopilotSelfUpdate - Self-updating intelligence system
+ * 9. CopilotUIResponses - UI dialogue pack and investor demo scripts
  */
 
 import { CopilotContextState } from './CopilotContext';
@@ -20,6 +28,74 @@ import {
   getClarificationRequest,
   generatePersonalizedGreeting,
 } from './CopilotPersonality';
+
+// Import new cognitive modules
+import {
+  queryKnowledge,
+  getKnowledgeByPageContext,
+  getKnowledgeResponse,
+  searchKnowledge,
+  KnowledgeDepth,
+} from './CopilotKnowledgeBase';
+
+import {
+  recognizeIntent,
+  isModeSwitch,
+  isNavigationRequest,
+  isVagueQuery,
+  RecognizedIntent,
+} from './CopilotIntentModel';
+
+import {
+  selectTone,
+  transformResponse,
+  createToneContext,
+  detectUserMood,
+  ToneConfig,
+  ToneState,
+} from './CopilotToneEngine';
+
+import {
+  createInitialContextState,
+  updatePageContext,
+  extractContextClues,
+  getContextDescription,
+  getSuggestedQuestions,
+  inferQuerySubject,
+  ContextState,
+} from './CopilotContextEngine';
+
+import {
+  getRecoveryResponse,
+  formatRecoveryResponse,
+  isRoboticResponse,
+  humanizeResponse,
+  detectUserConfusion,
+  getProactiveHelp,
+} from './CopilotErrorRecovery';
+
+import {
+  searchExamples,
+  getExamplesByIntent,
+  TRAINING_DATASET,
+} from './CopilotTrainingDataset';
+
+import {
+  getUserPreferences,
+  updateUserPreferences,
+  recordQuestion,
+  recordFeedback,
+} from './CopilotSelfUpdate';
+
+import {
+  getWelcomeScript,
+  getEncouragingPrompt,
+  getHoverHint,
+  getGuidancePrompt,
+  getDemoScript,
+  getFullDemoScript,
+  UserType,
+} from './CopilotUIResponses';
 
 export interface CopilotAnswer {
   text: string;
@@ -697,8 +773,257 @@ export function generateGreeting(context: CopilotContextState): string {
   return generatePersonalizedGreeting(context);
 }
 
+// ============================================
+// COGNITIVE ENGINE ORCHESTRATION PIPELINE
+// ============================================
+
+/**
+ * Internal context state for the cognitive engine
+ */
+let cognitiveContextState: ContextState = createInitialContextState();
+
+/**
+ * Convert CopilotContextState to ContextState for the cognitive engine
+ */
+function convertToContextState(context: CopilotContextState): ContextState {
+  // Update the cognitive context with the current page
+  if (context.currentPath) {
+    cognitiveContextState = updatePageContext(cognitiveContextState, context.currentPath);
+  }
+  
+  // Update selected entity if available
+  if (context.selectedAddress) {
+    cognitiveContextState = {
+      ...cognitiveContextState,
+      selectedEntity: {
+        type: 'wallet',
+        id: context.selectedAddress,
+        label: context.selectedAddress.slice(0, 10) + '...',
+        riskScore: context.lastRiskScore ?? undefined,
+      },
+    };
+  }
+  
+  return cognitiveContextState;
+}
+
+/**
+ * Map PersonalityConfig depth to KnowledgeDepth
+ */
+function mapDepthToKnowledge(depth: string): KnowledgeDepth {
+  switch (depth) {
+    case 'beginner':
+      return 'simple';
+    case 'expert':
+    case 'advanced':
+      return 'technical';
+    default:
+      return 'standard';
+  }
+}
+
+/**
+ * Full Cognitive Engine Pipeline
+ * 
+ * Pipeline: Answer = ToneEngine(Personality(KnowledgeBase(Intent(Context))))
+ * 
+ * Steps:
+ * 1. Capture user's voice → converts to text (handled by STT engine)
+ * 2. Pass text to Intent Model
+ * 3. Add Context clues via Context Engine
+ * 4. Knowledge Base generates skeleton answer
+ * 5. Personality Engine shapes answer
+ * 6. Tone Engine transforms voice style
+ * 7. Error Recovery invoked if needed
+ * 8. Output final text
+ * 9. Pass to TTS voice output (handled by TTS engine)
+ */
+export function processWithCognitiveEngine(
+  question: string,
+  context: CopilotContextState,
+  userId: string = 'default'
+): CopilotAnswer {
+  // Record the question for analytics
+  recordQuestion(userId);
+  
+  // Step 1: Convert context to cognitive engine format
+  const cognitiveContext = convertToContextState(context);
+  
+  // Step 2: Intent Recognition
+  const intent = recognizeIntent(question, context.currentPath);
+  
+  // Step 3: Extract context clues
+  const contextClues = extractContextClues(cognitiveContext);
+  
+  // Step 4: Generate personality configuration
+  const personalityConfig = generatePersonalityConfig(question, context);
+  
+  // Step 5: Create tone context and select tone
+  const toneContext = createToneContext(question, intent, context.currentPath, undefined);
+  const toneConfig = selectTone(toneContext);
+  
+  // Step 6: Get user preferences for depth
+  const userPrefs = getUserPreferences(userId);
+  const knowledgeDepth = mapDepthToKnowledge(personalityConfig.depth);
+  
+  // Step 7: Query knowledge base based on intent
+  let skeletonAnswer = '';
+  
+  // Check if this is a demo request
+  if (intent.category === 'summary' && question.toLowerCase().includes('demo')) {
+    const demoScript = getFullDemoScript('investor_demo_3min');
+    if (demoScript) {
+      skeletonAnswer = demoScript;
+    }
+  }
+  
+  // If no demo, query knowledge base
+  if (!skeletonAnswer) {
+    // Extract action keywords from entities
+    const actionEntities = intent.extractedEntities.filter(e => e.type === 'action');
+    const keywords = actionEntities.length > 0 ? actionEntities.map(e => e.value) : [];
+    
+    const knowledgeQuery = queryKnowledge({
+      keywords,
+      category: intent.category as any,
+      pageContext: context.currentPath,
+      depth: knowledgeDepth,
+    });
+    
+    if (knowledgeQuery.length > 0) {
+      // queryKnowledge returns { entry, response } objects
+      skeletonAnswer = knowledgeQuery[0].response;
+    } else {
+      // Try searching by the question itself
+      const searchResults = searchKnowledge(question.split(' '), knowledgeDepth);
+      if (searchResults.length > 0) {
+        skeletonAnswer = getKnowledgeResponse(searchResults[0], knowledgeDepth);
+      }
+    }
+  }
+  
+  // Step 8: If no knowledge found, check training dataset
+  if (!skeletonAnswer) {
+    const trainingExamples = searchExamples(question);
+    if (trainingExamples.length > 0) {
+      skeletonAnswer = trainingExamples[0].expectedResponse;
+    }
+  }
+  
+  // Step 9: If still no answer, use error recovery
+  if (!skeletonAnswer) {
+    const recovery = getRecoveryResponse(
+      isVagueQuery(question) ? 'vague_question' : 'unclear_intent',
+      cognitiveContext,
+      { intent }
+    );
+    skeletonAnswer = formatRecoveryResponse(recovery, {
+      addEncouragement: true,
+      addExploration: true,
+    });
+  }
+  
+  // Step 10: Shape response with personality
+  const shapedResponse = shapeResponse(skeletonAnswer, personalityConfig, context);
+  
+  // Step 11: Transform with tone engine
+  let finalText = transformResponse(shapedResponse.text, toneConfig);
+  
+  // Step 12: Ensure response is not robotic
+  if (isRoboticResponse(finalText)) {
+    finalText = humanizeResponse(finalText, cognitiveContext);
+  }
+  
+  // Step 13: Check for user confusion and offer proactive help
+  if (detectUserConfusion(cognitiveContext)) {
+    finalText = getProactiveHelp(cognitiveContext) + ' ' + finalText;
+  }
+  
+  // Determine category from intent
+  const categoryMap: Record<string, CopilotAnswer['category']> = {
+    'hydra': 'hydra',
+    'constellation': 'constellation',
+    'ecoscan': 'ecoscan',
+    'risk_score': 'general',
+    'whale_intel': 'whales',
+    'dashboard': 'analytics',
+    'beginner_mode': 'general',
+    'advanced_mode': 'general',
+    'summary': 'analytics',
+    'navigation': 'general',
+    'vague_recovery': 'general',
+    'contextual': 'general',
+    'greeting': 'general',
+    'help': 'onboarding',
+  };
+  
+  const category = categoryMap[intent.category] || 'general';
+  
+  // Get suggested questions for follow-up
+  const suggestedQuestions = getSuggestedQuestions(cognitiveContext);
+  
+  return {
+    text: finalText,
+    category,
+    contextSummary: getContextDescription(cognitiveContext),
+    suggestedActions: suggestedQuestions.slice(0, 3),
+    mode: isNavigationRequest(question) ? 'navigation' : 'explanation',
+    followUp: shapedResponse.followUp,
+    personalityConfig,
+  };
+}
+
+/**
+ * Get welcome message based on user type
+ */
+export function getWelcomeMessage(userType: UserType = 'new'): string {
+  return getWelcomeScript(userType);
+}
+
+/**
+ * Get hover hint for UI element
+ */
+export function getUIHoverHint(elementType: string): string {
+  return getHoverHint(elementType);
+}
+
+/**
+ * Get guidance prompt for user
+ */
+export function getUIGuidancePrompt(): string {
+  return getGuidancePrompt();
+}
+
+/**
+ * Get encouraging prompt
+ */
+export function getUIEncouragingPrompt(): string {
+  return getEncouragingPrompt();
+}
+
+/**
+ * Record user feedback on response
+ */
+export function recordResponseFeedback(userId: string, wasHelpful: boolean): void {
+  recordFeedback(userId, wasHelpful);
+}
+
+/**
+ * Get investor demo script
+ */
+export function getInvestorDemoScript(scriptId: string = 'investor_demo_3min'): string {
+  return getFullDemoScript(scriptId);
+}
+
 // Export for use in provider
 export default {
   processQuestion,
+  processWithCognitiveEngine,
   generateGreeting,
+  getWelcomeMessage,
+  getUIHoverHint,
+  getUIGuidancePrompt,
+  getUIEncouragingPrompt,
+  recordResponseFeedback,
+  getInvestorDemoScript,
 };
