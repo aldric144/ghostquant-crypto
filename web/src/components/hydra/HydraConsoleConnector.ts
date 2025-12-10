@@ -118,10 +118,12 @@ export async function runHydraDetection(
     }
 
     // Step 3: Execute detection
-    callbacks?.onProgress?.(`Executing detection with ${parsed.heads.length} heads...`);
-    logs.push(`[Connector] Executing detection with heads: ${formatHeadsForDisplay(parsed.heads)}`);
+    // Pass mode to the adapter for demo/bootstrap handling
+    const mode = parsed.source === 'demo' ? 'demo' : parsed.source === 'bootstrap' ? 'bootstrap' : undefined;
+    callbacks?.onProgress?.(`Executing detection with ${parsed.heads.length} heads${mode ? ` (${mode} mode)` : ''}...`);
+    logs.push(`[Connector] Executing detection with heads: ${formatHeadsForDisplay(parsed.heads)}${mode ? ` (mode: ${mode})` : ''}`);
     
-    const adapterResponse: HydraAdapterResponse = await executeHydraDetection(parsed.heads);
+    const adapterResponse: HydraAdapterResponse = await executeHydraDetection(parsed.heads, mode);
     logs.push(...adapterResponse.logs);
 
     // Step 4: Transform response to console format

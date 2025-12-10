@@ -359,13 +359,16 @@ async def adapter_detect(request: AdapterDetectRequest) -> AdapterDetectResponse
     Run Hydra detection via the adapter.
     
     This endpoint:
-    1. Normalizes the input
-    2. Generates and ingests events
-    3. Runs detection
-    4. Returns the cluster result
+    1. Normalizes the input (handles demo/bootstrap modes)
+    2. Generates synthetic events for the heads
+    3. Ingests events into the real Hydra engine
+    4. Runs detection and returns the cluster result
+    
+    This ensures all Hydra console requests go through proper normalization
+    and always produce ≥2 heads for demo/bootstrap modes.
     """
     try:
-        # Normalize input
+        # Normalize input - this handles demo/bootstrap modes and ensures ≥2 heads
         normalized = HydraInputAdapter.normalize({
             "heads": request.heads or [],
             "mode": request.mode
@@ -380,12 +383,66 @@ async def adapter_detect(request: AdapterDetectRequest) -> AdapterDetectResponse
                 timestamp=datetime.utcnow().isoformat()
             )
         
-        # Generate cluster ID from heads
+        # Generate synthetic events for the normalized heads
+        events = generate_events_from_heads(normalized.heads)
+        
+        # Try to use the real Hydra engine if available
+        try:
+            from app.gde.intel.hydra.hydra_engine import OperationHydraEngine
+            
+            # Create a fresh engine instance for this detection
+            engine = OperationHydraEngine()
+            
+            # Ingest the generated events
+            event_dicts = [e.dict() for e in events]
+            engine.ingest_events(event_dicts)
+            
+            # Run detection
+            detected_heads = engine.detect_heads()
+            
+            # If the engine detected heads, use them
+            if len(detected_heads) >= 2:
+                cluster_id = hashlib.md5(
+                    "".join(sorted(detected_heads)).encode()
+                ).hexdigest()[:16]
+                
+                cluster = {
+                    "cluster_id": f"hydra-{cluster_id}",
+                    "heads": detected_heads,
+                    "relays": engine.detect_relays() if hasattr(engine, 'detect_relays') else [],
+                    "proxies": engine.detect_proxies() if hasattr(engine, 'detect_proxies') else [],
+                    "risk_level": "HIGH" if len(detected_heads) >= 4 else "MEDIUM",
+                    "risk_score": min(0.95, 0.5 + len(detected_heads) * 0.1),
+                    "indicators": {
+                        "temporal_clustering": 0.85,
+                        "amount_similarity": 0.72,
+                        "chain_diversity": 0.68,
+                        "coordination_score": 0.91
+                    },
+                    "narrative": f"Detected coordinated activity across {len(detected_heads)} addresses",
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "source": "engine"
+                }
+                
+                return AdapterDetectResponse(
+                    success=True,
+                    cluster=cluster,
+                    timestamp=datetime.utcnow().isoformat()
+                )
+        except ImportError:
+            # Engine not available, fall through to synthetic response
+            pass
+        except Exception as engine_error:
+            # Engine failed, fall through to synthetic response
+            import logging
+            logging.getLogger(__name__).warning(f"Hydra engine error: {engine_error}")
+        
+        # Fallback: Build synthetic cluster result from normalized heads
+        # This ensures demo/bootstrap modes always return ≥2 heads
         cluster_id = hashlib.md5(
             "".join(sorted(normalized.heads)).encode()
         ).hexdigest()[:16]
         
-        # Build cluster result
         cluster = {
             "cluster_id": f"hydra-{cluster_id}",
             "heads": normalized.heads,
@@ -400,7 +457,8 @@ async def adapter_detect(request: AdapterDetectRequest) -> AdapterDetectResponse
                 "coordination_score": 0.91
             },
             "narrative": f"Detected coordinated activity across {len(normalized.heads)} addresses with high temporal clustering",
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
+            "source": "adapter"
         }
         
         return AdapterDetectResponse(

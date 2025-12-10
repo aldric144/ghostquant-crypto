@@ -7,6 +7,8 @@
 
 export {
   executeHydraDetection,
+  executeHydraDemoDetection,
+  executeHydraBootstrapDetection,
   fetchHydraCluster,
   fetchHydraIndicators,
   fetchHydraHealth,

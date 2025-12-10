@@ -215,6 +215,10 @@ app.include_router(risk_router)
 app.include_router(ai_router)
 app.include_router(timeline_router)
 
+# Hydra Input Adapter - routes all Hydra console requests through normalization
+from app.gde.constellation_hydra.hydra_input_adapter import hydra_adapter_router
+app.include_router(hydra_adapter_router)
+
 @app.post("/intel/sim/start")
 async def start_sim():
     """Start the intelligence feed simulator."""
