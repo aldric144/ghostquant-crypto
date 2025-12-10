@@ -251,3 +251,36 @@ export type { CopilotPanelProps } from './CopilotPanel';
 
 export { default as CopilotUI } from './CopilotUI';
 export type { CopilotUIProps } from './CopilotUI';
+
+// Wake Word UI Hooks
+export {
+  setUICallbacks,
+  getAnimationState,
+  setAnimationState,
+  showListeningAnimation,
+  hideListeningAnimation,
+  showActivationGlow,
+  showThinkingAnimation,
+  showSpeakingAnimation,
+  showInsightBurst,
+  playWakeSound,
+  playActivateSound,
+  smoothFadeOut,
+  updateVolumeLevel,
+  resetAnimations,
+} from './WakeWordUIHooks';
+export type { AnimationState, WakeWordUICallbacks } from './WakeWordUIHooks';
+
+// Voice Pipeline (Full Integration)
+export {
+  createVoicePipeline,
+  getGlobalVoicePipeline,
+  initializeGlobalVoicePipeline,
+  destroyGlobalVoicePipeline,
+} from './VoicePipeline';
+export type {
+  VoicePipeline,
+  VoicePipelineConfig,
+  PipelineState,
+  PipelineCallbacks,
+} from './VoicePipeline';
