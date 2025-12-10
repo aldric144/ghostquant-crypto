@@ -89,6 +89,9 @@ export interface ContextClues {
 // ============================================
 
 const PAGE_CONTEXTS: Record<string, PageContext> = {
+  // ============================================
+  // CORE INTELLIGENCE ENGINES
+  // ============================================
   '/terminal/hydra': {
     path: '/terminal/hydra',
     name: 'Hydra Console',
@@ -103,19 +106,12 @@ const PAGE_CONTEXTS: Record<string, PageContext> = {
     description: 'Entity fusion engine showing wallet relationships and cluster analysis',
     keyElements: ['entity clusters', 'connection graph', 'risk propagation', 'entity details'],
   },
-  '/terminal/graph': {
-    path: '/terminal/graph',
-    name: 'Influence Graph',
-    category: 'constellation',
-    description: 'Visual network graph of entity connections and relationships',
-    keyElements: ['connection nodes', 'relationship edges', 'cluster highlights', 'risk indicators'],
-  },
-  '/terminal/analytics': {
-    path: '/terminal/analytics',
-    name: 'Analytics Dashboard',
-    category: 'analytics',
-    description: 'Real-time market intelligence with risk indices and anomaly feeds',
-    keyElements: ['risk index', 'whale activity', 'market trends', 'anomaly feed', 'narrative summary'],
+  '/ecoscan': {
+    path: '/ecoscan',
+    name: 'EcoScan',
+    category: 'ecoscan',
+    description: 'Entity scanning tool for wallet risk assessment',
+    keyElements: ['address input', 'risk assessment', 'behavioral analysis', 'threat indicators'],
   },
   '/terminal/whales': {
     path: '/terminal/whales',
@@ -131,47 +127,231 @@ const PAGE_CONTEXTS: Record<string, PageContext> = {
     description: 'Comprehensive database of whale entities and risk profiles',
     keyElements: ['entity profiles', 'risk scores', 'transaction history', 'watchlist status'],
   },
-  '/terminal/entity': {
-    path: '/terminal/entity',
-    name: 'Entity Scanner',
-    category: 'ecoscan',
-    description: 'Detailed entity analysis and risk assessment',
-    keyElements: ['entity profile', 'risk breakdown', 'connection map', 'activity log'],
+  '/terminal/sentinel': {
+    path: '/terminal/sentinel',
+    name: 'Sentinel Command Console',
+    category: 'sentinel',
+    description: 'Real-time system health monitoring with global threat assessment and active engine status',
+    keyElements: ['global threat level', 'active engines', 'fusion score', 'live alerts'],
   },
-  '/ecoscan': {
-    path: '/ecoscan',
-    name: 'EcoScan',
-    category: 'ecoscan',
-    description: 'Entity scanning tool for wallet risk assessment',
-    keyElements: ['address input', 'risk assessment', 'behavioral analysis', 'threat indicators'],
+  '/terminal/predict': {
+    path: '/terminal/predict',
+    name: 'Prediction Console',
+    category: 'predict',
+    description: 'AI-powered risk predictions for events, entities, tokens, and chains with champion model tracking',
+    keyElements: ['prediction models', 'confidence intervals', 'champion model', 'prediction history'],
+  },
+  '/terminal/radar': {
+    path: '/terminal/radar',
+    name: 'Global Manipulation Radar',
+    category: 'radar',
+    description: 'Real-time manipulation risk heatmap with spike detection across chains, entities, tokens, and networks',
+    keyElements: ['heatmap', 'manipulation spikes', 'volatility spikes', 'risk levels'],
+  },
+  '/terminal/rings': {
+    path: '/terminal/rings',
+    name: 'Ring Detector',
+    category: 'rings',
+    description: 'Detects manipulation rings and coordinated wallet clusters with real-time severity scoring',
+    keyElements: ['ring nodes', 'severity levels', 'activity tracking', 'cluster visualization'],
+  },
+  '/terminal/ultrafusion': {
+    path: '/terminal/ultrafusion',
+    name: 'UltraFusion',
+    category: 'ultrafusion',
+    description: 'Advanced multi-source intelligence fusion engine combining signals from all detection systems',
+    keyElements: ['fusion signals', 'unified assessment', 'multi-source analysis', 'threat synthesis'],
+  },
+  '/terminal/valkyrie': {
+    path: '/terminal/valkyrie',
+    name: 'Valkyrie',
+    category: 'valkyrie',
+    description: 'Advanced threat response and mitigation system for high-priority alerts',
+    keyElements: ['threat response', 'mitigation options', 'priority alerts', 'action queue'],
+  },
+  '/terminal/phantom': {
+    path: '/terminal/phantom',
+    name: 'Phantom',
+    category: 'phantom',
+    description: 'Stealth monitoring system for tracking hidden or obfuscated transactions and dark pool activity',
+    keyElements: ['dark pool activity', 'hidden transactions', 'obfuscation detection', 'stealth tracking'],
+  },
+  // ============================================
+  // MARKET + BLOCKCHAIN INTELLIGENCE
+  // ============================================
+  '/terminal/analytics': {
+    path: '/terminal/analytics',
+    name: 'Analytics Dashboard',
+    category: 'analytics',
+    description: 'Real-time market intelligence with risk indices and anomaly feeds',
+    keyElements: ['risk index', 'whale activity', 'market trends', 'anomaly feed', 'narrative summary'],
   },
   '/terminal/map': {
     path: '/terminal/map',
     name: 'Global Threat Map',
-    category: 'analytics',
-    description: 'Geographic visualization of threat distribution',
-    keyElements: ['regional risk levels', 'threat hotspots', 'activity density', 'trend indicators'],
+    category: 'map',
+    description: 'Geographic 3D globe visualization of real-time threat distribution with whale activity and manipulation rings',
+    keyElements: ['threat points', 'flow arcs', 'regional hotspots', 'threat filters'],
+  },
+  '/terminal/timeline': {
+    path: '/terminal/timeline',
+    name: 'AI Timeline',
+    category: 'timeline',
+    description: 'Chronological intelligence event stream showing all alerts grouped by time with search and filtering',
+    keyElements: ['event stream', 'severity classification', 'time grouping', 'search filters'],
+  },
+  '/terminal/graph': {
+    path: '/terminal/graph',
+    name: 'Influence Graph',
+    category: 'graph',
+    description: 'Visual network graph of entity connections and relationships with interactive node exploration',
+    keyElements: ['connection nodes', 'relationship edges', 'cluster highlights', 'risk indicators'],
+  },
+  '/terminal/entity': {
+    path: '/terminal/entity',
+    name: 'Entity Scanner',
+    category: 'entity',
+    description: 'Detailed entity analysis tool showing risk breakdown, connection maps, and activity logs',
+    keyElements: ['entity profile', 'risk breakdown', 'connection map', 'activity log'],
+  },
+  '/terminal/token': {
+    path: '/terminal/token',
+    name: 'Token Intelligence',
+    category: 'token',
+    description: 'Token-specific intelligence including price analysis, volume metrics, and manipulation risk indicators',
+    keyElements: ['price analysis', 'volume metrics', 'manipulation risk', 'token profile'],
+  },
+  '/terminal/contracts': {
+    path: '/terminal/contracts',
+    name: 'Smart Contracts',
+    category: 'contracts',
+    description: 'Smart contract analysis and monitoring for detecting malicious code patterns and vulnerabilities',
+    keyElements: ['contract analysis', 'vulnerability scan', 'code patterns', 'risk indicators'],
+  },
+  '/terminal/binder': {
+    path: '/terminal/binder',
+    name: 'Data Binder',
+    category: 'binder',
+    description: 'Data binding and aggregation tool for combining multiple intelligence sources into unified reports',
+    keyElements: ['data sources', 'aggregation', 'report builder', 'intelligence feeds'],
+  },
+  '/terminal/exporter': {
+    path: '/terminal/exporter',
+    name: 'Data Exporter',
+    category: 'exporter',
+    description: 'Export intelligence data and reports in multiple formats for external analysis and compliance',
+    keyElements: ['export formats', 'report download', 'compliance export', 'data extraction'],
+  },
+  '/terminal/dataroom': {
+    path: '/terminal/dataroom',
+    name: 'Data Room',
+    category: 'dataroom',
+    description: 'Secure data room for storing and sharing intelligence reports with stakeholders',
+    keyElements: ['stored reports', 'sharing controls', 'stakeholder access', 'document management'],
+  },
+  '/terminal/compliance-report': {
+    path: '/terminal/compliance-report',
+    name: 'Compliance Report',
+    category: 'compliance',
+    description: 'Automated compliance reporting system generating regulatory-ready documentation and audit trails',
+    keyElements: ['regulatory reports', 'audit trails', 'compliance documentation', 'export options'],
+  },
+  // ============================================
+  // UI-DRIVEN SYSTEMS
+  // ============================================
+  '/terminal/home': {
+    path: '/terminal/home',
+    name: 'Terminal Home',
+    category: 'home',
+    description: 'GhostQuant terminal dashboard and navigation hub with quick actions and system status',
+    keyElements: ['quick actions', 'recent activity', 'system status', 'navigation menu'],
   },
   '/terminal/ghostmind': {
     path: '/terminal/ghostmind',
     name: 'GhostMind AI',
-    category: 'general',
-    description: 'AI-powered conversational intelligence interface',
+    category: 'ghostmind',
+    description: 'AI-powered conversational intelligence interface for natural language queries',
     keyElements: ['chat interface', 'query history', 'suggested questions', 'context panel'],
   },
-  '/terminal/predict': {
-    path: '/terminal/predict',
-    name: 'Prediction Engine',
-    category: 'analytics',
-    description: 'Market forecasting and trend prediction',
-    keyElements: ['prediction models', 'confidence intervals', 'historical accuracy', 'trend projections'],
+  '/terminal/settings': {
+    path: '/terminal/settings',
+    name: 'Settings',
+    category: 'settings',
+    description: 'User preferences and configuration panel for customizing the GhostQuant experience',
+    keyElements: ['preferences', 'notifications', 'display options', 'account settings'],
   },
-  '/terminal/home': {
-    path: '/terminal/home',
-    name: 'Terminal Home',
-    category: 'general',
-    description: 'GhostQuant terminal dashboard and navigation hub',
-    keyElements: ['quick actions', 'recent activity', 'system status', 'navigation menu'],
+  '/terminal/billing': {
+    path: '/terminal/billing',
+    name: 'Billing',
+    category: 'billing',
+    description: 'Subscription management and billing portal for GhostQuant services',
+    keyElements: ['subscription status', 'payment methods', 'invoices', 'plan details'],
+  },
+  '/terminal/pricing': {
+    path: '/terminal/pricing',
+    name: 'Pricing',
+    category: 'pricing',
+    description: 'GhostQuant pricing tiers and feature comparison for different subscription levels',
+    keyElements: ['pricing tiers', 'feature comparison', 'plan selection', 'upgrade options'],
+  },
+  '/terminal/licenses': {
+    path: '/terminal/licenses',
+    name: 'Licenses',
+    category: 'licenses',
+    description: 'License management for API access and enterprise deployments',
+    keyElements: ['API keys', 'access tokens', 'license status', 'usage limits'],
+  },
+  '/terminal/config': {
+    path: '/terminal/config',
+    name: 'Configuration',
+    category: 'config',
+    description: 'Advanced system configuration for power users and administrators',
+    keyElements: ['system settings', 'advanced options', 'admin controls', 'integration config'],
+  },
+  // ============================================
+  // SYSTEM INTELLIGENCE + DIAGNOSTICS
+  // ============================================
+  '/terminal/secrets': {
+    path: '/terminal/secrets',
+    name: 'Secrets Manager',
+    category: 'secrets',
+    description: 'Secure secrets and credentials management for API keys and sensitive configuration',
+    keyElements: ['API keys', 'credentials', 'secure storage', 'access management'],
+  },
+  '/terminal/partners': {
+    path: '/terminal/partners',
+    name: 'Partners',
+    category: 'partners',
+    description: 'Partner integration management and channel partner portal',
+    keyElements: ['partner list', 'integration status', 'channel management', 'partner portal'],
+  },
+  '/terminal/deck': {
+    path: '/terminal/deck',
+    name: 'Pitch Deck',
+    category: 'deck',
+    description: 'GhostQuant pitch deck and presentation materials for investors and stakeholders',
+    keyElements: ['presentation slides', 'investor materials', 'company overview', 'product highlights'],
+  },
+  '/terminal/pitchdeck': {
+    path: '/terminal/pitchdeck',
+    name: 'Pitch Deck Builder',
+    category: 'pitchdeck',
+    description: 'Interactive pitch deck builder for creating custom presentations',
+    keyElements: ['slide builder', 'template selection', 'customization', 'export options'],
+  },
+  '/terminal/proposals': {
+    path: '/terminal/proposals',
+    name: 'Proposals',
+    category: 'proposals',
+    description: 'Proposal generation and management for enterprise sales and partnerships',
+    keyElements: ['proposal templates', 'quote builder', 'deal tracking', 'approval workflow'],
+  },
+  '/terminal/rfp': {
+    path: '/terminal/rfp',
+    name: 'RFP Manager',
+    category: 'rfp',
+    description: 'Request for Proposal management and response automation',
+    keyElements: ['RFP list', 'response builder', 'deadline tracking', 'submission status'],
   },
   '/': {
     path: '/',
@@ -464,6 +644,7 @@ export function getSuggestedQuestions(state: ContextState): string[] {
   
   if (state.currentPage) {
     switch (state.currentPage.category) {
+      // Core Intelligence Engines
       case 'hydra':
         suggestions.push('What threats are being detected?');
         suggestions.push('Explain the confidence scores');
@@ -484,10 +665,163 @@ export function getSuggestedQuestions(state: ContextState): string[] {
         suggestions.push('Any significant movements?');
         suggestions.push('Who are the biggest holders?');
         break;
+      case 'sentinel':
+        suggestions.push('What is the current threat level?');
+        suggestions.push('Which engines are active?');
+        suggestions.push('Show me the fusion score');
+        break;
+      case 'predict':
+        suggestions.push('Predict the risk for this event');
+        suggestions.push('What is the token price direction?');
+        suggestions.push('Run entity manipulation prediction');
+        break;
+      case 'radar':
+        suggestions.push('Show me the manipulation radar');
+        suggestions.push('What chains have high risk?');
+        suggestions.push('Any manipulation spikes detected?');
+        break;
+      case 'rings':
+        suggestions.push('Any manipulation rings detected?');
+        suggestions.push('Show me coordinated wallet clusters');
+        suggestions.push('What entities are in this ring?');
+        break;
+      case 'ultrafusion':
+        suggestions.push('What is UltraFusion showing?');
+        suggestions.push('Run a fusion analysis');
+        suggestions.push('Combine all intelligence sources');
+        break;
+      case 'valkyrie':
+        suggestions.push('What is Valkyrie status?');
+        suggestions.push('Any Valkyrie alerts?');
+        suggestions.push('Show me threat response options');
+        break;
+      case 'phantom':
+        suggestions.push('What is Phantom tracking?');
+        suggestions.push('Any dark pool activity?');
+        suggestions.push('Show hidden transactions');
+        break;
+      // Market + Blockchain Intelligence
       case 'analytics':
         suggestions.push('Give me a market briefing');
         suggestions.push('What\'s the current risk level?');
         suggestions.push('Any anomalies to watch?');
+        break;
+      case 'map':
+        suggestions.push('Show me the threat map');
+        suggestions.push('Where are threats concentrated?');
+        suggestions.push('Any regional hotspots?');
+        break;
+      case 'timeline':
+        suggestions.push('Show me recent events');
+        suggestions.push('What happened in the last hour?');
+        suggestions.push('Search timeline for whale activity');
+        break;
+      case 'graph':
+        suggestions.push('Show me the influence graph');
+        suggestions.push('How are these entities connected?');
+        suggestions.push('Explore this node connections');
+        break;
+      case 'entity':
+        suggestions.push('Analyze this entity');
+        suggestions.push('What is the risk breakdown?');
+        suggestions.push('Show entity activity log');
+        break;
+      case 'token':
+        suggestions.push('Analyze this token');
+        suggestions.push('What is the token risk?');
+        suggestions.push('Show token metrics');
+        break;
+      case 'contracts':
+        suggestions.push('Analyze this contract');
+        suggestions.push('Is this contract safe?');
+        suggestions.push('Check for vulnerabilities');
+        break;
+      case 'binder':
+        suggestions.push('Bind these data sources');
+        suggestions.push('Create aggregated report');
+        suggestions.push('Combine intelligence feeds');
+        break;
+      case 'exporter':
+        suggestions.push('Export this data');
+        suggestions.push('Download report as CSV');
+        suggestions.push('Generate compliance export');
+        break;
+      case 'dataroom':
+        suggestions.push('Open the data room');
+        suggestions.push('Share this report');
+        suggestions.push('Access stored intelligence');
+        break;
+      case 'compliance':
+        suggestions.push('Generate compliance report');
+        suggestions.push('Show audit trail');
+        suggestions.push('Create regulatory documentation');
+        break;
+      // UI-Driven Systems
+      case 'home':
+        suggestions.push('What can I do from here?');
+        suggestions.push('Show me recent activity');
+        suggestions.push('Where should I start?');
+        break;
+      case 'ghostmind':
+        suggestions.push('Ask GhostMind a question');
+        suggestions.push('Get AI assistance');
+        suggestions.push('What can GhostMind help with?');
+        break;
+      case 'settings':
+        suggestions.push('Change my preferences');
+        suggestions.push('Configure notifications');
+        suggestions.push('Update display options');
+        break;
+      case 'billing':
+        suggestions.push('Show my billing');
+        suggestions.push('Upgrade my plan');
+        suggestions.push('View subscription status');
+        break;
+      case 'pricing':
+        suggestions.push('Show me pricing');
+        suggestions.push('What plans are available?');
+        suggestions.push('Compare features');
+        break;
+      case 'licenses':
+        suggestions.push('Show my licenses');
+        suggestions.push('Generate API key');
+        suggestions.push('Manage access tokens');
+        break;
+      case 'config':
+        suggestions.push('Open configuration');
+        suggestions.push('Change system settings');
+        suggestions.push('Configure advanced options');
+        break;
+      // System Intelligence + Diagnostics
+      case 'secrets':
+        suggestions.push('Manage my secrets');
+        suggestions.push('Add API key');
+        suggestions.push('View stored credentials');
+        break;
+      case 'partners':
+        suggestions.push('Show partner integrations');
+        suggestions.push('Add new partner');
+        suggestions.push('View partner status');
+        break;
+      case 'deck':
+        suggestions.push('Show the pitch deck');
+        suggestions.push('View presentation');
+        suggestions.push('Get investor materials');
+        break;
+      case 'pitchdeck':
+        suggestions.push('Build a pitch deck');
+        suggestions.push('Create presentation');
+        suggestions.push('Customize slides');
+        break;
+      case 'proposals':
+        suggestions.push('Create a proposal');
+        suggestions.push('View proposals');
+        suggestions.push('Generate quote');
+        break;
+      case 'rfp':
+        suggestions.push('Manage RFPs');
+        suggestions.push('Respond to RFP');
+        suggestions.push('View pending requests');
         break;
       default:
         suggestions.push('What can you help me with?');

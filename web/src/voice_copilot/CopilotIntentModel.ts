@@ -17,7 +17,13 @@
  * 10. Navigation Intents
  * 11. Vagueness Recovery Intents
  * 12. Contextual Inference Intents
+ * 
+ * Phase 1 Intelligence Expansion:
+ * - Added 30+ new intent categories for all GhostQuant modules
+ * - Integrated with GhostQuantModuleRegistry for module-based intent matching
  */
+
+import { findBestMatch, MODULE_REGISTRY, type ModuleEntry } from './knowledge/GhostQuantModuleRegistry';
 
 export type IntentCategory = 
   | 'hydra'
@@ -34,7 +40,41 @@ export type IntentCategory =
   | 'contextual'
   | 'greeting'
   | 'help'
-  | 'unknown';
+  | 'unknown'
+  // Phase 1 Intelligence Expansion - New Intent Categories
+  | 'sentinel'
+  | 'predict'
+  | 'radar'
+  | 'rings'
+  | 'ultrafusion'
+  | 'valkyrie'
+  | 'phantom'
+  | 'map'
+  | 'timeline'
+  | 'graph'
+  | 'entity'
+  | 'token'
+  | 'contracts'
+  | 'binder'
+  | 'exporter'
+  | 'dataroom'
+  | 'compliance'
+  | 'home'
+  | 'ghostmind'
+  | 'copilot'
+  | 'settings'
+  | 'billing'
+  | 'pricing'
+  | 'licenses'
+  | 'config'
+  | 'secrets'
+  | 'partners'
+  | 'deck'
+  | 'pitchdeck'
+  | 'proposals'
+  | 'rfp'
+  | 'demo_mode'
+  | 'health';
 
 export interface IntentPattern {
   pattern: RegExp;
@@ -205,6 +245,244 @@ const HELP_PATTERNS: IntentPattern[] = [
   { pattern: /tutorial/i, intent: 'help', confidence: 0.8 },
 ];
 
+// ============================================
+// PHASE 1 INTELLIGENCE EXPANSION - NEW PATTERNS
+// ============================================
+
+const SENTINEL_PATTERNS: IntentPattern[] = [
+  { pattern: /sentinel/i, intent: 'sentinel', confidence: 0.9 },
+  { pattern: /command\s*console/i, intent: 'sentinel', confidence: 0.85 },
+  { pattern: /global\s*threat\s*level/i, intent: 'sentinel', confidence: 0.9 },
+  { pattern: /active\s*engines/i, intent: 'sentinel', confidence: 0.8 },
+  { pattern: /system\s*status/i, intent: 'sentinel', confidence: 0.75 },
+  { pattern: /fusion\s*score/i, intent: 'sentinel', confidence: 0.85 },
+];
+
+const PREDICT_PATTERNS: IntentPattern[] = [
+  { pattern: /predict/i, intent: 'predict', confidence: 0.9 },
+  { pattern: /prediction/i, intent: 'predict', confidence: 0.9 },
+  { pattern: /forecast/i, intent: 'predict', confidence: 0.85 },
+  { pattern: /price\s*direction/i, intent: 'predict', confidence: 0.85 },
+  { pattern: /manipulation\s*risk/i, intent: 'predict', confidence: 0.8 },
+  { pattern: /champion\s*model/i, intent: 'predict', confidence: 0.9 },
+];
+
+const RADAR_PATTERNS: IntentPattern[] = [
+  { pattern: /radar/i, intent: 'radar', confidence: 0.9 },
+  { pattern: /manipulation\s*radar/i, intent: 'radar', confidence: 0.95 },
+  { pattern: /heatmap/i, intent: 'radar', confidence: 0.85 },
+  { pattern: /manipulation\s*spike/i, intent: 'radar', confidence: 0.9 },
+  { pattern: /volatility\s*spike/i, intent: 'radar', confidence: 0.85 },
+];
+
+const RINGS_PATTERNS: IntentPattern[] = [
+  { pattern: /ring\s*detect/i, intent: 'rings', confidence: 0.9 },
+  { pattern: /manipulation\s*ring/i, intent: 'rings', confidence: 0.95 },
+  { pattern: /coordinated\s*(wallet|cluster)/i, intent: 'rings', confidence: 0.9 },
+  { pattern: /ring\s*severity/i, intent: 'rings', confidence: 0.85 },
+];
+
+const ULTRAFUSION_PATTERNS: IntentPattern[] = [
+  { pattern: /ultrafusion/i, intent: 'ultrafusion', confidence: 0.95 },
+  { pattern: /ultra\s*fusion/i, intent: 'ultrafusion', confidence: 0.95 },
+  { pattern: /multi.?source\s*fusion/i, intent: 'ultrafusion', confidence: 0.9 },
+  { pattern: /unified\s*threat/i, intent: 'ultrafusion', confidence: 0.85 },
+];
+
+const VALKYRIE_PATTERNS: IntentPattern[] = [
+  { pattern: /valkyrie/i, intent: 'valkyrie', confidence: 0.95 },
+  { pattern: /threat\s*response/i, intent: 'valkyrie', confidence: 0.85 },
+  { pattern: /mitigation/i, intent: 'valkyrie', confidence: 0.8 },
+];
+
+const PHANTOM_PATTERNS: IntentPattern[] = [
+  { pattern: /phantom/i, intent: 'phantom', confidence: 0.95 },
+  { pattern: /stealth\s*monitor/i, intent: 'phantom', confidence: 0.9 },
+  { pattern: /dark\s*pool/i, intent: 'phantom', confidence: 0.85 },
+  { pattern: /hidden\s*transaction/i, intent: 'phantom', confidence: 0.85 },
+  { pattern: /obfuscated/i, intent: 'phantom', confidence: 0.8 },
+];
+
+const MAP_PATTERNS: IntentPattern[] = [
+  { pattern: /threat\s*map/i, intent: 'map', confidence: 0.9 },
+  { pattern: /global\s*map/i, intent: 'map', confidence: 0.85 },
+  { pattern: /geographic/i, intent: 'map', confidence: 0.8 },
+  { pattern: /globe/i, intent: 'map', confidence: 0.8 },
+  { pattern: /regional\s*hotspot/i, intent: 'map', confidence: 0.85 },
+];
+
+const TIMELINE_PATTERNS: IntentPattern[] = [
+  { pattern: /timeline/i, intent: 'timeline', confidence: 0.9 },
+  { pattern: /ai\s*timeline/i, intent: 'timeline', confidence: 0.95 },
+  { pattern: /event\s*stream/i, intent: 'timeline', confidence: 0.85 },
+  { pattern: /chronological/i, intent: 'timeline', confidence: 0.8 },
+  { pattern: /recent\s*events/i, intent: 'timeline', confidence: 0.8 },
+];
+
+const GRAPH_PATTERNS: IntentPattern[] = [
+  { pattern: /influence\s*graph/i, intent: 'graph', confidence: 0.95 },
+  { pattern: /network\s*graph/i, intent: 'graph', confidence: 0.9 },
+  { pattern: /node\s*connection/i, intent: 'graph', confidence: 0.85 },
+  { pattern: /entity\s*graph/i, intent: 'graph', confidence: 0.9 },
+];
+
+const ENTITY_PATTERNS_INTENT: IntentPattern[] = [
+  { pattern: /entity\s*scanner/i, intent: 'entity', confidence: 0.9 },
+  { pattern: /entity\s*analysis/i, intent: 'entity', confidence: 0.9 },
+  { pattern: /entity\s*breakdown/i, intent: 'entity', confidence: 0.85 },
+  { pattern: /activity\s*log/i, intent: 'entity', confidence: 0.8 },
+];
+
+const TOKEN_PATTERNS: IntentPattern[] = [
+  { pattern: /token\s*intelligence/i, intent: 'token', confidence: 0.9 },
+  { pattern: /token\s*analysis/i, intent: 'token', confidence: 0.9 },
+  { pattern: /token\s*metrics/i, intent: 'token', confidence: 0.85 },
+  { pattern: /token\s*risk/i, intent: 'token', confidence: 0.85 },
+];
+
+const CONTRACTS_PATTERNS: IntentPattern[] = [
+  { pattern: /smart\s*contract/i, intent: 'contracts', confidence: 0.9 },
+  { pattern: /contract\s*analysis/i, intent: 'contracts', confidence: 0.9 },
+  { pattern: /contract\s*vulnerabilit/i, intent: 'contracts', confidence: 0.9 },
+  { pattern: /malicious\s*code/i, intent: 'contracts', confidence: 0.85 },
+];
+
+const BINDER_PATTERNS: IntentPattern[] = [
+  { pattern: /data\s*binder/i, intent: 'binder', confidence: 0.9 },
+  { pattern: /bind\s*data/i, intent: 'binder', confidence: 0.85 },
+  { pattern: /aggregate\s*report/i, intent: 'binder', confidence: 0.8 },
+];
+
+const EXPORTER_PATTERNS: IntentPattern[] = [
+  { pattern: /export/i, intent: 'exporter', confidence: 0.85 },
+  { pattern: /download\s*report/i, intent: 'exporter', confidence: 0.9 },
+  { pattern: /csv/i, intent: 'exporter', confidence: 0.8 },
+  { pattern: /compliance\s*export/i, intent: 'exporter', confidence: 0.9 },
+];
+
+const DATAROOM_PATTERNS: IntentPattern[] = [
+  { pattern: /data\s*room/i, intent: 'dataroom', confidence: 0.9 },
+  { pattern: /dataroom/i, intent: 'dataroom', confidence: 0.95 },
+  { pattern: /share\s*report/i, intent: 'dataroom', confidence: 0.8 },
+  { pattern: /stored\s*intelligence/i, intent: 'dataroom', confidence: 0.85 },
+];
+
+const COMPLIANCE_PATTERNS: IntentPattern[] = [
+  { pattern: /compliance\s*report/i, intent: 'compliance', confidence: 0.95 },
+  { pattern: /regulatory/i, intent: 'compliance', confidence: 0.85 },
+  { pattern: /audit\s*trail/i, intent: 'compliance', confidence: 0.9 },
+  { pattern: /compliance\s*document/i, intent: 'compliance', confidence: 0.9 },
+];
+
+const HOME_PATTERNS: IntentPattern[] = [
+  { pattern: /terminal\s*home/i, intent: 'home', confidence: 0.9 },
+  { pattern: /home\s*page/i, intent: 'home', confidence: 0.85 },
+  { pattern: /main\s*dashboard/i, intent: 'home', confidence: 0.8 },
+  { pattern: /quick\s*action/i, intent: 'home', confidence: 0.75 },
+];
+
+const GHOSTMIND_PATTERNS: IntentPattern[] = [
+  { pattern: /ghostmind/i, intent: 'ghostmind', confidence: 0.95 },
+  { pattern: /ghost\s*mind/i, intent: 'ghostmind', confidence: 0.95 },
+  { pattern: /ai\s*chat/i, intent: 'ghostmind', confidence: 0.8 },
+  { pattern: /ai\s*assistant/i, intent: 'ghostmind', confidence: 0.8 },
+];
+
+const COPILOT_PATTERNS: IntentPattern[] = [
+  { pattern: /voice\s*copilot/i, intent: 'copilot', confidence: 0.95 },
+  { pattern: /copilot/i, intent: 'copilot', confidence: 0.9 },
+  { pattern: /wake\s*word/i, intent: 'copilot', confidence: 0.85 },
+  { pattern: /hey\s*ghost/i, intent: 'copilot', confidence: 0.9 },
+  { pattern: /voice\s*command/i, intent: 'copilot', confidence: 0.85 },
+];
+
+const SETTINGS_PATTERNS: IntentPattern[] = [
+  { pattern: /settings/i, intent: 'settings', confidence: 0.9 },
+  { pattern: /preferences/i, intent: 'settings', confidence: 0.85 },
+  { pattern: /configuration/i, intent: 'settings', confidence: 0.8 },
+  { pattern: /customize/i, intent: 'settings', confidence: 0.75 },
+];
+
+const BILLING_PATTERNS: IntentPattern[] = [
+  { pattern: /billing/i, intent: 'billing', confidence: 0.9 },
+  { pattern: /subscription/i, intent: 'billing', confidence: 0.85 },
+  { pattern: /payment/i, intent: 'billing', confidence: 0.85 },
+  { pattern: /upgrade\s*plan/i, intent: 'billing', confidence: 0.9 },
+];
+
+const PRICING_PATTERNS: IntentPattern[] = [
+  { pattern: /pricing/i, intent: 'pricing', confidence: 0.9 },
+  { pattern: /price/i, intent: 'pricing', confidence: 0.8 },
+  { pattern: /cost/i, intent: 'pricing', confidence: 0.75 },
+  { pattern: /plans?\s*available/i, intent: 'pricing', confidence: 0.85 },
+];
+
+const LICENSES_PATTERNS: IntentPattern[] = [
+  { pattern: /license/i, intent: 'licenses', confidence: 0.9 },
+  { pattern: /api\s*key/i, intent: 'licenses', confidence: 0.85 },
+  { pattern: /access\s*token/i, intent: 'licenses', confidence: 0.85 },
+];
+
+const CONFIG_PATTERNS: IntentPattern[] = [
+  { pattern: /config/i, intent: 'config', confidence: 0.85 },
+  { pattern: /advanced\s*settings/i, intent: 'config', confidence: 0.9 },
+  { pattern: /system\s*config/i, intent: 'config', confidence: 0.9 },
+];
+
+const SECRETS_PATTERNS: IntentPattern[] = [
+  { pattern: /secrets?\s*manager/i, intent: 'secrets', confidence: 0.9 },
+  { pattern: /credentials/i, intent: 'secrets', confidence: 0.85 },
+  { pattern: /vault/i, intent: 'secrets', confidence: 0.8 },
+];
+
+const PARTNERS_PATTERNS: IntentPattern[] = [
+  { pattern: /partner/i, intent: 'partners', confidence: 0.85 },
+  { pattern: /channel\s*partner/i, intent: 'partners', confidence: 0.9 },
+  { pattern: /reseller/i, intent: 'partners', confidence: 0.85 },
+  { pattern: /affiliate/i, intent: 'partners', confidence: 0.8 },
+];
+
+const DECK_PATTERNS: IntentPattern[] = [
+  { pattern: /pitch\s*deck/i, intent: 'deck', confidence: 0.95 },
+  { pattern: /presentation/i, intent: 'deck', confidence: 0.8 },
+  { pattern: /investor\s*materials/i, intent: 'deck', confidence: 0.9 },
+  { pattern: /slides/i, intent: 'deck', confidence: 0.75 },
+];
+
+const PITCHDECK_PATTERNS: IntentPattern[] = [
+  { pattern: /deck\s*builder/i, intent: 'pitchdeck', confidence: 0.9 },
+  { pattern: /build\s*deck/i, intent: 'pitchdeck', confidence: 0.85 },
+  { pattern: /create\s*presentation/i, intent: 'pitchdeck', confidence: 0.85 },
+];
+
+const PROPOSALS_PATTERNS: IntentPattern[] = [
+  { pattern: /proposal/i, intent: 'proposals', confidence: 0.9 },
+  { pattern: /quote/i, intent: 'proposals', confidence: 0.8 },
+  { pattern: /enterprise\s*sales/i, intent: 'proposals', confidence: 0.85 },
+];
+
+const RFP_PATTERNS: IntentPattern[] = [
+  { pattern: /rfp/i, intent: 'rfp', confidence: 0.9 },
+  { pattern: /request\s*for\s*proposal/i, intent: 'rfp', confidence: 0.95 },
+  { pattern: /bid/i, intent: 'rfp', confidence: 0.75 },
+  { pattern: /tender/i, intent: 'rfp', confidence: 0.8 },
+];
+
+const DEMO_MODE_PATTERNS: IntentPattern[] = [
+  { pattern: /demo\s*mode/i, intent: 'demo_mode', confidence: 0.95 },
+  { pattern: /demonstration/i, intent: 'demo_mode', confidence: 0.85 },
+  { pattern: /show\s*me\s*a\s*demo/i, intent: 'demo_mode', confidence: 0.9 },
+  { pattern: /trial/i, intent: 'demo_mode', confidence: 0.75 },
+];
+
+const HEALTH_PATTERNS: IntentPattern[] = [
+  { pattern: /system\s*health/i, intent: 'health', confidence: 0.9 },
+  { pattern: /service\s*status/i, intent: 'health', confidence: 0.85 },
+  { pattern: /uptime/i, intent: 'health', confidence: 0.8 },
+  { pattern: /diagnostics/i, intent: 'health', confidence: 0.85 },
+  { pattern: /is\s*everything\s*working/i, intent: 'health', confidence: 0.85 },
+];
+
 // Combine all patterns
 const ALL_PATTERNS: IntentPattern[] = [
   ...HYDRA_PATTERNS,
@@ -221,6 +499,40 @@ const ALL_PATTERNS: IntentPattern[] = [
   ...CONTEXTUAL_PATTERNS,
   ...GREETING_PATTERNS,
   ...HELP_PATTERNS,
+  // Phase 1 Intelligence Expansion - New Patterns
+  ...SENTINEL_PATTERNS,
+  ...PREDICT_PATTERNS,
+  ...RADAR_PATTERNS,
+  ...RINGS_PATTERNS,
+  ...ULTRAFUSION_PATTERNS,
+  ...VALKYRIE_PATTERNS,
+  ...PHANTOM_PATTERNS,
+  ...MAP_PATTERNS,
+  ...TIMELINE_PATTERNS,
+  ...GRAPH_PATTERNS,
+  ...ENTITY_PATTERNS_INTENT,
+  ...TOKEN_PATTERNS,
+  ...CONTRACTS_PATTERNS,
+  ...BINDER_PATTERNS,
+  ...EXPORTER_PATTERNS,
+  ...DATAROOM_PATTERNS,
+  ...COMPLIANCE_PATTERNS,
+  ...HOME_PATTERNS,
+  ...GHOSTMIND_PATTERNS,
+  ...COPILOT_PATTERNS,
+  ...SETTINGS_PATTERNS,
+  ...BILLING_PATTERNS,
+  ...PRICING_PATTERNS,
+  ...LICENSES_PATTERNS,
+  ...CONFIG_PATTERNS,
+  ...SECRETS_PATTERNS,
+  ...PARTNERS_PATTERNS,
+  ...DECK_PATTERNS,
+  ...PITCHDECK_PATTERNS,
+  ...PROPOSALS_PATTERNS,
+  ...RFP_PATTERNS,
+  ...DEMO_MODE_PATTERNS,
+  ...HEALTH_PATTERNS,
 ];
 
 // ============================================
@@ -352,19 +664,49 @@ export function isNavigationRequest(query: string): { isNavigation: boolean; des
     return { isNavigation: false };
   }
   
-  // Extract destination
+  // Extract destination - Phase 1 Intelligence Expansion: Added all 40+ module destinations
   const destinations: Record<string, string> = {
+    // Core Intelligence Engines
     hydra: '/terminal/hydra',
     constellation: '/terminal/constellation',
-    graph: '/terminal/graph',
-    analytics: '/terminal/analytics',
-    dashboard: '/terminal/analytics',
+    ecoscan: '/ecoscan',
     whale: '/terminal/whales',
     widb: '/terminal/whale-intel',
-    ecoscan: '/ecoscan',
-    entity: '/terminal/entity',
+    sentinel: '/terminal/sentinel',
+    predict: '/terminal/predict',
+    radar: '/terminal/radar',
+    rings: '/terminal/rings',
+    ultrafusion: '/terminal/ultrafusion',
+    valkyrie: '/terminal/valkyrie',
+    phantom: '/terminal/phantom',
+    // Market + Blockchain Intelligence
+    analytics: '/terminal/analytics',
+    dashboard: '/terminal/analytics',
     map: '/terminal/map',
+    timeline: '/terminal/timeline',
+    graph: '/terminal/graph',
+    entity: '/terminal/entity',
+    token: '/terminal/token',
+    contracts: '/terminal/contracts',
+    binder: '/terminal/binder',
+    exporter: '/terminal/exporter',
+    dataroom: '/terminal/dataroom',
+    compliance: '/terminal/compliance-report',
+    // UI-Driven Systems
     home: '/terminal/home',
+    ghostmind: '/terminal/ghostmind',
+    settings: '/terminal/settings',
+    billing: '/terminal/billing',
+    pricing: '/terminal/pricing',
+    licenses: '/terminal/licenses',
+    config: '/terminal/config',
+    // System Intelligence + Diagnostics
+    secrets: '/terminal/secrets',
+    partners: '/terminal/partners',
+    deck: '/terminal/deck',
+    pitchdeck: '/terminal/pitchdeck',
+    proposals: '/terminal/proposals',
+    rfp: '/terminal/rfp',
   };
   
   for (const [keyword, path] of Object.entries(destinations)) {
@@ -403,6 +745,40 @@ export function getIntentDisplayName(category: IntentCategory): string {
     greeting: 'Greeting',
     help: 'Help Request',
     unknown: 'Unknown Intent',
+    // Phase 1 Intelligence Expansion - New Intent Display Names
+    sentinel: 'Sentinel Command Console',
+    predict: 'Prediction Console',
+    radar: 'Global Manipulation Radar',
+    rings: 'Ring Detector',
+    ultrafusion: 'UltraFusion',
+    valkyrie: 'Valkyrie',
+    phantom: 'Phantom',
+    map: 'Global Threat Map',
+    timeline: 'AI Timeline',
+    graph: 'Influence Graph',
+    entity: 'Entity Scanner',
+    token: 'Token Intelligence',
+    contracts: 'Smart Contracts',
+    binder: 'Data Binder',
+    exporter: 'Data Exporter',
+    dataroom: 'Data Room',
+    compliance: 'Compliance Report',
+    home: 'Terminal Home',
+    ghostmind: 'GhostMind AI',
+    copilot: 'Voice Copilot',
+    settings: 'Settings',
+    billing: 'Billing',
+    pricing: 'Pricing',
+    licenses: 'Licenses',
+    config: 'Configuration',
+    secrets: 'Secrets Manager',
+    partners: 'Partners',
+    deck: 'Pitch Deck',
+    pitchdeck: 'Pitch Deck Builder',
+    proposals: 'Proposals',
+    rfp: 'RFP Manager',
+    demo_mode: 'Demo Mode',
+    health: 'System Health',
   };
   return names[category];
 }
@@ -411,7 +787,7 @@ export function getIntentDisplayName(category: IntentCategory): string {
  * Suggest follow-up intents based on current intent
  */
 export function suggestFollowUpIntents(currentIntent: IntentCategory): IntentCategory[] {
-  const followUps: Record<IntentCategory, IntentCategory[]> = {
+  const followUps: Partial<Record<IntentCategory, IntentCategory[]>> = {
     hydra: ['risk_score', 'constellation', 'summary'],
     constellation: ['ecoscan', 'risk_score', 'whale_intel'],
     ecoscan: ['risk_score', 'constellation', 'whale_intel'],
@@ -427,6 +803,40 @@ export function suggestFollowUpIntents(currentIntent: IntentCategory): IntentCat
     greeting: ['help', 'summary', 'dashboard'],
     help: ['beginner_mode', 'summary', 'navigation'],
     unknown: ['help', 'beginner_mode'],
+    // Phase 1 Intelligence Expansion - New Follow-up Suggestions
+    sentinel: ['hydra', 'radar', 'health'],
+    predict: ['dashboard', 'risk_score', 'timeline'],
+    radar: ['hydra', 'rings', 'map'],
+    rings: ['constellation', 'hydra', 'graph'],
+    ultrafusion: ['hydra', 'constellation', 'sentinel'],
+    valkyrie: ['sentinel', 'hydra', 'health'],
+    phantom: ['whale_intel', 'map', 'rings'],
+    map: ['radar', 'timeline', 'dashboard'],
+    timeline: ['dashboard', 'sentinel', 'summary'],
+    graph: ['constellation', 'entity', 'rings'],
+    entity: ['ecoscan', 'constellation', 'risk_score'],
+    token: ['predict', 'dashboard', 'risk_score'],
+    contracts: ['ecoscan', 'entity', 'risk_score'],
+    binder: ['exporter', 'dataroom', 'compliance'],
+    exporter: ['binder', 'dataroom', 'compliance'],
+    dataroom: ['exporter', 'compliance', 'binder'],
+    compliance: ['exporter', 'dataroom', 'entity'],
+    home: ['dashboard', 'sentinel', 'help'],
+    ghostmind: ['copilot', 'help', 'summary'],
+    copilot: ['ghostmind', 'help', 'settings'],
+    settings: ['config', 'billing', 'licenses'],
+    billing: ['pricing', 'licenses', 'settings'],
+    pricing: ['billing', 'licenses', 'settings'],
+    licenses: ['billing', 'settings', 'config'],
+    config: ['settings', 'secrets', 'licenses'],
+    secrets: ['config', 'licenses', 'settings'],
+    partners: ['proposals', 'rfp', 'deck'],
+    deck: ['pitchdeck', 'proposals', 'partners'],
+    pitchdeck: ['deck', 'proposals', 'dataroom'],
+    proposals: ['rfp', 'partners', 'deck'],
+    rfp: ['proposals', 'partners', 'compliance'],
+    demo_mode: ['home', 'dashboard', 'help'],
+    health: ['sentinel', 'config', 'settings'],
   };
   
   return followUps[currentIntent] || ['help'];
