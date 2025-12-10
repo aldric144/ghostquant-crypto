@@ -16,6 +16,9 @@ export const GHOSTQUANT_BIAS_TERMS = [
   'GusQuant',
   'Ghost Kwant',
   'Ghost Quont',
+  'Goast Quant',
+  'Ghost Quench',
+  'Ghost Quint',
 ] as const;
 
 // Normalized form for all bias terms
@@ -54,6 +57,16 @@ const MISRECOGNITION_MAP: Record<string, string> = {
   'ghostclient': 'GhostQuant',
   'ghost point': 'GhostQuant',
   'ghostpoint': 'GhostQuant',
+  
+  // Additional phonetic variants
+  'goast quant': 'GhostQuant',
+  'goastquant': 'GhostQuant',
+  'ghost quench': 'GhostQuant',
+  'ghostquench': 'GhostQuant',
+  'ghost quint': 'GhostQuant',
+  'ghostquint': 'GhostQuant',
+  'ghost quinch': 'GhostQuant',
+  'ghostquinch': 'GhostQuant',
   
   // Spacing variations
   'ghost quant': 'GhostQuant',
