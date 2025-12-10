@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { runHydraDetection, HydraConnectorResult } from '../../../components/hydra/HydraConsoleConnector'
+import HydraResetControls from '../../../components/hydra/HydraResetControls'
+import { clearInput, resetConsoleState } from '../../../components/hydra/HydraResetHandler'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
@@ -53,6 +55,22 @@ export default function HydraConsolePage() {
   const [cluster, setCluster] = useState<HydraCluster | null>(null)
   const [indicators, setIndicators] = useState<HydraIndicators | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // Reset handlers - wrapper functions that call into HydraResetHandler
+  const handleClearInput = () => {
+    clearInput({ setOriginAddress })
+  }
+
+  const handleResetConsole = () => {
+    resetConsoleState({
+      setOriginAddress,
+      setResult,
+      setCluster,
+      setIndicators,
+      setError,
+      setLoading,
+    })
+  }
 
   const fetchCluster = async () => {
     try {
@@ -229,6 +247,15 @@ export default function HydraConsolePage() {
               )}
             </button>
           </div>
+        </div>
+
+        {/* Reset Controls - Isolated component for clearing input/output */}
+        <div className="mb-8">
+          <HydraResetControls
+            onClearInput={handleClearInput}
+            onResetConsole={handleResetConsole}
+            isLoading={loading}
+          />
         </div>
 
         {error && (
