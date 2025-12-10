@@ -10,11 +10,12 @@
  * Language selection via active language from LanguageRouter.
  */
 
-import { speakWithElevenLabs, isElevenLabsAvailable, stopCurrentAudio as stopElevenLabs } from './ElevenLabsTTS';
+import { speakWithElevenLabs, isElevenLabsAvailable, stopCurrentAudio as stopElevenLabs, type VoiceMode, VOICE_MODES } from './ElevenLabsTTS';
 import { speakWithOpenAIVoice, isOpenAITTSAvailable, stopCurrentAudio as stopOpenAI } from './OpenAITTS';
 import { copilotEvents } from './CopilotEvents';
 import { type LanguageCode, SUPPORTED_LANGUAGES } from './language/LanguageDetector';
 import { getActiveLanguage } from './language/LanguageRouter';
+import { getVoiceMode, getCurrentVoiceId } from './voice/VoiceModeManager';
 
 // TTS Provider types
 export type TTSProvider = 'elevenlabs' | 'openai' | 'browser' | 'auto';
@@ -37,6 +38,7 @@ export interface TTSEngineConfig {
   provider?: TTSProvider;
   fallbackEnabled?: boolean;
   language?: LanguageCode;
+  voiceMode?: VoiceMode;
 }
 
 // Language to BCP 47 mapping for browser TTS
@@ -162,8 +164,12 @@ export async function speak(text: string, options?: TTSEngineConfig): Promise<TT
   
   // Get language from options, current setting, or LanguageRouter
   const language = options?.language || currentLanguage || getActiveLanguage();
+  
+  // Get voice mode from options or VoiceModeManager
+  const voiceMode = options?.voiceMode || getVoiceMode();
+  const voiceId = getCurrentVoiceId();
 
-  console.log(`[TTSEngine] Speaking with provider: ${requestedProvider}, language: ${language}`);
+  console.log(`[TTSEngine] Speaking with provider: ${requestedProvider}, language: ${language}, voiceMode: ${voiceMode}`);
 
   // Track which providers have been tried
   const triedProviders = new Set<TTSProvider>();
@@ -172,16 +178,17 @@ export async function speak(text: string, options?: TTSEngineConfig): Promise<TT
   let result: TTSResult;
 
   switch (requestedProvider) {
-    case 'elevenlabs': {
-      triedProviders.add('elevenlabs');
-      // ElevenLabs supports multilingual via model selection
-      const elevenResult = await speakWithElevenLabs(text);
-      if (elevenResult.success) {
-        return { success: true, provider: 'elevenlabs' };
-      }
-      result = { success: false, provider: 'elevenlabs', error: elevenResult.error };
-      break;
-    }
+        case 'elevenlabs': {
+          triedProviders.add('elevenlabs');
+          // ElevenLabs supports multilingual via model selection
+          // Pass voiceId from VoiceModeManager for dual-voice support
+          const elevenResult = await speakWithElevenLabs(text, { voiceId });
+          if (elevenResult.success) {
+            return { success: true, provider: 'elevenlabs' };
+          }
+          result = { success: false, provider: 'elevenlabs', error: elevenResult.error };
+          break;
+        }
 
     case 'openai': {
       triedProviders.add('openai');
@@ -209,13 +216,13 @@ export async function speak(text: string, options?: TTSEngineConfig): Promise<TT
   if (!result.success && fallbackEnabled) {
     console.log(`[TTSEngine] Primary provider failed, attempting fallback...`);
 
-    // Try ElevenLabs if not already tried
-    if (!triedProviders.has('elevenlabs') && isElevenLabsAvailable()) {
-      const elevenResult = await speakWithElevenLabs(text);
-      if (elevenResult.success) {
-        return { success: true, provider: 'elevenlabs' };
-      }
-    }
+        // Try ElevenLabs if not already tried (with voice mode support)
+        if (!triedProviders.has('elevenlabs') && isElevenLabsAvailable()) {
+          const elevenResult = await speakWithElevenLabs(text, { voiceId });
+          if (elevenResult.success) {
+            return { success: true, provider: 'elevenlabs' };
+          }
+        }
 
     // Try OpenAI if not already tried
     if (!triedProviders.has('openai') && isOpenAITTSAvailable()) {
