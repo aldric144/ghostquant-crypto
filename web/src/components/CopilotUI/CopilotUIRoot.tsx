@@ -45,6 +45,7 @@ import { MicButton } from './MicButton';
 import { WakeWordIndicator } from './WakeWordIndicator';
 import { CopilotPanel } from './CopilotPanel';
 import { copilotEvents, CopilotUIState } from '../../voice_copilot/CopilotEvents';
+import { speak } from '../../voice_copilot/TTSEngine';
 import './CopilotUIStyles.css';
 
 export interface CopilotUIRootProps {
@@ -268,42 +269,21 @@ export function CopilotUIRoot({
     }
   }, []);
 
-  // Text-to-speech
-  const speakResponse = useCallback((text: string) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) {
-      console.warn('[CopilotUI] Speech synthesis not supported');
-      copilotEvents.setState('idle');
-      return;
-    }
-
-    copilotEvents.emitSpeakingStart();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
-
-    // Try to use a good voice
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(v => 
-      v.name.includes('Google') || 
-      v.name.includes('Samantha') ||
-      v.name.includes('Daniel')
-    );
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
-    }
-
-    utterance.onend = () => {
+  // Text-to-speech using TTSEngine (ElevenLabs/OpenAI with fallback)
+  const speakResponse = useCallback(async (text: string) => {
+    console.log('[CopilotUI] Speaking response via TTSEngine:', text.substring(0, 50) + '...');
+    
+    try {
+      const result = await speak(text);
+      console.log('[CopilotUI] TTSEngine result:', result);
+      
+      if (!result.success) {
+        console.error('[CopilotUI] TTS failed:', result.error);
+      }
+    } catch (error) {
+      console.error('[CopilotUI] TTS exception:', error);
       copilotEvents.emitSpeakingEnd();
-    };
-
-    utterance.onerror = (event) => {
-      console.error('[CopilotUI] TTS error:', event.error);
-      copilotEvents.emitSpeakingEnd();
-    };
-
-    window.speechSynthesis.speak(utterance);
+    }
   }, []);
 
   // Handle orb click - toggle panel
