@@ -414,14 +414,20 @@ export function processVoiceInput(rawText: string): NormalizedVoiceInput {
 
   // Log normalization if text was modified
   const wasModified = normalized !== original;
-  if (wasModified && typeof console !== 'undefined') {
-    console.log('[VoiceInputPipeline] Normalization applied:', {
-      original,
-      normalized,
-      hasWakeWord,
-      query,
-      intent: detectedIntent?.type,
-    });
+  if (typeof console !== 'undefined') {
+    // Always log the before/after for debugging
+    console.log('[VoiceNormalize] Before →', original);
+    console.log('[VoiceNormalize] After →', normalized);
+    
+    if (wasModified) {
+      console.log('[WakeFix] Applied normalization:', {
+        original,
+        normalized,
+        hasWakeWord,
+        query,
+        intent: detectedIntent?.type,
+      });
+    }
   }
 
   return {
