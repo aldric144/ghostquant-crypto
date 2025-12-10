@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { 
   Shield, 
@@ -19,8 +20,13 @@ import {
   Scan,
   Map
 } from 'lucide-react'
+import { PredictionDemoModal, EntityScanDemoModal, RiskMapDemoModal } from '@/components/demo'
 
 export default function HomePage() {
+  const [showPredictionModal, setShowPredictionModal] = useState(false)
+  const [showEntityScanModal, setShowEntityScanModal] = useState(false)
+  const [showRiskMapModal, setShowRiskMapModal] = useState(false)
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       {/* Hero Section */}
@@ -340,7 +346,10 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Demo 1 */}
-            <div className="group relative p-8 bg-gradient-to-br from-slate-900/80 to-slate-800/50 border border-cyan-500/20 rounded-xl hover:border-cyan-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 cursor-pointer hover:-translate-y-2">
+            <div 
+              onClick={() => setShowPredictionModal(true)}
+              className="group relative p-8 bg-gradient-to-br from-slate-900/80 to-slate-800/50 border border-cyan-500/20 rounded-xl hover:border-cyan-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 cursor-pointer hover:-translate-y-2"
+            >
               <div className="space-y-4">
                 <div className="p-4 bg-cyan-500/10 rounded-full w-fit mx-auto group-hover:bg-cyan-500/20 transition-colors">
                   <Play className="w-8 h-8 text-cyan-400" />
@@ -358,7 +367,10 @@ export default function HomePage() {
             </div>
 
             {/* Demo 2 */}
-            <div className="group relative p-8 bg-gradient-to-br from-slate-900/80 to-slate-800/50 border border-cyan-500/20 rounded-xl hover:border-cyan-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 cursor-pointer hover:-translate-y-2">
+            <div 
+              onClick={() => setShowEntityScanModal(true)}
+              className="group relative p-8 bg-gradient-to-br from-slate-900/80 to-slate-800/50 border border-cyan-500/20 rounded-xl hover:border-cyan-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 cursor-pointer hover:-translate-y-2"
+            >
               <div className="space-y-4">
                 <div className="p-4 bg-cyan-500/10 rounded-full w-fit mx-auto group-hover:bg-cyan-500/20 transition-colors">
                   <Scan className="w-8 h-8 text-cyan-400" />
@@ -376,7 +388,10 @@ export default function HomePage() {
             </div>
 
             {/* Demo 3 */}
-            <div className="group relative p-8 bg-gradient-to-br from-slate-900/80 to-slate-800/50 border border-cyan-500/20 rounded-xl hover:border-cyan-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 cursor-pointer hover:-translate-y-2">
+            <div 
+              onClick={() => setShowRiskMapModal(true)}
+              className="group relative p-8 bg-gradient-to-br from-slate-900/80 to-slate-800/50 border border-cyan-500/20 rounded-xl hover:border-cyan-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 cursor-pointer hover:-translate-y-2"
+            >
               <div className="space-y-4">
                 <div className="p-4 bg-cyan-500/10 rounded-full w-fit mx-auto group-hover:bg-cyan-500/20 transition-colors">
                   <Map className="w-8 h-8 text-cyan-400" />
@@ -629,6 +644,20 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+
+      {/* Demo Modals */}
+      <PredictionDemoModal 
+        isOpen={showPredictionModal} 
+        onClose={() => setShowPredictionModal(false)} 
+      />
+      <EntityScanDemoModal 
+        isOpen={showEntityScanModal} 
+        onClose={() => setShowEntityScanModal(false)} 
+      />
+      <RiskMapDemoModal 
+        isOpen={showRiskMapModal} 
+        onClose={() => setShowRiskMapModal(false)} 
+      />
     </div>
   )
 }
