@@ -4,6 +4,7 @@ import './globals.css'
 import NavBar from '@/components/NavBar'
 import BottomNavBar from '@/components/mobile/BottomNavBar'
 import DebugConsole from '@/components/DebugConsole'
+import { CopilotUIRoot } from '@/components/CopilotUI'
 
 export const metadata: Metadata = {
   title: 'GhostQuant',
@@ -30,6 +31,7 @@ export default function RootLayout({
         </main>
         <BottomNavBar />
         <DebugConsole />
+        <CopilotUIRoot />
       </body>
     </html>
   )

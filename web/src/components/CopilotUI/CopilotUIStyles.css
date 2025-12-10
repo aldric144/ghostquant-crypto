@@ -1,0 +1,564 @@
+/**
+ * CopilotUIStyles - Premium CSS for GhostQuant Voice Copilot UI
+ * 
+ * Design System:
+ * - Primary: Emerald (#10B981, #00F070)
+ * - Accent: Gold (#FFD860, #FFD700)
+ * - Neural: Purple (#8B5CF6)
+ * - Alert: Blue (#3B82F6)
+ */
+
+/* ========================================
+   CSS Variables
+   ======================================== */
+:root {
+  --copilot-emerald: #10B981;
+  --copilot-emerald-bright: #00F070;
+  --copilot-gold: #FFD860;
+  --copilot-gold-bright: #FFD700;
+  --copilot-purple: #8B5CF6;
+  --copilot-blue: #3B82F6;
+  --copilot-red: #EF4444;
+  
+  --copilot-bg-dark: rgba(0, 0, 0, 0.85);
+  --copilot-bg-medium: rgba(0, 0, 0, 0.7);
+  --copilot-bg-light: rgba(255, 255, 255, 0.1);
+  
+  --copilot-text-primary: rgba(255, 255, 255, 0.95);
+  --copilot-text-secondary: rgba(255, 255, 255, 0.7);
+  --copilot-text-muted: rgba(255, 255, 255, 0.5);
+  
+  --copilot-transition-fast: 150ms;
+  --copilot-transition-normal: 300ms;
+  --copilot-transition-slow: 500ms;
+  
+  --copilot-shadow-glow: 0 0 30px;
+  --copilot-shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================
+   Copilot UI Root Container
+   ======================================== */
+.copilot-ui-root {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 16px;
+  pointer-events: none;
+}
+
+.copilot-ui-root > * {
+  pointer-events: auto;
+}
+
+/* ========================================
+   Singularity Orb - Premium 3D Orb
+   ======================================== */
+.copilot-orb-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.copilot-orb {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  transition: transform var(--copilot-transition-normal) ease;
+  
+  /* Premium 3D gradient */
+  background: radial-gradient(
+    circle at 30% 30%,
+    #34D399 0%,
+    var(--copilot-emerald) 40%,
+    #059669 100%
+  );
+  
+  /* Multi-layer glow effect */
+  box-shadow: 
+    0 0 30px rgba(16, 185, 129, 0.5),
+    0 0 60px rgba(16, 185, 129, 0.3),
+    0 0 90px rgba(16, 185, 129, 0.1),
+    inset 0 0 20px rgba(255, 255, 255, 0.15);
+}
+
+/* Highlight reflection */
+.copilot-orb::before {
+  content: '';
+  position: absolute;
+  top: 8%;
+  left: 12%;
+  width: 35%;
+  height: 25%;
+  background: radial-gradient(
+    ellipse,
+    rgba(255, 255, 255, 0.7) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+/* Halo ring */
+.copilot-orb::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  opacity: 0;
+  transition: opacity var(--copilot-transition-normal) ease;
+}
+
+.copilot-orb:hover::after {
+  opacity: 1;
+}
+
+/* ========================================
+   Orb States
+   ======================================== */
+
+/* IDLE - Soft breathing */
+.copilot-orb.orb-idle {
+  animation: orbBreathing 4s ease-in-out infinite;
+}
+
+@keyframes orbBreathing {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 
+      0 0 30px rgba(16, 185, 129, 0.4),
+      0 0 60px rgba(16, 185, 129, 0.2);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 
+      0 0 40px rgba(16, 185, 129, 0.5),
+      0 0 80px rgba(16, 185, 129, 0.3);
+  }
+}
+
+/* WAKE_WORD_DETECTED - Gold flash + ripple */
+.copilot-orb.orb-wake {
+  animation: orbWake 800ms ease-out forwards;
+  background: radial-gradient(
+    circle at 30% 30%,
+    #FFE066 0%,
+    var(--copilot-gold) 40%,
+    #F59E0B 100%
+  );
+}
+
+@keyframes orbWake {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.15);
+    box-shadow: 
+      0 0 60px rgba(255, 216, 96, 0.7),
+      0 0 100px rgba(255, 216, 96, 0.5);
+  }
+  100% {
+    transform: scale(1.05);
+    box-shadow: 
+      0 0 50px rgba(255, 216, 96, 0.5),
+      0 0 80px rgba(255, 216, 96, 0.3);
+  }
+}
+
+/* Ripple rings for wake word */
+.copilot-orb-ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--copilot-gold);
+  transform: translate(-50%, -50%);
+  animation: rippleExpand 1s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes rippleExpand {
+  0% {
+    width: 100%;
+    height: 100%;
+    opacity: 0.8;
+  }
+  100% {
+    width: 200%;
+    height: 200%;
+    opacity: 0;
+  }
+}
+
+/* LISTENING - Audio-reactive pulse */
+.copilot-orb.orb-listening {
+  background: radial-gradient(
+    circle at 30% 30%,
+    #60A5FA 0%,
+    var(--copilot-blue) 40%,
+    #2563EB 100%
+  );
+  transform: scale(var(--volume-scale, 1));
+  transition: transform 50ms ease-out;
+}
+
+.copilot-orb.orb-listening::after {
+  opacity: 1;
+  border-color: rgba(59, 130, 246, 0.5);
+  animation: listeningHalo 1.5s ease-in-out infinite;
+}
+
+@keyframes listeningHalo {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* THINKING - Neural sparks */
+.copilot-orb.orb-thinking {
+  background: radial-gradient(
+    circle at 30% 30%,
+    #A78BFA 0%,
+    var(--copilot-purple) 40%,
+    #7C3AED 100%
+  );
+  animation: orbThinking 2s ease-in-out infinite;
+}
+
+@keyframes orbThinking {
+  0%, 100% {
+    transform: scale(0.96);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+/* Neural spark particles */
+.copilot-neural-spark {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: #E879F9;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #E879F9;
+  animation: neuralSpark 600ms ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes neuralSpark {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(1);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--spark-x, 20px), var(--spark-y, -20px)) scale(0.5);
+  }
+}
+
+/* SPEAKING - Rhythmic rotation + glow */
+.copilot-orb.orb-speaking {
+  background: radial-gradient(
+    circle at 30% 30%,
+    #6EE7B7 0%,
+    #34D399 40%,
+    var(--copilot-emerald) 100%
+  );
+  animation: orbSpeaking 8s linear infinite, orbSpeakingGlow 600ms ease-in-out infinite;
+}
+
+@keyframes orbSpeaking {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbSpeakingGlow {
+  0%, 100% {
+    box-shadow: 
+      0 0 30px rgba(16, 185, 129, 0.5),
+      0 0 60px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 
+      0 0 50px rgba(16, 185, 129, 0.7),
+      0 0 90px rgba(16, 185, 129, 0.5);
+  }
+}
+
+/* INSIGHT - Domain color burst */
+.copilot-orb.orb-insight {
+  animation: orbInsight 1.2s ease-out forwards;
+}
+
+@keyframes orbInsight {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.copilot-orb.orb-insight-whale {
+  background: radial-gradient(circle at 30% 30%, #38BDF8, #0EA5E9, #0284C7);
+  box-shadow: 0 0 60px rgba(14, 165, 233, 0.7);
+}
+
+.copilot-orb.orb-insight-hydra {
+  background: radial-gradient(circle at 30% 30%, #F87171, #EF4444, #DC2626);
+  box-shadow: 0 0 60px rgba(239, 68, 68, 0.7);
+}
+
+.copilot-orb.orb-insight-ecoscan {
+  background: radial-gradient(circle at 30% 30%, #FBBF24, #F59E0B, #D97706);
+  box-shadow: 0 0 60px rgba(245, 158, 11, 0.7);
+}
+
+.copilot-orb.orb-insight-cluster {
+  background: radial-gradient(circle at 30% 30%, #C084FC, #A855F7, #9333EA);
+  box-shadow: 0 0 60px rgba(168, 85, 247, 0.7);
+}
+
+/* ========================================
+   Orb Status Label
+   ======================================== */
+.copilot-orb-status {
+  font-size: 11px;
+  color: var(--copilot-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity var(--copilot-transition-normal) ease;
+}
+
+.copilot-orb-wrapper:hover .copilot-orb-status,
+.copilot-orb.orb-wake + .copilot-orb-status,
+.copilot-orb.orb-listening + .copilot-orb-status,
+.copilot-orb.orb-thinking + .copilot-orb-status,
+.copilot-orb.orb-speaking + .copilot-orb-status {
+  opacity: 1;
+}
+
+/* ========================================
+   Spotlight Overlay
+   ======================================== */
+.copilot-spotlight {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at bottom right,
+    rgba(16, 185, 129, 0.08) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--copilot-transition-slow) ease;
+  z-index: 9998;
+}
+
+.copilot-spotlight.active {
+  opacity: 1;
+}
+
+/* ========================================
+   Copilot Panel (Transcript/Chat)
+   ======================================== */
+.copilot-panel {
+  position: fixed;
+  bottom: 120px;
+  right: 24px;
+  width: 360px;
+  max-height: 500px;
+  background: var(--copilot-bg-dark);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--copilot-shadow-soft);
+  overflow: hidden;
+  transform: translateY(20px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--copilot-transition-normal) ease;
+  z-index: 9999;
+}
+
+.copilot-panel.open {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+.copilot-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.copilot-panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--copilot-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copilot-panel-title::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--copilot-emerald);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--copilot-emerald);
+}
+
+.copilot-panel-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--copilot-bg-light);
+  color: var(--copilot-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--copilot-transition-fast) ease;
+}
+
+.copilot-panel-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--copilot-text-primary);
+}
+
+.copilot-panel-content {
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.copilot-panel-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.copilot-panel-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.copilot-panel-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+/* ========================================
+   Transcript Messages
+   ======================================== */
+.copilot-message {
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.copilot-message-user {
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: var(--copilot-text-primary);
+  margin-left: 24px;
+}
+
+.copilot-message-assistant {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: var(--copilot-text-primary);
+  margin-right: 24px;
+}
+
+.copilot-message-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--copilot-text-muted);
+  margin-bottom: 4px;
+}
+
+/* ========================================
+   Responsive Adjustments
+   ======================================== */
+@media (max-width: 768px) {
+  .copilot-ui-root {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .copilot-orb {
+    width: 60px;
+    height: 60px;
+  }
+
+  .copilot-panel {
+    right: 16px;
+    left: 16px;
+    width: auto;
+    bottom: 100px;
+  }
+}
+
+/* ========================================
+   Reduced Motion
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  .copilot-orb,
+  .copilot-orb.orb-idle,
+  .copilot-orb.orb-wake,
+  .copilot-orb.orb-listening,
+  .copilot-orb.orb-thinking,
+  .copilot-orb.orb-speaking,
+  .copilot-orb.orb-insight {
+    animation: none;
+  }
+
+  .copilot-orb-ripple,
+  .copilot-neural-spark {
+    animation: none;
+    display: none;
+  }
+}
