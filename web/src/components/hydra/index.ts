@@ -22,3 +22,12 @@ export {
   type HydraSubmitResult,
   type HydraSubmitCallbacks,
 } from './HydraSubmitHandler';
+
+export {
+  runHydraDetection,
+  runDemoDetection,
+  runBootstrapDetection,
+  validateInput,
+  type HydraConnectorResult,
+  type HydraConnectorCallbacks,
+} from './HydraConsoleConnector';
