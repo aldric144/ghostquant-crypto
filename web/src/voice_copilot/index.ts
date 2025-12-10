@@ -284,3 +284,27 @@ export type {
   PipelineState,
   PipelineCallbacks,
 } from './VoicePipeline';
+
+// Copilot Events (UI Event Bus)
+export {
+  copilotEvents,
+  CopilotEventBus,
+} from './CopilotEvents';
+export type {
+  CopilotEventType,
+  CopilotUIState,
+  InsightEventType,
+  CopilotEvent,
+  WakeWordEvent,
+  MicStartEvent,
+  MicStopEvent,
+  VolumeChangeEvent,
+  TranscriptEvent,
+  ThinkingEvent,
+  ResponseEvent,
+  SpeakingStartEvent,
+  SpeakingEndEvent,
+  InsightEvent,
+  ErrorEvent,
+  StateChangeEvent,
+} from './CopilotEvents';
