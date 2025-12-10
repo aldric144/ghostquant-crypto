@@ -31,3 +31,17 @@ export {
   type HydraConnectorResult,
   type HydraConnectorCallbacks,
 } from './HydraConsoleConnector';
+
+export {
+  clearInput,
+  clearOutput,
+  resetConsoleState,
+  createResetHandlers,
+  type HydraResetHandlers,
+} from './HydraResetHandler';
+
+export {
+  default as HydraResetControls,
+  HydraResetControlsCompact,
+  type HydraResetControlsProps,
+} from './HydraResetControls';
