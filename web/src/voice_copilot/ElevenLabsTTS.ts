@@ -27,6 +27,22 @@ export const ELEVENLABS_VOICES = {
   bella: 'EXAVITQu4vr4xnSDxMaL',  // Soft female voice
 } as const;
 
+// Voice mode configuration for dual-voice system
+export type VoiceMode = 'default' | 'mission';
+
+export const VOICE_MODES = {
+  default: {
+    id: process.env.NEXT_PUBLIC_ELEVENLABS_ADAM_VOICE_ID || process.env.ELEVENLABS_ADAM_VOICE_ID || ELEVENLABS_VOICES.adam,
+    name: 'Adam',
+    description: 'Conversational mode - warm, helpful, natural',
+  },
+  mission: {
+    id: process.env.NEXT_PUBLIC_ELEVENLABS_ERIC_VOICE_ID || process.env.ELEVENLABS_ERIC_VOICE_ID || ELEVENLABS_VOICES.eric,
+    name: 'Eric',
+    description: 'Mission briefing mode - concise, analytical, authoritative',
+  },
+} as const;
+
 // Default voice ID (Adam - natural male voice)
 const DEFAULT_VOICE_ID = ELEVENLABS_VOICES.adam;
 
