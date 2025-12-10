@@ -74,10 +74,20 @@ export function normalizeTranscript(text: string): NormalizationResult {
   // Extract query after wake word
   const queryAfterWake = extractQueryAfterWakeAlias(afterWakeAliasNormalize);
 
+  // Log normalization if text was modified (resembles GhostQuant)
+  const wasModified = afterWakeAliasNormalize !== text;
+  if (wasModified && typeof console !== 'undefined') {
+    console.log('[WakeFix] Applied normalization + alias redirection:', {
+      original: text,
+      normalized: afterWakeAliasNormalize,
+      confidence: wakeWordConfidence,
+    });
+  }
+
   return {
     original: text,
     normalized: afterWakeAliasNormalize,
-    wasModified: afterWakeAliasNormalize !== text,
+    wasModified,
     containsWakeWord,
     wakeWordConfidence,
     queryAfterWake,

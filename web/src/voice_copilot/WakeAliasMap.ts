@@ -44,6 +44,12 @@ export const WAKE_ALIASES: readonly string[] = [
   'hey ghostpoint',
   'hey ghost client',
   'hey ghostclient',
+  'hey ghost quench',
+  'hey ghostquench',
+  'hey ghost quint',
+  'hey ghostquint',
+  'hey goast quant',
+  'hey goastquant',
   
   // OK prefix variants
   'ok gusquant',
