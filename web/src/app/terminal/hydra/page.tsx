@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { runHydraDetection, HydraConnectorResult } from '../../../components/hydra/HydraConsoleConnector'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
@@ -91,40 +92,80 @@ export default function HydraConsolePage() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleDetect = async () => {
-    if (!originAddress) {
-      setError('Please enter an origin address')
-      return
-    }
-
-    setLoading(true)
-    setError(null)
-    setResult(null)
-
-    try {
-      const response = await fetch(`${API_BASE}/hydra/hydra/detect`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ origin_address: originAddress }),
-      })
-
-      const data: HydraDetectResponse = await response.json()
-
-      if (data.success) {
-        setResult(data)
-        fetchCluster()
-        fetchIndicators()
-      } else {
-        setError(data.error || 'Detection failed')
+    // Original handler - kept intact for backward compatibility
+    const handleDetect = async () => {
+      if (!originAddress) {
+        setError('Please enter an origin address')
+        return
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
-    } finally {
-      setLoading(false)
+
+      setLoading(true)
+      setError(null)
+      setResult(null)
+
+      try {
+        const response = await fetch(`${API_BASE}/hydra/hydra/detect`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ origin_address: originAddress }),
+        })
+
+        const data: HydraDetectResponse = await response.json()
+
+        if (data.success) {
+          setResult(data)
+          fetchCluster()
+          fetchIndicators()
+        } else {
+          setError(data.error || 'Detection failed')
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+      } finally {
+        setLoading(false)
+      }
     }
-  }
+
+    // NEW: Wrapper handler that routes to HydraConsoleConnector
+    // This intercepts the submission and uses the new parser/adapter pipeline
+    const handleDetectWrapper = async () => {
+      // Use input or default to demo mode if empty
+      const input = originAddress.trim() || 'hydra://demo'
+    
+      setLoading(true)
+      setError(null)
+      setResult(null)
+
+      try {
+        const connectorResult: HydraConnectorResult = await runHydraDetection(input)
+
+        if (connectorResult.success && connectorResult.report) {
+          // Transform connector result to match existing HydraDetectResponse format
+          const transformedResult: HydraDetectResponse = {
+            success: true,
+            report: connectorResult.report,
+            timestamp: connectorResult.timestamp,
+          }
+          setResult(transformedResult)
+        
+          // Update cluster display if available
+          if (connectorResult.cluster) {
+            setCluster(connectorResult.cluster)
+          }
+        
+          // Refresh indicators
+          fetchIndicators()
+        } else {
+          setError(connectorResult.error || 'Detection failed')
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+      } finally {
+        setLoading(false)
+      }
+    }
 
   const getRiskColor = (level: string) => {
     switch (level?.toLowerCase()) {
@@ -173,11 +214,11 @@ export default function HydraConsolePage() {
           </div>
 
           <div className="bg-slate-800/50 border border-red-500/20 rounded-lg p-4 flex items-end">
-            <button
-              onClick={handleDetect}
-              disabled={loading}
-              className="w-full px-6 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold rounded-lg hover:from-red-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
+                        <button
+                          onClick={handleDetectWrapper}
+                          disabled={loading}
+                          className="w-full px-6 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold rounded-lg hover:from-red-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
