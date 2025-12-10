@@ -308,3 +308,36 @@ export type {
   ErrorEvent,
   StateChangeEvent,
 } from './CopilotEvents';
+
+// TTS Engines (ElevenLabs + OpenAI + Unified Engine)
+export {
+  speakWithElevenLabs,
+  stopCurrentAudio as stopElevenLabsAudio,
+  isElevenLabsAvailable,
+  getAvailableVoices as getElevenLabsVoices,
+  preloadAudioContext as preloadElevenLabsAudio,
+  ELEVENLABS_VOICES,
+} from './ElevenLabsTTS';
+export type { ElevenLabsConfig, ElevenLabsResult, ElevenLabsVoice } from './ElevenLabsTTS';
+
+export {
+  speakWithOpenAIVoice,
+  stopCurrentAudio as stopOpenAIAudio,
+  isOpenAITTSAvailable,
+  getAvailableVoices as getOpenAIVoices,
+  preloadAudioContext as preloadOpenAIAudio,
+  OPENAI_VOICES,
+  OPENAI_TTS_MODELS,
+} from './OpenAITTS';
+export type { OpenAITTSConfig, OpenAITTSResult, OpenAIVoice, OpenAITTSModel } from './OpenAITTS';
+
+export {
+  speak,
+  stopSpeaking,
+  getCurrentProvider,
+  setProvider,
+  getAvailableProviders,
+  isTTSAvailable,
+  initializeTTSEngine,
+} from './TTSEngine';
+export type { TTSProvider, TTSResult, TTSEngineConfig } from './TTSEngine';
