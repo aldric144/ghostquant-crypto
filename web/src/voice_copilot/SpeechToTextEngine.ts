@@ -1,7 +1,14 @@
 /**
  * SpeechToTextEngine - Handles speech recognition using Web Speech API
  * Provides both one-shot and continuous listening modes
+ * 
+ * Multilingual Support:
+ * - Accepts language codes (ISO 639-1) or 'auto' for auto-detection
+ * - Stores detected language in session context
+ * - Integrates with LanguageDetector for post-processing
  */
+
+import { detectLanguageFromText, type LanguageCode } from './language/LanguageDetector';
 
 // Type declarations for Web Speech API
 interface SpeechRecognitionEvent extends Event {
@@ -46,19 +53,39 @@ interface SpeechRecognitionInstance {
 type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
 
 export interface SpeechToTextCallbacks {
-  onTranscript: (text: string, isFinal: boolean) => void;
+  onTranscript: (text: string, isFinal: boolean, detectedLanguage?: LanguageCode) => void;
   onError: (error: string) => void;
   onEnd: () => void;
   onStart: () => void;
+  onLanguageDetected?: (language: LanguageCode, confidence: number) => void;
 }
+
+// Language code to BCP 47 mapping for Web Speech API
+const LANGUAGE_TO_BCP47: Record<LanguageCode | 'auto', string> = {
+  auto: '', // Empty string for auto-detection
+  en: 'en-US',
+  es: 'es-ES',
+  fr: 'fr-FR',
+  zh: 'zh-CN',
+  hi: 'hi-IN',
+  ja: 'ja-JP',
+  ko: 'ko-KR',
+  ar: 'ar-SA',
+  pt: 'pt-BR',
+  de: 'de-DE',
+  it: 'it-IT',
+};
 
 export interface SpeechToTextEngine {
   supported: boolean;
   isListening: boolean;
-  startOnce: () => void;
-  startContinuous: () => void;
+  currentLanguage: LanguageCode | 'auto';
+  detectedLanguage: LanguageCode | null;
+  startOnce: (language?: LanguageCode | 'auto') => void;
+  startContinuous: (language?: LanguageCode | 'auto') => void;
   stop: () => void;
   setCallbacks: (callbacks: Partial<SpeechToTextCallbacks>) => void;
+  setLanguage: (language: LanguageCode | 'auto') => void;
 }
 
 // Check for browser support
@@ -78,6 +105,8 @@ export function createSpeechToTextEngine(): SpeechToTextEngine {
   let recognition: SpeechRecognitionInstance | null = null;
   let isListening = false;
   let isContinuousMode = false;
+  let currentLanguage: LanguageCode | 'auto' = 'auto';
+  let detectedLanguage: LanguageCode | null = null;
   
   let callbacks: SpeechToTextCallbacks = {
     onTranscript: () => {},
@@ -86,13 +115,22 @@ export function createSpeechToTextEngine(): SpeechToTextEngine {
     onStart: () => {},
   };
 
-  const initRecognition = (continuous: boolean) => {
+  // Get BCP 47 language code for Web Speech API
+  const getBCP47Language = (lang: LanguageCode | 'auto'): string => {
+    if (lang === 'auto') {
+      // Default to English for auto-detection, will detect from transcript
+      return 'en-US';
+    }
+    return LANGUAGE_TO_BCP47[lang] || 'en-US';
+  };
+
+  const initRecognition = (continuous: boolean, language: LanguageCode | 'auto') => {
     if (!SpeechRecognitionAPI) return null;
     
     const rec = new SpeechRecognitionAPI();
     rec.continuous = continuous;
     rec.interimResults = true;
-    rec.lang = 'en-US';
+    rec.lang = getBCP47Language(language);
     rec.maxAlternatives = 1;
 
     rec.onstart = () => {
@@ -113,10 +151,23 @@ export function createSpeechToTextEngine(): SpeechToTextEngine {
         }
       }
 
+      // Detect language from transcript if in auto mode
+      let transcriptLanguage: LanguageCode | undefined;
+      if (currentLanguage === 'auto' && finalTranscript) {
+        const detection = detectLanguageFromText(finalTranscript);
+        if (detection.confidence >= 0.5) {
+          transcriptLanguage = detection.language;
+          detectedLanguage = detection.language;
+          callbacks.onLanguageDetected?.(detection.language, detection.confidence);
+        }
+      } else if (currentLanguage !== 'auto') {
+        transcriptLanguage = currentLanguage;
+      }
+
       if (finalTranscript) {
-        callbacks.onTranscript(finalTranscript.trim(), true);
+        callbacks.onTranscript(finalTranscript.trim(), true, transcriptLanguage);
       } else if (interimTranscript) {
-        callbacks.onTranscript(interimTranscript.trim(), false);
+        callbacks.onTranscript(interimTranscript.trim(), false, transcriptLanguage);
       }
     };
 
@@ -154,14 +205,48 @@ export function createSpeechToTextEngine(): SpeechToTextEngine {
       return isListening;
     },
 
+    get currentLanguage() {
+      return currentLanguage;
+    },
+
+    get detectedLanguage() {
+      return detectedLanguage;
+    },
+
     setCallbacks(newCallbacks: Partial<SpeechToTextCallbacks>) {
       callbacks = { ...callbacks, ...newCallbacks };
     },
 
-    startOnce() {
+    setLanguage(language: LanguageCode | 'auto') {
+      currentLanguage = language;
+      // If currently listening, restart with new language
+      if (isListening && recognition) {
+        const wasContinuous = isContinuousMode;
+        try {
+          recognition.stop();
+        } catch {
+          // Ignore
+        }
+        recognition = initRecognition(wasContinuous, language);
+        if (recognition) {
+          try {
+            recognition.start();
+          } catch {
+            // Ignore
+          }
+        }
+      }
+    },
+
+    startOnce(language?: LanguageCode | 'auto') {
       if (!supported) {
         callbacks.onError('Speech recognition not supported in this browser');
         return;
+      }
+
+      // Update language if provided
+      if (language !== undefined) {
+        currentLanguage = language;
       }
 
       // Stop any existing recognition
@@ -174,7 +259,7 @@ export function createSpeechToTextEngine(): SpeechToTextEngine {
       }
 
       isContinuousMode = false;
-      recognition = initRecognition(false);
+      recognition = initRecognition(false, currentLanguage);
       
       if (recognition) {
         try {
@@ -185,10 +270,15 @@ export function createSpeechToTextEngine(): SpeechToTextEngine {
       }
     },
 
-    startContinuous() {
+    startContinuous(language?: LanguageCode | 'auto') {
       if (!supported) {
         callbacks.onError('Speech recognition not supported in this browser');
         return;
+      }
+
+      // Update language if provided
+      if (language !== undefined) {
+        currentLanguage = language;
       }
 
       // Stop any existing recognition
@@ -201,7 +291,7 @@ export function createSpeechToTextEngine(): SpeechToTextEngine {
       }
 
       isContinuousMode = true;
-      recognition = initRecognition(true);
+      recognition = initRecognition(true, currentLanguage);
       
       if (recognition) {
         try {
