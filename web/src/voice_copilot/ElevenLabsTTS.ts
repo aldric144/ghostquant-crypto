@@ -99,11 +99,15 @@ function getConfig(): ElevenLabsConfig | null {
   const apiKey = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY || process.env.ELEVENLABS_API_KEY;
   const voiceId = process.env.NEXT_PUBLIC_ELEVENLABS_VOICE_ID || process.env.ELEVENLABS_VOICE_ID || process.env.GHOSTQUANT_CUSTOM_VOICE_ID || DEFAULT_VOICE_ID;
 
+  console.log('[ElevenLabsTTS] getConfig: NEXT_PUBLIC_ELEVENLABS_API_KEY present =', !!process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY);
+  console.log('[ElevenLabsTTS] getConfig: apiKey present =', !!apiKey);
+
   if (!apiKey) {
-    console.warn('[ElevenLabsTTS] No API key configured');
+    console.warn('[ElevenLabsTTS] No API key configured - ElevenLabs will NOT be available');
     return null;
   }
 
+  console.log('[ElevenLabsTTS] Config OK: apiKey present, voiceId =', voiceId);
   return {
     apiKey,
     voiceId,
@@ -235,7 +239,9 @@ async function playAudioBlob(blob: Blob): Promise<void> {
  * Check if ElevenLabs is configured and available
  */
 export function isElevenLabsAvailable(): boolean {
-  return getConfig() !== null;
+  const available = getConfig() !== null;
+  console.log('[ElevenLabsTTS] isElevenLabsAvailable =', available);
+  return available;
 }
 
 /**

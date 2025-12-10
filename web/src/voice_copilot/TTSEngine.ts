@@ -21,9 +21,17 @@ import { getVoiceMode, getCurrentVoiceId } from './voice/VoiceModeManager';
 export type TTSProvider = 'elevenlabs' | 'openai' | 'browser' | 'auto';
 
 // Get configured provider from environment
+// Default to 'elevenlabs' when ElevenLabs API key is available
 const getConfiguredProvider = (): TTSProvider => {
-  const provider = process.env.NEXT_PUBLIC_TTS_PROVIDER || process.env.TTS_PROVIDER || 'auto';
-  return provider as TTSProvider;
+  const envProvider = process.env.NEXT_PUBLIC_TTS_PROVIDER || process.env.TTS_PROVIDER;
+  if (envProvider) {
+    return envProvider as TTSProvider;
+  }
+  // Auto-select elevenlabs if API key is available, otherwise auto
+  if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY) {
+    return 'elevenlabs';
+  }
+  return 'auto';
 };
 
 // TTS Result interface
@@ -68,6 +76,9 @@ let currentProvider: TTSProvider = 'auto';
 export function initializeTTSEngine(config?: TTSEngineConfig): void {
   currentProvider = config?.provider || getConfiguredProvider();
   console.log(`[TTSEngine] Initialized with provider: ${currentProvider}`);
+  console.log(`[TTSEngine] env NEXT_PUBLIC_TTS_PROVIDER =`, process.env.NEXT_PUBLIC_TTS_PROVIDER);
+  console.log(`[TTSEngine] isElevenLabsAvailable =`, isElevenLabsAvailable());
+  console.log(`[TTSEngine] isOpenAITTSAvailable =`, isOpenAITTSAvailable());
 }
 
 /**
@@ -215,30 +226,37 @@ export async function speak(text: string, options?: TTSEngineConfig): Promise<TT
   // Fallback chain if primary failed
   if (!result.success && fallbackEnabled) {
     console.log(`[TTSEngine] Primary provider failed, attempting fallback...`);
+    console.log(`[TTSEngine] Primary error was:`, result.error);
 
         // Try ElevenLabs if not already tried (with voice mode support)
         if (!triedProviders.has('elevenlabs') && isElevenLabsAvailable()) {
+          console.log(`[TTSEngine] Trying ElevenLabs fallback...`);
           const elevenResult = await speakWithElevenLabs(text, { voiceId });
           if (elevenResult.success) {
             return { success: true, provider: 'elevenlabs' };
           }
+          console.log(`[TTSEngine] ElevenLabs fallback failed:`, elevenResult.error);
         }
 
     // Try OpenAI if not already tried
     if (!triedProviders.has('openai') && isOpenAITTSAvailable()) {
+      console.log(`[TTSEngine] Trying OpenAI fallback...`);
       const openaiResult = await speakWithOpenAIVoice(text);
       if (openaiResult.success) {
         return { success: true, provider: 'openai' };
       }
+      console.log(`[TTSEngine] OpenAI fallback failed:`, openaiResult.error);
     }
 
-    // Final fallback to browser TTS with language
-    if (!triedProviders.has('browser')) {
-      const browserSuccess = await speakWithBrowser(text, language);
-      if (browserSuccess) {
-        return { success: true, provider: 'browser' };
-      }
-    }
+    // TEMPORARILY DISABLED: Browser TTS fallback
+    // This is disabled to make ElevenLabs failures visible instead of silently defaulting to robot voice
+    // if (!triedProviders.has('browser')) {
+    //   const browserSuccess = await speakWithBrowser(text, language);
+    //   if (browserSuccess) {
+    //     return { success: true, provider: 'browser' };
+    //   }
+    // }
+    console.warn(`[TTSEngine] All TTS providers failed - browser fallback is DISABLED for debugging`);
   }
 
   return result;
