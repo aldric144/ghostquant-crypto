@@ -223,6 +223,10 @@ app.include_router(hydra_adapter_router)
 from app.widb import widb_router
 app.include_router(widb_router)
 
+# Demo Engine - Subscriber demo mode endpoints
+from app.demo_engine import demo_engine_router
+app.include_router(demo_engine_router)
+
 @app.post("/intel/sim/start")
 async def start_sim():
     """Start the intelligence feed simulator."""
