@@ -219,6 +219,10 @@ app.include_router(timeline_router)
 from app.gde.constellation_hydra.hydra_input_adapter import hydra_adapter_router
 app.include_router(hydra_adapter_router)
 
+# WIDB - Whale Intelligence Database (Phase 11)
+from app.widb import widb_router
+app.include_router(widb_router)
+
 @app.post("/intel/sim/start")
 async def start_sim():
     """Start the intelligence feed simulator."""
