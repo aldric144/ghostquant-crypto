@@ -7,6 +7,7 @@
  * - Toggle continuous listening on/off
  * - Persist user preference to localStorage
  * - Provide API to UI button (future)
+ * - Supports "Hey G3" wake word and all aliases
  * 
  * Logging prefix: [HandsFreeMode]
  */

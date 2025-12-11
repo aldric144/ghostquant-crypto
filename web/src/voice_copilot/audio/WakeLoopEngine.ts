@@ -4,11 +4,18 @@
  * Phase 4: Continuous Listening + Wake-Word Loop Engine
  * 
  * Implements a continuous loop that:
- * 1. Listens for wake-word ("Hey GhostQuant" and all fuzzy alias variants)
+ * 1. Listens for wake-word ("Hey G3" and all fuzzy alias variants including GhostQuant)
  * 2. On detection -> activates MicEngine for full STT capture
  * 3. Hands text to CopilotOrchestrator
  * 4. Waits for TTS to finish (InterruptibleTTSPipeline)
  * 5. Automatically resets into wake-word listening state
+ * 
+ * Supported wake words:
+ * - "Hey G3", "G3", "OK G3", "Hi G3", "Yo G3"
+ * - "Hey gee three", "Hey g-3"
+ * - "Ghost Quant" -> normalizes to G3
+ * - "Go Quant" -> normalizes to G3
+ * - "Ghost Quench" -> normalizes to G3
  * 
  * Features:
  * - Wake-word detection every ~150ms

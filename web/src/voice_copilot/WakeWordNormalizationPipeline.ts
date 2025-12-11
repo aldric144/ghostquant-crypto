@@ -6,9 +6,11 @@
  * without modifying any existing Copilot logic.
  * 
  * Pipeline order:
- * 1. PhoneticReranker - Replace "google" with "GhostQuant" if phonetics match
- * 2. STTNormalizer - Apply bias dictionary corrections
- * 3. WakeAliasMap - Normalize wake phrase aliases
+ * 1. PhoneticReranker - Replace "google" with "G3" if phonetics match
+ * 2. STTNormalizer - Apply bias dictionary corrections (all normalize to G3)
+ * 3. WakeAliasMap - Normalize wake phrase aliases to "Hey G3"
+ * 
+ * All GhostQuant variants now normalize to G3.
  */
 
 import { normalizeSTTOutput, containsGhostQuantTerm, getGhostQuantConfidenceBoost } from './STTNormalizer';
@@ -108,14 +110,28 @@ export function normalizeTranscript(text: string): NormalizationResult {
 export function shouldActivateWakeWord(text: string): boolean {
   if (!text) return false;
 
-  // Quick check for obvious matches first
+  // Quick check for obvious G3 matches first
   const lowerText = text.toLowerCase();
+  if (lowerText.includes('g3') || lowerText.includes('hey g3') || lowerText.includes('gee three')) {
+    console.log('[WakeWord] Alias detected -> normalized to "Hey G3"');
+    return true;
+  }
+
+  // Check for GhostQuant (legacy, normalizes to G3)
   if (lowerText.includes('ghostquant') || lowerText.includes('ghost quant')) {
+    console.log('[WakeWord] Alias detected -> normalized to "Hey G3"');
+    return true;
+  }
+
+  // Check for go quant / ghost quench (normalize to G3)
+  if (lowerText.includes('go quant') || lowerText.includes('ghost quench')) {
+    console.log('[WakeWord] Alias detected -> normalized to "Hey G3"');
     return true;
   }
 
   // Check for Google misrecognition (very common)
   if (isGoogleMisrecognition(text)) {
+    console.log('[WakeWord] Alias detected -> normalized to "Hey G3"');
     return true;
   }
 
@@ -161,6 +177,7 @@ export function hasDetectableIntent(text: string): boolean {
   
   // If there's a query after the wake word, intent is detectable
   if (result.queryAfterWake && result.queryAfterWake.trim().length > 0) {
+    console.log(`[WakeWord] Query extracted: "${result.queryAfterWake.trim()}"`);
     return true;
   }
 
@@ -168,11 +185,17 @@ export function hasDetectableIntent(text: string): boolean {
   if (result.containsWakeWord) {
     // Remove wake word patterns and check for remaining content
     const withoutWake = result.normalized
+      .replace(/hey g3/gi, '')
+      .replace(/ok g3/gi, '')
+      .replace(/g3/gi, '')
       .replace(/hey ghostquant/gi, '')
       .replace(/ok ghostquant/gi, '')
       .replace(/ghostquant/gi, '')
       .trim();
     
+    if (withoutWake.length > 0) {
+      console.log(`[WakeWord] Query extracted: "${withoutWake}"`);
+    }
     return withoutWake.length > 0;
   }
 

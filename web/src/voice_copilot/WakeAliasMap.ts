@@ -1,23 +1,72 @@
 /**
  * WakeAliasMap - Wake-word aliases for misheard variants
- * Maps common misrecognitions to the canonical "Hey GhostQuant" wake phrase
+ * Maps common misrecognitions to the canonical "Hey G3" wake phrase
  * 
  * This module provides alias mapping without modifying the WakeWordEngine directly.
  * It can be used as a pre-processing layer for wake word detection.
  */
 
-// Canonical wake phrase
-export const CANONICAL_WAKE_PHRASE = 'Hey GhostQuant';
+// Canonical wake phrase - Updated to G3
+export const CANONICAL_WAKE_PHRASE = 'Hey G3';
 
-// Wake word aliases - misheard variants that should activate GhostQuant
-// All of these should be normalized to "Hey GhostQuant"
+// G3 wake word aliases - all variants that should activate G3
+// All of these should be normalized to "Hey G3"
+export const G3_ALIASES: readonly string[] = [
+  // Primary G3 variants
+  'hey g3',
+  'g3',
+  'ok g3',
+  'hi g3',
+  'yo g3',
+  'hey gee three',
+  'hey g-3',
+  'hey gee 3',
+  'hey g 3',
+  'ok gee three',
+  'hi gee three',
+  'yo gee three',
+  'gee three',
+  'gee 3',
+  'g-3',
+  'g 3',
+] as const;
+
+// GhostQuant aliases that should normalize to G3
+export const GHOSTQUANT_TO_G3_ALIASES: readonly string[] = [
+  // Direct GhostQuant -> G3 normalization
+  'ghost quant',
+  'ghostquant',
+  'go quant',
+  'goquant',
+  'ghost quench',
+  'ghostquench',
+  'hey ghost quant',
+  'hey ghostquant',
+  'ok ghost quant',
+  'ok ghostquant',
+  'hi ghost quant',
+  'hi ghostquant',
+  'hey go quant',
+  'hey goquant',
+  'hey ghost quench',
+  'hey ghostquench',
+] as const;
+
+// Wake word aliases - misheard variants that should activate G3
+// All of these should be normalized to "Hey G3"
 export const WAKE_ALIASES: readonly string[] = [
+  // G3 primary aliases
+  ...G3_ALIASES,
+  
+  // GhostQuant -> G3 aliases
+  ...GHOSTQUANT_TO_G3_ALIASES,
+  
   // Google misrecognitions (very common)
   'hey google',
   'ok google',
   'okay google',
   
-  // GhostQuant phonetic variants
+  // GhostQuant phonetic variants (all normalize to G3)
   'hey gusquant',
   'hey gus quant',
   'hey ghost quan',
@@ -44,8 +93,6 @@ export const WAKE_ALIASES: readonly string[] = [
   'hey ghostpoint',
   'hey ghost client',
   'hey ghostclient',
-  'hey ghost quench',
-  'hey ghostquench',
   'hey ghost quint',
   'hey ghostquint',
   'hey goast quant',
@@ -68,8 +115,6 @@ export const WAKE_ALIASES: readonly string[] = [
   'hello ghost quant',
   
   // Without prefix (just the name)
-  'ghostquant',
-  'ghost quant',
   'gusquant',
   'gus quant',
   'ghost kwant',
@@ -117,9 +162,9 @@ export function matchesWakeAlias(text: string): boolean {
 }
 
 /**
- * Normalize wake phrase to canonical form
+ * Normalize wake phrase to canonical form (Hey G3)
  * @param text - Text containing wake phrase
- * @returns Text with wake phrase normalized to "Hey GhostQuant"
+ * @returns Text with wake phrase normalized to "Hey G3"
  */
 export function normalizeWakePhrase(text: string): string {
   if (!text) return text;
@@ -137,6 +182,13 @@ export function normalizeWakePhrase(text: string): string {
       const before = normalized.substring(0, index);
       const after = normalized.substring(index + alias.length);
       normalized = before + CANONICAL_WAKE_PHRASE + after;
+      
+      // Log the normalization
+      console.log('[WakeWord] Alias detected -> normalized to "Hey G3"');
+      const cleanedQuery = after.trim();
+      if (cleanedQuery) {
+        console.log(`[WakeWord] Query extracted: "${cleanedQuery}"`);
+      }
       break; // Only replace first occurrence
     }
   }
@@ -186,18 +238,36 @@ export function getWakeAliasConfidence(text: string): number {
   
   const lowerText = text.toLowerCase().trim();
   
-  // Exact canonical match
-  if (lowerText === 'hey ghostquant' || lowerText === 'hey ghost quant') {
+  // Exact G3 canonical match (highest confidence)
+  if (lowerText === 'hey g3' || lowerText === 'g3' || lowerText.includes('hey g3')) {
+    console.log('[WakeWord] Alias detected -> normalized to "Hey G3"');
     return 1.0;
   }
   
-  // Google misrecognitions (very high confidence these are meant for GhostQuant)
-  if (lowerText.includes('hey google') || lowerText.includes('ok google')) {
+  // G3 variants (very high confidence)
+  const g3Variants = ['ok g3', 'hi g3', 'yo g3', 'hey gee three', 'hey g-3', 'gee three'];
+  for (const variant of g3Variants) {
+    if (lowerText.includes(variant)) {
+      console.log('[WakeWord] Alias detected -> normalized to "Hey G3"');
+      return 0.98;
+    }
+  }
+  
+  // GhostQuant -> G3 normalization (high confidence)
+  if (lowerText.includes('ghostquant') || lowerText.includes('ghost quant')) {
+    console.log('[WakeWord] Alias detected -> normalized to "Hey G3"');
     return 0.95;
   }
   
-  // Close phonetic matches
+  // Google misrecognitions (very high confidence these are meant for G3)
+  if (lowerText.includes('hey google') || lowerText.includes('ok google')) {
+    console.log('[WakeWord] Alias detected -> normalized to "Hey G3"');
+    return 0.95;
+  }
+  
+  // GhostQuant phonetic variants -> G3
   const highConfidenceAliases = [
+    'ghost quench', 'ghostquench', 'go quant', 'goquant',
     'hey ghost kwant', 'hey ghostkwant',
     'hey ghost quont', 'hey ghostquont',
     'hey gusquant', 'hey gus quant',
@@ -206,6 +276,7 @@ export function getWakeAliasConfidence(text: string): number {
   
   for (const alias of highConfidenceAliases) {
     if (lowerText.includes(alias)) {
+      console.log('[WakeWord] Alias detected -> normalized to "Hey G3"');
       return 0.9;
     }
   }
@@ -213,6 +284,7 @@ export function getWakeAliasConfidence(text: string): number {
   // Other aliases
   for (const alias of WAKE_ALIASES) {
     if (lowerText.includes(alias.toLowerCase())) {
+      console.log('[WakeWord] Alias detected -> normalized to "Hey G3"');
       return 0.8;
     }
   }
@@ -240,6 +312,8 @@ export function isGoogleMisrecognition(text: string): boolean {
 export default {
   CANONICAL_WAKE_PHRASE,
   WAKE_ALIASES,
+  G3_ALIASES,
+  GHOSTQUANT_TO_G3_ALIASES,
   matchesWakeAlias,
   normalizeWakePhrase,
   extractQueryAfterWakeAlias,
