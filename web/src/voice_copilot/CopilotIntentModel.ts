@@ -221,6 +221,17 @@ const VAGUE_RECOVERY_PATTERNS: IntentPattern[] = [
   { pattern: /^should\s*i\s*(worry|be\s*concerned)\??$/i, intent: 'vague_recovery', subIntent: 'concern', confidence: 0.9, requiresContext: true },
   { pattern: /^help\.?$/i, intent: 'vague_recovery', subIntent: 'help', confidence: 0.9 },
   { pattern: /^i'?m\s*(confused|lost)\.?$/i, intent: 'vague_recovery', subIntent: 'confused', confidence: 0.9 },
+  // Phase 2 Conversational Engine - Extended vague question patterns
+  { pattern: /^what\s*(is\s*)?(happening|going\s*on)\s*(here)?\??$/i, intent: 'vague_recovery', subIntent: 'happening', confidence: 0.9, requiresContext: true },
+  { pattern: /^(can\s*you\s*)?(simplify|make\s*it\s*simpler)\s*(that|this)?\??$/i, intent: 'vague_recovery', subIntent: 'simplify', confidence: 0.9, requiresContext: true },
+  { pattern: /^tell\s*me\s*more\.?$/i, intent: 'vague_recovery', subIntent: 'elaborate', confidence: 0.9, requiresContext: true },
+  { pattern: /^(go\s*on|continue|and\??)\s*$/i, intent: 'vague_recovery', subIntent: 'continue', confidence: 0.85, requiresContext: true },
+  { pattern: /^compare\s*(this|that|it)\s*to\s*(yesterday|last\s*week|before)\.?$/i, intent: 'vague_recovery', subIntent: 'compare', confidence: 0.9, requiresContext: true },
+  { pattern: /^(what|how)\s*about\s*(this|that|the\s*other)\.?$/i, intent: 'vague_recovery', subIntent: 'about', confidence: 0.85, requiresContext: true },
+  { pattern: /^(so|okay|alright)\s*(what|now)\??$/i, intent: 'vague_recovery', subIntent: 'next', confidence: 0.8, requiresContext: true },
+  { pattern: /^(huh|what|sorry)\??$/i, intent: 'vague_recovery', subIntent: 'repeat', confidence: 0.85, requiresContext: true },
+  { pattern: /^(say\s*that\s*again|repeat\s*that|come\s*again)\.?$/i, intent: 'vague_recovery', subIntent: 'repeat', confidence: 0.9 },
+  { pattern: /^(why|how\s*come)\??$/i, intent: 'vague_recovery', subIntent: 'why', confidence: 0.8, requiresContext: true },
 ];
 
 const CONTEXTUAL_PATTERNS: IntentPattern[] = [
