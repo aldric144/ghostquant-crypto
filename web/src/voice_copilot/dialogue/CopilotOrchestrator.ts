@@ -1,0 +1,432 @@
+/**
+ * CopilotOrchestrator - Phase 2 Conversational Engine Integration
+ * 
+ * Integrates all Phase 2 modules into a unified response pipeline:
+ * 
+ * Flow:
+ * 1. STT → IntentModel
+ * 2. IntentModel → DialogueManager (context + follow-up)
+ * 3. DialogueManager → KnowledgeBase (topic resolution)
+ * 4. KnowledgeBase → NaturalExpansionEngine
+ * 5. ToneEngine → apply conversational tone
+ * 6. InterruptibleTTSPipeline → speak the final output
+ * 
+ * This is an ADDITIVE module - does NOT modify existing Copilot logic.
+ * It wraps and extends the existing system.
+ */
+
+import { getDialogueManager, type DialogueTurn } from './CopilotDialogueManager';
+import { getInterruptionEngine } from './CopilotInterruptionEngine';
+import { getNaturalExpansionEngine, type ExpansionMode } from './NaturalExpansionEngine';
+import { getInterruptibleTTSPipeline } from '../audio/InterruptibleTTSPipeline';
+import {
+  selectConversationalProfile,
+  applyConversationalProfile,
+  selectTone,
+  transformResponse,
+  createToneContext,
+  type ToneState,
+} from '../CopilotToneEngine';
+import { recognizeIntent, type RecognizedIntent } from '../CopilotIntentModel';
+
+export interface OrchestratorConfig {
+  enableDialogueTracking: boolean;
+  enableInterruption: boolean;
+  enableNaturalExpansion: boolean;
+  enableToneAdaptation: boolean;
+  enableInterruptibleTTS: boolean;
+  defaultExpansionMode: ExpansionMode;
+  enableLogging: boolean;
+}
+
+const DEFAULT_CONFIG: OrchestratorConfig = {
+  enableDialogueTracking: true,
+  enableInterruption: true,
+  enableNaturalExpansion: true,
+  enableToneAdaptation: true,
+  enableInterruptibleTTS: true,
+  defaultExpansionMode: 'standard',
+  enableLogging: true,
+};
+
+export interface ProcessedQuery {
+  originalQuery: string;
+  normalizedQuery: string;
+  intent: RecognizedIntent;
+  isFollowUp: boolean;
+  followUpType: string | null;
+  resolvedReferences: Array<{ original: string; resolved: string }>;
+  needsClarification: boolean;
+  clarifyingQuestion: string | null;
+  contextSummary: string | null;
+}
+
+export interface ProcessedResponse {
+  originalResponse: string;
+  expandedResponse: string;
+  finalResponse: string;
+  toneApplied: ToneState;
+  profileApplied: string;
+  transitionPhrase: string | null;
+}
+
+class CopilotOrchestratorImpl {
+  private config: OrchestratorConfig;
+  private currentPageContext: string = '';
+  private lastTone: ToneState | undefined;
+
+  constructor(config: Partial<OrchestratorConfig> = {}) {
+    this.config = { ...DEFAULT_CONFIG, ...config };
+    this.log('CopilotOrchestrator initialized');
+  }
+
+  /**
+   * Log message with [CopilotPhase2] prefix
+   */
+  private log(message: string, data?: unknown): void {
+    if (this.config.enableLogging) {
+      if (data) {
+        console.log(`[CopilotPhase2][Orchestrator] ${message}`, data);
+      } else {
+        console.log(`[CopilotPhase2][Orchestrator] ${message}`);
+      }
+    }
+  }
+
+  /**
+   * Set current page context
+   */
+  setPageContext(pageContext: string): void {
+    this.currentPageContext = pageContext;
+    this.log('Page context updated:', pageContext);
+  }
+
+  /**
+   * Process user query through the full pipeline
+   * 
+   * Steps:
+   * 1. Recognize intent
+   * 2. Check for follow-up
+   * 3. Resolve references
+   * 4. Check if clarification needed
+   */
+  processQuery(userQuery: string): ProcessedQuery {
+    this.log('Processing query:', userQuery);
+
+    // Step 1: Recognize intent
+    const intent = recognizeIntent(userQuery);
+    this.log('Intent recognized:', intent.category);
+
+    // Step 2: Check for follow-up (if dialogue tracking enabled)
+    let isFollowUp = false;
+    let followUpType: string | null = null;
+    
+    if (this.config.enableDialogueTracking) {
+      const dialogueManager = getDialogueManager();
+      const followUpResult = dialogueManager.detectFollowUp(userQuery);
+      isFollowUp = followUpResult.isFollowUp;
+      followUpType = followUpResult.followUpType;
+      this.log('Follow-up detection:', { isFollowUp, followUpType });
+    }
+
+    // Step 3: Resolve references
+    let resolvedReferences: Array<{ original: string; resolved: string }> = [];
+    let needsClarification = false;
+    let clarifyingQuestion: string | null = null;
+
+    if (this.config.enableDialogueTracking) {
+      const dialogueManager = getDialogueManager();
+      const resolution = dialogueManager.resolveReference(
+        userQuery,
+        this.currentPageContext,
+        undefined
+      );
+      resolvedReferences = resolution.resolvedReferences;
+      needsClarification = resolution.needsClarification;
+
+      // Get clarifying question if needed
+      if (needsClarification) {
+        clarifyingQuestion = dialogueManager.getClarifyingQuestion(userQuery);
+      }
+    }
+
+    // Step 4: Get context summary for long conversations
+    let contextSummary: string | null = null;
+    if (this.config.enableDialogueTracking) {
+      const dialogueManager = getDialogueManager();
+      contextSummary = dialogueManager.getContextSummary();
+    }
+
+    const processed: ProcessedQuery = {
+      originalQuery: userQuery,
+      normalizedQuery: userQuery, // Could be enhanced with normalization
+      intent,
+      isFollowUp,
+      followUpType,
+      resolvedReferences,
+      needsClarification,
+      clarifyingQuestion,
+      contextSummary,
+    };
+
+    this.log('Query processed:', processed);
+    return processed;
+  }
+
+  /**
+   * Process response through the full pipeline
+   * 
+   * Steps:
+   * 1. Apply natural expansion
+   * 2. Select and apply tone
+   * 3. Add transition phrase if follow-up
+   */
+  processResponse(
+    response: string,
+    processedQuery: ProcessedQuery
+  ): ProcessedResponse {
+    this.log('Processing response');
+
+    let expandedResponse = response;
+    let finalResponse = response;
+    let toneApplied: ToneState = 'conversational';
+    let profileApplied = 'friendly';
+    let transitionPhrase: string | null = null;
+
+    // Step 1: Apply natural expansion
+    if (this.config.enableNaturalExpansion) {
+      const expansionEngine = getNaturalExpansionEngine();
+      expandedResponse = expansionEngine.expand(response, {
+        isFollowUp: processedQuery.isFollowUp,
+        questionType: processedQuery.intent.category,
+      });
+      this.log('Natural expansion applied');
+    }
+
+    // Step 2: Select and apply tone
+    if (this.config.enableToneAdaptation) {
+      // Create tone context
+      const toneContext = createToneContext(
+        processedQuery.originalQuery,
+        processedQuery.intent,
+        this.currentPageContext,
+        this.lastTone
+      );
+
+      // Select tone
+      const toneConfig = selectTone(toneContext);
+      toneApplied = toneConfig.state;
+
+      // Transform response with tone
+      finalResponse = transformResponse(expandedResponse, toneConfig);
+
+      // Also apply conversational profile
+      const profile = selectConversationalProfile(
+        processedQuery.originalQuery,
+        this.currentPageContext
+      );
+      profileApplied = profile.profile;
+      finalResponse = applyConversationalProfile(finalResponse, profile);
+
+      // Update last tone
+      this.lastTone = toneApplied;
+      this.log('Tone applied:', toneApplied);
+    } else {
+      finalResponse = expandedResponse;
+    }
+
+    // Step 3: Add transition phrase if follow-up
+    if (processedQuery.isFollowUp && this.config.enableDialogueTracking) {
+      const dialogueManager = getDialogueManager();
+      transitionPhrase = dialogueManager.getTransitionPhrase();
+      if (transitionPhrase) {
+        finalResponse = `${transitionPhrase} ${finalResponse}`;
+        this.log('Transition phrase added:', transitionPhrase);
+      }
+    }
+
+    const processed: ProcessedResponse = {
+      originalResponse: response,
+      expandedResponse,
+      finalResponse,
+      toneApplied,
+      profileApplied,
+      transitionPhrase,
+    };
+
+    this.log('Response processed');
+    return processed;
+  }
+
+  /**
+   * Update dialogue state after a complete turn
+   */
+  updateDialogueState(
+    userQuery: string,
+    copilotResponse: string,
+    intent?: string,
+    pageContext?: string
+  ): void {
+    if (!this.config.enableDialogueTracking) return;
+
+    const dialogueManager = getDialogueManager();
+    dialogueManager.updateState(
+      userQuery,
+      copilotResponse,
+      intent,
+      pageContext || this.currentPageContext
+    );
+    this.log('Dialogue state updated');
+  }
+
+  /**
+   * Speak response using interruptible TTS
+   */
+  async speakResponse(audioBlob: Blob): Promise<void> {
+    if (!this.config.enableInterruptibleTTS) {
+      this.log('Interruptible TTS disabled, skipping');
+      return;
+    }
+
+    const ttsPipeline = getInterruptibleTTSPipeline();
+    await ttsPipeline.play(audioBlob);
+    this.log('Response spoken via interruptible TTS');
+  }
+
+  /**
+   * Stop current speech (for interruption)
+   */
+  stopSpeech(): void {
+    if (!this.config.enableInterruptibleTTS) return;
+
+    const ttsPipeline = getInterruptibleTTSPipeline();
+    ttsPipeline.stop();
+    this.log('Speech stopped');
+  }
+
+  /**
+   * Notify that user started speaking (for interruption detection)
+   */
+  notifyUserSpeechStart(): void {
+    if (!this.config.enableInterruption) return;
+
+    const interruptionEngine = getInterruptionEngine();
+    interruptionEngine.notifyUserSpeechDetected();
+    this.log('User speech detected');
+  }
+
+  /**
+   * Notify that user stopped speaking
+   */
+  notifyUserSpeechEnd(): void {
+    if (!this.config.enableInterruption) return;
+
+    const interruptionEngine = getInterruptionEngine();
+    interruptionEngine.notifyUserSpeechEnded();
+    this.log('User speech ended');
+  }
+
+  /**
+   * Clear dialogue context
+   */
+  clearContext(): void {
+    if (!this.config.enableDialogueTracking) return;
+
+    const dialogueManager = getDialogueManager();
+    dialogueManager.clearContext();
+    this.lastTone = undefined;
+    this.log('Context cleared');
+  }
+
+  /**
+   * Get current dialogue context
+   */
+  getDialogueContext(): {
+    recentTurns: DialogueTurn[];
+    currentTopic: string | null;
+    lastModuleMentioned: string | null;
+    mentionedEntities: string[];
+  } | null {
+    if (!this.config.enableDialogueTracking) return null;
+
+    const dialogueManager = getDialogueManager();
+    return dialogueManager.getContext();
+  }
+
+  /**
+   * Set expansion mode
+   */
+  setExpansionMode(mode: ExpansionMode): void {
+    if (!this.config.enableNaturalExpansion) return;
+
+    const expansionEngine = getNaturalExpansionEngine();
+    expansionEngine.setMode(mode);
+    this.log('Expansion mode set:', mode);
+  }
+
+  /**
+   * Check if TTS is currently speaking
+   */
+  isSpeaking(): boolean {
+    if (!this.config.enableInterruptibleTTS) return false;
+
+    const ttsPipeline = getInterruptibleTTSPipeline();
+    return ttsPipeline.isPlaying();
+  }
+
+  /**
+   * Update configuration
+   */
+  configure(config: Partial<OrchestratorConfig>): void {
+    this.config = { ...this.config, ...config };
+    this.log('Configuration updated', this.config);
+  }
+
+  /**
+   * Reset orchestrator state
+   */
+  reset(): void {
+    this.clearContext();
+    this.currentPageContext = '';
+    this.lastTone = undefined;
+
+    if (this.config.enableInterruptibleTTS) {
+      const ttsPipeline = getInterruptibleTTSPipeline();
+      ttsPipeline.reset();
+    }
+
+    if (this.config.enableNaturalExpansion) {
+      const expansionEngine = getNaturalExpansionEngine();
+      expansionEngine.clearCache();
+    }
+
+    this.log('Orchestrator reset');
+  }
+}
+
+// Singleton instance
+let orchestrator: CopilotOrchestratorImpl | null = null;
+
+/**
+ * Get the CopilotOrchestrator singleton instance
+ */
+export function getCopilotOrchestrator(): CopilotOrchestratorImpl {
+  if (!orchestrator) {
+    orchestrator = new CopilotOrchestratorImpl();
+  }
+  return orchestrator;
+}
+
+/**
+ * Create a new CopilotOrchestrator with custom config
+ */
+export function createCopilotOrchestrator(
+  config?: Partial<OrchestratorConfig>
+): CopilotOrchestratorImpl {
+  return new CopilotOrchestratorImpl(config);
+}
+
+export default {
+  getCopilotOrchestrator,
+  createCopilotOrchestrator,
+};

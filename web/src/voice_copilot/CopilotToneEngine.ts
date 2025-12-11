@@ -530,3 +530,221 @@ export function createToneContext(
 
 // Export tone configs for direct access
 export { TONE_CONFIGS };
+
+// ============================================
+// PHASE 2 CONVERSATIONAL PROFILES
+// ============================================
+
+/**
+ * Phase 2 Conversational Profile Types
+ * 
+ * Profiles:
+ * - friendly: Warm, approachable, uses casual language
+ * - conversational: Natural dialogue flow
+ * - professional: Business-appropriate, clear
+ * - technical: Data-focused, precise terminology
+ * - investor_pitch: ROI-focused, value proposition language
+ * - beginner_explainer: ELI5 style, analogies, step-by-step
+ */
+export type ConversationalProfile = 
+  | 'friendly'
+  | 'conversational'
+  | 'professional'
+  | 'technical'
+  | 'investor_pitch'
+  | 'beginner_explainer';
+
+export interface ConversationalProfileConfig {
+  profile: ConversationalProfile;
+  openingStyle: 'warm' | 'direct' | 'formal' | 'educational';
+  responseLength: 'brief' | 'standard' | 'detailed';
+  useQuestions: boolean;
+  useExamples: boolean;
+  technicalDepth: 'low' | 'medium' | 'high';
+}
+
+const CONVERSATIONAL_PROFILES: Record<ConversationalProfile, ConversationalProfileConfig> = {
+  friendly: {
+    profile: 'friendly',
+    openingStyle: 'warm',
+    responseLength: 'standard',
+    useQuestions: true,
+    useExamples: true,
+    technicalDepth: 'low',
+  },
+  conversational: {
+    profile: 'conversational',
+    openingStyle: 'warm',
+    responseLength: 'standard',
+    useQuestions: true,
+    useExamples: true,
+    technicalDepth: 'medium',
+  },
+  professional: {
+    profile: 'professional',
+    openingStyle: 'direct',
+    responseLength: 'standard',
+    useQuestions: false,
+    useExamples: false,
+    technicalDepth: 'medium',
+  },
+  technical: {
+    profile: 'technical',
+    openingStyle: 'direct',
+    responseLength: 'detailed',
+    useQuestions: false,
+    useExamples: true,
+    technicalDepth: 'high',
+  },
+  investor_pitch: {
+    profile: 'investor_pitch',
+    openingStyle: 'formal',
+    responseLength: 'standard',
+    useQuestions: false,
+    useExamples: true,
+    technicalDepth: 'medium',
+  },
+  beginner_explainer: {
+    profile: 'beginner_explainer',
+    openingStyle: 'educational',
+    responseLength: 'detailed',
+    useQuestions: true,
+    useExamples: true,
+    technicalDepth: 'low',
+  },
+};
+
+// Investor-related terms for detection
+const INVESTOR_INDICATORS = [
+  /\b(roi|return on investment)\b/i,
+  /\b(investor|investment|portfolio)\b/i,
+  /\b(valuation|market cap)\b/i,
+  /\b(revenue|profit|earnings)\b/i,
+  /\b(funding|series [a-z])\b/i,
+  /\b(pitch|deck|presentation)\b/i,
+  /\b(stakeholder|shareholder)\b/i,
+];
+
+// Data-related terms for technical profile
+const DATA_INDICATORS = [
+  /\b(data|dataset|metrics)\b/i,
+  /\b(chart|graph|visualization)\b/i,
+  /\b(percentage|ratio|rate)\b/i,
+  /\b(trend|pattern|correlation)\b/i,
+  /\b(analysis|analytics)\b/i,
+  /\b(score|index|indicator)\b/i,
+];
+
+// Uncertainty indicators for beginner mode
+const UNCERTAINTY_INDICATORS = [
+  /\b(not sure|unsure|uncertain)\b/i,
+  /\b(maybe|perhaps|possibly)\b/i,
+  /\b(i think|i guess)\b/i,
+  /\b(what is|what's|what are)\b/i,
+  /\b(how do|how does|how can)\b/i,
+  /\b(new to|just started|beginner)\b/i,
+  /\?{1,}$/,
+];
+
+/**
+ * Phase 2: Select conversational profile based on message analysis
+ * 
+ * Rules:
+ * - If user sounds unsure → beginner_explainer
+ * - If question is simple → conversational
+ * - If question mentions investor terms → investor_pitch
+ * - If question references data → technical
+ */
+export function selectConversationalProfile(
+  message: string,
+  pageContext?: string
+): ConversationalProfileConfig {
+  const lowerMessage = message.toLowerCase();
+
+  // Rule 1: User sounds unsure → beginner_explainer
+  if (UNCERTAINTY_INDICATORS.some(pattern => pattern.test(message))) {
+    console.log('[CopilotPhase2] Selected profile: beginner_explainer (uncertainty detected)');
+    return CONVERSATIONAL_PROFILES.beginner_explainer;
+  }
+
+  // Rule 2: Investor terms → investor_pitch
+  if (INVESTOR_INDICATORS.some(pattern => pattern.test(message))) {
+    console.log('[CopilotPhase2] Selected profile: investor_pitch (investor terms detected)');
+    return CONVERSATIONAL_PROFILES.investor_pitch;
+  }
+
+  // Rule 3: Data references → technical
+  if (DATA_INDICATORS.some(pattern => pattern.test(message))) {
+    console.log('[CopilotPhase2] Selected profile: technical (data terms detected)');
+    return CONVERSATIONAL_PROFILES.technical;
+  }
+
+  // Rule 4: Page context hints
+  if (pageContext?.includes('pitch') || pageContext?.includes('investor')) {
+    console.log('[CopilotPhase2] Selected profile: investor_pitch (page context)');
+    return CONVERSATIONAL_PROFILES.investor_pitch;
+  }
+
+  // Rule 5: Simple question → conversational
+  const wordCount = message.split(/\s+/).length;
+  if (wordCount <= 5) {
+    console.log('[CopilotPhase2] Selected profile: conversational (simple question)');
+    return CONVERSATIONAL_PROFILES.conversational;
+  }
+
+  // Default: friendly
+  console.log('[CopilotPhase2] Selected profile: friendly (default)');
+  return CONVERSATIONAL_PROFILES.friendly;
+}
+
+/**
+ * Get conversational profile by name
+ */
+export function getConversationalProfile(
+  profile: ConversationalProfile
+): ConversationalProfileConfig {
+  return CONVERSATIONAL_PROFILES[profile];
+}
+
+/**
+ * Apply conversational profile to response
+ */
+export function applyConversationalProfile(
+  response: string,
+  profile: ConversationalProfileConfig
+): string {
+  let result = response;
+
+  // Apply opening style
+  if (profile.openingStyle === 'warm' && Math.random() < 0.4) {
+    const warmOpenings = [
+      'Great question! ',
+      'I\'d be happy to help with that. ',
+      'Good thinking! ',
+    ];
+    result = warmOpenings[Math.floor(Math.random() * warmOpenings.length)] + result;
+  } else if (profile.openingStyle === 'educational' && Math.random() < 0.5) {
+    const eduOpenings = [
+      'Let me break this down for you. ',
+      'Here\'s how this works: ',
+      'Think of it this way: ',
+    ];
+    result = eduOpenings[Math.floor(Math.random() * eduOpenings.length)] + result;
+  }
+
+  // Add follow-up question for profiles that use questions
+  if (profile.useQuestions && Math.random() < 0.3) {
+    const followUps = [
+      ' Would you like me to explain any part in more detail?',
+      ' Does that make sense?',
+      ' Want me to elaborate on anything?',
+    ];
+    result = result + followUps[Math.floor(Math.random() * followUps.length)];
+  }
+
+  console.log('[CopilotPhase2] Applied conversational profile:', profile.profile);
+  return result;
+}
+
+// Export conversational profiles
+export { CONVERSATIONAL_PROFILES };
