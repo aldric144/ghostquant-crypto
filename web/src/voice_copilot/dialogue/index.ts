@@ -40,3 +40,21 @@ export {
   type ProcessedQuery,
   type ProcessedResponse,
 } from './CopilotOrchestrator';
+
+// CopilotQueryParser - Wake-word stripping and query extraction
+export {
+  parse as parseQuery,
+  hasWakeWord,
+  getDetectedWakeWord,
+  type ParsedQuery,
+} from './CopilotQueryParser';
+
+// CopilotFallback - Fallback clarification layer
+export {
+  askForClarification,
+  provideSuggestions,
+  respondToGreeting,
+  getFallbackResponse,
+  isFallbackResponse,
+  type FallbackResponse,
+} from './CopilotFallback';
