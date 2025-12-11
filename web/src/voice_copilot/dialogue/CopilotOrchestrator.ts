@@ -54,6 +54,10 @@ import { getProactiveSpeechController } from '../proactive/ProactiveSpeechContro
 import { getIntelBriefingScheduler, type BriefingContent } from '../proactive/IntelBriefingScheduler';
 import { getProactivePreferences } from '../state/ProactivePreferences';
 
+// Query Parser imports (additive - fixes wake-word stripping)
+import { parse as parseQuery, type ParsedQuery } from './CopilotQueryParser';
+import { getFallbackResponse, type FallbackResponse } from './CopilotFallback';
+
 export interface OrchestratorConfig {
   enableDialogueTracking: boolean;
   enableInterruption: boolean;
@@ -1066,6 +1070,79 @@ class CopilotOrchestratorImpl {
   configure(config: Partial<OrchestratorConfig>): void {
     this.config = { ...this.config, ...config };
     this.log('Configuration updated', this.config);
+  }
+
+  // ============================================================
+  // Query Parser Integration (additive - fixes wake-word stripping)
+  // ============================================================
+
+  /**
+   * Process raw user input with wake-word stripping
+   * 
+   * This method should be called BEFORE routing to intent.
+   * It strips the wake-word and returns the cleaned query.
+   * 
+   * Example:
+   * Input: "hey g3 what is real time threat mapping"
+   * Output: { raw: "...", cleaned: "what is real time threat mapping", hasWakeWord: true, isEmpty: false }
+   * 
+   * @param rawInput - Raw user input from STT or text
+   * @returns ParsedQuery with cleaned text and metadata
+   */
+  parseRawInput(rawInput: string): ParsedQuery {
+    this.log('Parsing raw input:', rawInput);
+    
+    const parsed = parseQuery(rawInput);
+    
+    this.log('Parsed result:', {
+      hasWakeWord: parsed.hasWakeWord,
+      isEmpty: parsed.isEmpty,
+      cleaned: parsed.cleaned,
+    });
+    
+    return parsed;
+  }
+
+  /**
+   * Process user input with wake-word stripping and fallback handling
+   * 
+   * This is the main entry point for processing voice input.
+   * It handles:
+   * 1. Wake-word stripping
+   * 2. Empty query fallback
+   * 3. Intent recognition on cleaned query
+   * 
+   * @param rawInput - Raw user input from STT
+   * @returns ProcessedQuery or FallbackResponse
+   */
+  processVoiceInput(rawInput: string): ProcessedQuery | FallbackResponse {
+    this.log('Processing voice input:', rawInput);
+    
+    // Step 1: Parse and strip wake-word
+    const parsed = this.parseRawInput(rawInput);
+    
+    // Step 2: Check if query is empty after stripping
+    if (parsed.isEmpty) {
+      this.log('Query is empty after wake-word stripping, returning fallback');
+      return getFallbackResponse(parsed.hasWakeWord, parsed.isEmpty);
+    }
+    
+    // Step 3: Process the cleaned query through the normal pipeline
+    const intent = recognizeIntent(parsed.cleaned);
+    this.log('Intent recognized from cleaned query:', intent.category);
+    
+    // Step 4: Continue with normal query processing
+    return this.processQuery(parsed.cleaned);
+  }
+
+  /**
+   * Check if a response is a fallback response
+   */
+  isFallbackResponse(response: ProcessedQuery | FallbackResponse): response is FallbackResponse {
+    return 'type' in response && 
+           (response.type === 'clarification' || 
+            response.type === 'suggestion' || 
+            response.type === 'greeting');
   }
 
   /**
