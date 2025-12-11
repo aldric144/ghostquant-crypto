@@ -1,5 +1,5 @@
 /**
- * State Module Exports - Phase 3: Real-Time Intelligence Awareness
+ * State Module Exports - Phase 3 & Phase 4 Modules
  */
 
 export {
@@ -43,3 +43,16 @@ export {
   type EntityProfile,
   type AggregatedIntelligence,
 } from './CopilotDataAggregator';
+
+// ============================================================
+// Phase 4: Continuous Listening + Wake-Word Loop Engine
+// ============================================================
+
+// HandsFreeModeManager - Toggle and persist hands-free mode
+export {
+  getHandsFreeModeManager,
+  createHandsFreeModeManager,
+  type HandsFreeModeConfig,
+  type HandsFreeModeState,
+  type HandsFreeModeCallbacks,
+} from './HandsFreeModeManager';
