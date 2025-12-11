@@ -11,7 +11,13 @@
  * - Full behavior explanations
  * - Beginner-level simplified explanations
  * - Advanced-level technical explanations
+ * 
+ * Phase 1 Intelligence Expansion:
+ * - Integrated with GhostQuantModuleRegistry for 40+ modules
+ * - Extended categories for all major systems
  */
+
+import { MODULE_REGISTRY, findBestMatch, searchModules, type ModuleEntry } from './knowledge/GhostQuantModuleRegistry';
 
 export type KnowledgeDepth = 'simple' | 'standard' | 'technical' | 'investor';
 export type KnowledgeCategory = 
@@ -23,7 +29,40 @@ export type KnowledgeCategory =
   | 'analytics' 
   | 'general' 
   | 'navigation'
-  | 'onboarding';
+  | 'onboarding'
+  | 'sentinel'
+  | 'predict'
+  | 'radar'
+  | 'rings'
+  | 'ultrafusion'
+  | 'valkyrie'
+  | 'phantom'
+  | 'map'
+  | 'timeline'
+  | 'graph'
+  | 'entity'
+  | 'token'
+  | 'contracts'
+  | 'binder'
+  | 'exporter'
+  | 'dataroom'
+  | 'compliance'
+  | 'home'
+  | 'ghostmind'
+  | 'copilot'
+  | 'settings'
+  | 'billing'
+  | 'pricing'
+  | 'licenses'
+  | 'config'
+  | 'secrets'
+  | 'partners'
+  | 'deck'
+  | 'pitchdeck'
+  | 'proposals'
+  | 'rfp'
+  | 'demo_mode'
+  | 'health';
 
 export interface KnowledgeEntry {
   id: string;
@@ -478,7 +517,14 @@ export function getRelatedKnowledge(entryId: string): KnowledgeEntry[] {
  * Get all categories
  */
 export function getAllCategories(): KnowledgeCategory[] {
-  return ['hydra', 'constellation', 'ecoscan', 'whale_intel', 'risk_scoring', 'analytics', 'general', 'navigation', 'onboarding'];
+  return [
+    'hydra', 'constellation', 'ecoscan', 'whale_intel', 'risk_scoring', 'analytics', 
+    'general', 'navigation', 'onboarding', 'sentinel', 'predict', 'radar', 'rings',
+    'ultrafusion', 'valkyrie', 'phantom', 'map', 'timeline', 'graph', 'entity',
+    'token', 'contracts', 'binder', 'exporter', 'dataroom', 'compliance', 'home',
+    'ghostmind', 'copilot', 'settings', 'billing', 'pricing', 'licenses', 'config',
+    'secrets', 'partners', 'deck', 'pitchdeck', 'proposals', 'rfp', 'demo_mode', 'health'
+  ];
 }
 
 /**
@@ -495,8 +541,62 @@ export function getCategoryDisplayName(category: KnowledgeCategory): string {
     general: 'General',
     navigation: 'Navigation',
     onboarding: 'Getting Started',
+    sentinel: 'Sentinel Command Console',
+    predict: 'Prediction Console',
+    radar: 'Global Manipulation Radar',
+    rings: 'Ring Detector',
+    ultrafusion: 'UltraFusion',
+    valkyrie: 'Valkyrie',
+    phantom: 'Phantom',
+    map: 'Global Threat Map',
+    timeline: 'AI Timeline',
+    graph: 'Influence Graph',
+    entity: 'Entity Scanner',
+    token: 'Token Intelligence',
+    contracts: 'Smart Contracts',
+    binder: 'Data Binder',
+    exporter: 'Data Exporter',
+    dataroom: 'Data Room',
+    compliance: 'Compliance Report',
+    home: 'Terminal Home',
+    ghostmind: 'GhostMind AI',
+    copilot: 'Voice Copilot',
+    settings: 'Settings',
+    billing: 'Billing',
+    pricing: 'Pricing',
+    licenses: 'Licenses',
+    config: 'Configuration',
+    secrets: 'Secrets Manager',
+    partners: 'Partners',
+    deck: 'Pitch Deck',
+    pitchdeck: 'Pitch Deck Builder',
+    proposals: 'Proposals',
+    rfp: 'RFP Manager',
+    demo_mode: 'Demo Mode',
+    health: 'System Health',
   };
   return names[category];
+}
+
+/**
+ * Search module registry for knowledge (Phase 1 Intelligence Expansion)
+ */
+export function searchModuleRegistry(query: string): ModuleEntry[] {
+  return searchModules(query);
+}
+
+/**
+ * Find best matching module for a query (Phase 1 Intelligence Expansion)
+ */
+export function findModuleMatch(query: string): ModuleEntry | null {
+  return findBestMatch(query);
+}
+
+/**
+ * Get all modules from registry (Phase 1 Intelligence Expansion)
+ */
+export function getAllModules(): ModuleEntry[] {
+  return MODULE_REGISTRY;
 }
 
 // Export all knowledge arrays for direct access if needed
@@ -510,4 +610,5 @@ export {
   GENERAL_KNOWLEDGE,
   NAVIGATION_KNOWLEDGE,
   ALL_KNOWLEDGE,
+  MODULE_REGISTRY,
 };
