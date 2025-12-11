@@ -1,7 +1,7 @@
 /**
- * CopilotOrchestrator - Phase 2 & 3 Conversational Engine Integration
+ * CopilotOrchestrator - Phase 2, 3 & 4 Conversational Engine Integration
  * 
- * Integrates all Phase 2 and Phase 3 modules into a unified response pipeline:
+ * Integrates all Phase 2, Phase 3, and Phase 4 modules into a unified response pipeline:
  * 
  * Flow:
  * 1. STT → IntentModel
@@ -13,6 +13,11 @@
  * 7. KnowledgeBase → NaturalExpansionEngine
  * 8. ToneEngine → apply conversational tone
  * 9. InterruptibleTTSPipeline → speak the final output
+ * 
+ * Phase 4 adds:
+ * - ContinuousListeningController for hands-free operation
+ * - HandsFreeModeManager for toggle and persistence
+ * - WakeLoopEngine for continuous wake-word detection
  * 
  * This is an ADDITIVE module - does NOT modify existing Copilot logic.
  * It wraps and extends the existing system.
@@ -37,6 +42,10 @@ import { getCopilotStateMonitor, type CopilotState, type GhostQuantModule } from
 import { getCopilotDataAggregator, type AggregatedIntelligence } from '../state/CopilotDataAggregator';
 import { getCopilotUIInterpreter, type ViewDescription } from '../ui/CopilotUIInterpreter';
 
+// Phase 4 imports
+import { getContinuousListeningController, type ContinuousListeningState } from '../audio/ContinuousListeningController';
+import { getHandsFreeModeManager } from '../state/HandsFreeModeManager';
+
 export interface OrchestratorConfig {
   enableDialogueTracking: boolean;
   enableInterruption: boolean;
@@ -49,6 +58,10 @@ export interface OrchestratorConfig {
   enableRealTimeAwareness: boolean;
   enableLiveIntelligence: boolean;
   enableUIInterpretation: boolean;
+  // Phase 4 options
+  enableContinuousListening: boolean;
+  enableHandsFreeMode: boolean;
+  autoStartHandsFree: boolean;
 }
 
 const DEFAULT_CONFIG: OrchestratorConfig = {
@@ -63,6 +76,10 @@ const DEFAULT_CONFIG: OrchestratorConfig = {
   enableRealTimeAwareness: true,
   enableLiveIntelligence: true,
   enableUIInterpretation: true,
+  // Phase 4 defaults
+  enableContinuousListening: true,
+  enableHandsFreeMode: true,
+  autoStartHandsFree: false,
 };
 
 export interface ProcessedQuery {
@@ -307,6 +324,36 @@ class CopilotOrchestratorImpl {
     const ttsPipeline = getInterruptibleTTSPipeline();
     await ttsPipeline.play(audioBlob);
     this.log('Response spoken via interruptible TTS');
+  }
+
+  /**
+   * Speak response text using browser TTS (Phase 4)
+   * This is a simplified version that uses the browser's built-in TTS
+   * for continuous listening mode when audio blobs are not available
+   */
+  async speakResponseText(text: string): Promise<void> {
+    this.log('Speaking response text:', text.substring(0, 50) + '...');
+    
+    // Use browser's built-in speech synthesis
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      return new Promise((resolve) => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        utterance.onend = () => {
+          this.log('Speech completed');
+          resolve();
+        };
+        utterance.onerror = () => {
+          this.log('Speech error, resolving anyway');
+          resolve();
+        };
+        window.speechSynthesis.speak(utterance);
+      });
+    } else {
+      this.log('Speech synthesis not available');
+    }
   }
 
   /**
@@ -608,6 +655,173 @@ class CopilotOrchestratorImpl {
     }
 
     return 'I\'m not sure what you\'re asking about. Could you be more specific?';
+  }
+
+  // ============================================================
+  // Phase 4: Continuous Listening + Wake-Word Loop Engine
+  // ============================================================
+
+  /**
+   * Initialize continuous listening mode
+   * Called on Copilot load if hands-free mode is enabled
+   */
+  async initializeContinuousListening(): Promise<void> {
+    if (!this.config.enableContinuousListening) {
+      this.log('Continuous listening disabled in config');
+      return;
+    }
+
+    const handsFreeModeManager = getHandsFreeModeManager();
+    const continuousListeningController = getContinuousListeningController();
+
+    // Configure the controller with orchestrator handler
+    continuousListeningController.setOrchestratorHandler(async (text: string) => {
+      await this.handleContinuousListeningInput(text);
+    });
+
+    // Auto-start if configured and user preference is enabled
+    if (this.config.autoStartHandsFree && handsFreeModeManager.shouldAutoStartOnLoad()) {
+      this.log('Auto-starting hands-free mode');
+      await this.startContinuousListening();
+    }
+
+    this.log('Continuous listening initialized');
+  }
+
+  /**
+   * Start continuous listening mode
+   */
+  async startContinuousListening(): Promise<void> {
+    if (!this.config.enableContinuousListening) {
+      this.log('Continuous listening disabled');
+      return;
+    }
+
+    const handsFreeModeManager = getHandsFreeModeManager();
+    const continuousListeningController = getContinuousListeningController();
+
+    try {
+      handsFreeModeManager.enable();
+      await continuousListeningController.start();
+      handsFreeModeManager.setActive(true);
+      this.log('Continuous listening started');
+    } catch (error) {
+      this.log('Failed to start continuous listening:', error);
+      handsFreeModeManager.disable();
+      throw error;
+    }
+  }
+
+  /**
+   * Stop continuous listening mode
+   */
+  stopContinuousListening(): void {
+    const handsFreeModeManager = getHandsFreeModeManager();
+    const continuousListeningController = getContinuousListeningController();
+
+    continuousListeningController.stop();
+    handsFreeModeManager.setActive(false);
+    handsFreeModeManager.disable();
+    this.log('Continuous listening stopped');
+  }
+
+  /**
+   * Toggle continuous listening mode
+   */
+  async toggleContinuousListening(): Promise<boolean> {
+    const handsFreeModeManager = getHandsFreeModeManager();
+
+    if (handsFreeModeManager.isEnabled()) {
+      this.stopContinuousListening();
+      return false;
+    } else {
+      await this.startContinuousListening();
+      return true;
+    }
+  }
+
+  /**
+   * Check if continuous listening is active
+   */
+  isContinuousListeningActive(): boolean {
+    const handsFreeModeManager = getHandsFreeModeManager();
+    return handsFreeModeManager.isEnabled() && handsFreeModeManager.isActive();
+  }
+
+  /**
+   * Get continuous listening state
+   */
+  getContinuousListeningState(): ContinuousListeningState {
+    const continuousListeningController = getContinuousListeningController();
+    return continuousListeningController.getState();
+  }
+
+  /**
+   * Handle input from continuous listening
+   */
+  private async handleContinuousListeningInput(text: string): Promise<void> {
+    this.log('Continuous listening input:', text);
+
+    try {
+      // Process the query through the standard pipeline
+      const processedQuery = await this.processQuery(text);
+
+      // Check if it's a real-time query (Phase 3)
+      if (this.isRealTimeQuery(processedQuery.intent.category)) {
+        const response = await this.processRealTimeQuery(text);
+        const processedResponse = this.processResponse(response, processedQuery);
+        await this.speakResponseText(processedResponse.finalResponse);
+      } else {
+        // Generate response based on intent
+        const response = this.generateResponseForIntent(processedQuery);
+        const processedResponse = this.processResponse(response, processedQuery);
+        await this.speakResponseText(processedResponse.finalResponse);
+      }
+
+      // Update dialogue state
+      this.updateDialogueState(text, processedQuery.intent.category);
+    } catch (error) {
+      this.log('Error handling continuous listening input:', error);
+      await this.speakResponseText('I encountered an error processing your request. Please try again.');
+    }
+  }
+
+  /**
+   * Check if intent category is a real-time query
+   */
+  private isRealTimeQuery(category: string): boolean {
+    const realTimeCategories = [
+      'ui_explanation',
+      'intelligence_summary',
+      'alert_explanation',
+      'fusion_engine',
+      'entity_query',
+    ];
+    return realTimeCategories.includes(category);
+  }
+
+  /**
+   * Generate response for a processed query
+   */
+  private generateResponseForIntent(query: ProcessedQuery): string {
+    // If clarification needed, return the clarifying question
+    if (query.needsClarification && query.clarifyingQuestion) {
+      return query.clarifyingQuestion;
+    }
+
+    // Default response based on intent category
+    const category = query.intent.category;
+    
+    switch (category) {
+      case 'greeting':
+        return 'Hello! How can I help you with GhostQuant today?';
+      case 'help':
+        return 'I can help you understand the GhostQuant platform. Ask me about any module, dashboard, or feature.';
+      case 'unknown':
+        return 'I\'m not sure what you\'re asking about. Could you be more specific?';
+      default:
+        return 'I understand you\'re asking about ' + category + '. Let me help you with that.';
+    }
   }
 
   /**
