@@ -46,6 +46,14 @@ import { getCopilotUIInterpreter, type ViewDescription } from '../ui/CopilotUIIn
 import { getContinuousListeningController, type ContinuousListeningState } from '../audio/ContinuousListeningController';
 import { getHandsFreeModeManager } from '../state/HandsFreeModeManager';
 
+// Phase 5 imports
+import { getProactiveIntelMonitor, type IntelChange } from '../proactive/ProactiveIntelMonitor';
+import { getIntelEventClassifier, type ClassifiedEvent } from '../proactive/IntelEventClassifier';
+import { getProactiveResponseEngine, type ProactiveResponse } from '../proactive/ProactiveResponseEngine';
+import { getProactiveSpeechController } from '../proactive/ProactiveSpeechController';
+import { getIntelBriefingScheduler, type BriefingContent } from '../proactive/IntelBriefingScheduler';
+import { getProactivePreferences } from '../state/ProactivePreferences';
+
 export interface OrchestratorConfig {
   enableDialogueTracking: boolean;
   enableInterruption: boolean;
@@ -62,6 +70,11 @@ export interface OrchestratorConfig {
   enableContinuousListening: boolean;
   enableHandsFreeMode: boolean;
   autoStartHandsFree: boolean;
+  // Phase 5 options
+  enableProactiveIntelligence: boolean;
+  enableProactiveAlerts: boolean;
+  enableScheduledBriefings: boolean;
+  autoStartProactiveMode: boolean;
 }
 
 const DEFAULT_CONFIG: OrchestratorConfig = {
@@ -80,6 +93,11 @@ const DEFAULT_CONFIG: OrchestratorConfig = {
   enableContinuousListening: true,
   enableHandsFreeMode: true,
   autoStartHandsFree: false,
+  // Phase 5 defaults
+  enableProactiveIntelligence: true,
+  enableProactiveAlerts: true,
+  enableScheduledBriefings: true,
+  autoStartProactiveMode: false,
 };
 
 export interface ProcessedQuery {
@@ -822,6 +840,224 @@ class CopilotOrchestratorImpl {
       default:
         return 'I understand you\'re asking about ' + category + '. Let me help you with that.';
     }
+  }
+
+  // ============================================================
+  // Phase 5: Proactive Intelligence & Autonomous Alerting Engine
+  // ============================================================
+
+  /**
+   * Initialize proactive intelligence monitoring
+   * Sets up the event pipeline: Monitor → Classifier → Response → Speech
+   */
+  initializeProactiveIntelligence(): void {
+    if (!this.config.enableProactiveIntelligence) {
+      this.log('Proactive intelligence disabled in config');
+      return;
+    }
+
+    this.log('Initializing proactive intelligence...');
+
+    const monitor = getProactiveIntelMonitor();
+    const classifier = getIntelEventClassifier();
+    const responseEngine = getProactiveResponseEngine();
+    const speechController = getProactiveSpeechController();
+    const briefingScheduler = getIntelBriefingScheduler();
+    const preferences = getProactivePreferences();
+
+    // Initialize preferences from localStorage
+    preferences.initialize();
+
+    // Set up speech controller callbacks
+    speechController.setSpeakCallback(async (text: string) => {
+      await this.speakResponseText(text);
+    });
+
+    speechController.setUserSpeakingCallback(() => {
+      // Check if continuous listening is detecting user speech
+      const clController = getContinuousListeningController();
+      const state = clController.getState();
+      // User is speaking if we're in capturing state
+      return state === 'capturing' || state === 'wake_detected';
+    });
+
+    speechController.setTTSSpeakingCallback(() => {
+      return this.isSpeaking();
+    });
+
+    speechController.setStopTTSCallback(() => {
+      this.stopSpeech();
+    });
+
+    // Set up monitor event handler
+    monitor.onIntelEvent((changes: IntelChange[]) => {
+      if (!preferences.isProactiveAlertsEnabled()) {
+        this.log('Proactive alerts disabled by user preference');
+        return;
+      }
+
+      // Classify changes
+      const classifiedEvents = classifier.classifyChanges(changes);
+      this.log(`Classified ${classifiedEvents.length} events from ${changes.length} changes`);
+
+      // Filter by user preferences
+      const filteredEvents = classifiedEvents.filter((event: ClassifiedEvent) => {
+        return preferences.shouldShowAlert(event.category, event.severity);
+      });
+
+      if (filteredEvents.length === 0) {
+        this.log('No events passed user preference filter');
+        return;
+      }
+
+      // Generate responses
+      const responses = responseEngine.generateResponses(filteredEvents);
+      this.log(`Generated ${responses.length} responses`);
+
+      // Queue for speech
+      for (const response of responses) {
+        if (preferences.isAlertVoiceEnabled()) {
+          speechController.queueResponse(response);
+        }
+      }
+    });
+
+    // Set up briefing scheduler
+    briefingScheduler.setSnapshotProvider(() => monitor.getLatestSnapshot());
+
+    briefingScheduler.onBriefing((content: BriefingContent) => {
+      if (!preferences.isBriefingsEnabled()) {
+        this.log('Briefings disabled by user preference');
+        return;
+      }
+
+      if (!preferences.isBriefingTypeEnabled(content.type)) {
+        this.log(`Briefing type ${content.type} disabled by user preference`);
+        return;
+      }
+
+      if (preferences.isBriefingVoiceEnabled()) {
+        const briefingText = `${content.title}. ${content.summary}`;
+        speechController.queueText(briefingText, 'medium');
+      }
+    });
+
+    this.log('Proactive intelligence initialized');
+  }
+
+  /**
+   * Start proactive intelligence monitoring
+   */
+  startProactiveIntelligence(): void {
+    if (!this.config.enableProactiveIntelligence) {
+      this.log('Proactive intelligence disabled in config');
+      return;
+    }
+
+    const monitor = getProactiveIntelMonitor();
+    const speechController = getProactiveSpeechController();
+    const briefingScheduler = getIntelBriefingScheduler();
+
+    monitor.start();
+    speechController.start();
+
+    if (this.config.enableScheduledBriefings) {
+      briefingScheduler.start();
+    }
+
+    this.log('Proactive intelligence started');
+  }
+
+  /**
+   * Stop proactive intelligence monitoring
+   */
+  stopProactiveIntelligence(): void {
+    const monitor = getProactiveIntelMonitor();
+    const speechController = getProactiveSpeechController();
+    const briefingScheduler = getIntelBriefingScheduler();
+
+    monitor.stop();
+    speechController.stop();
+    briefingScheduler.stop();
+
+    this.log('Proactive intelligence stopped');
+  }
+
+  /**
+   * Toggle proactive intelligence on/off
+   */
+  toggleProactiveIntelligence(): boolean {
+    const monitor = getProactiveIntelMonitor();
+    const isActive = monitor.isActive();
+
+    if (isActive) {
+      this.stopProactiveIntelligence();
+    } else {
+      this.startProactiveIntelligence();
+    }
+
+    return !isActive;
+  }
+
+  /**
+   * Check if proactive intelligence is active
+   */
+  isProactiveIntelligenceActive(): boolean {
+    const monitor = getProactiveIntelMonitor();
+    return monitor.isActive();
+  }
+
+  /**
+   * Get proactive intelligence stats
+   */
+  getProactiveIntelligenceStats(): {
+    monitor: object;
+    classifier: object;
+    responseEngine: object;
+    speechController: object;
+    briefingScheduler: object;
+  } {
+    return {
+      monitor: getProactiveIntelMonitor().getStats(),
+      classifier: getIntelEventClassifier().getStats(),
+      responseEngine: getProactiveResponseEngine().getStats(),
+      speechController: getProactiveSpeechController().getStats(),
+      briefingScheduler: getIntelBriefingScheduler().getStats(),
+    };
+  }
+
+  /**
+   * Trigger an immediate briefing
+   */
+  triggerBriefing(type: 'hourly_summary' | 'market_open' | 'market_close' | 'whale_overview' | 'risk_report' | 'constellation_update'): BriefingContent | null {
+    const briefingScheduler = getIntelBriefingScheduler();
+    const content = briefingScheduler.triggerBriefing(type);
+
+    if (content) {
+      const preferences = getProactivePreferences();
+      if (preferences.isBriefingVoiceEnabled()) {
+        const speechController = getProactiveSpeechController();
+        const briefingText = `${content.title}. ${content.summary}`;
+        speechController.queueText(briefingText, 'medium');
+      }
+    }
+
+    return content;
+  }
+
+  /**
+   * Speak an immediate proactive alert
+   */
+  async speakProactiveAlert(text: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'): Promise<boolean> {
+    const preferences = getProactivePreferences();
+    
+    if (!preferences.isProactiveAlertsEnabled() || !preferences.isAlertVoiceEnabled()) {
+      this.log('Proactive alerts or voice disabled');
+      return false;
+    }
+
+    const speechController = getProactiveSpeechController();
+    return speechController.speakImmediate(text);
   }
 
   /**

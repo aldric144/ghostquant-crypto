@@ -56,3 +56,17 @@ export {
   type HandsFreeModeState,
   type HandsFreeModeCallbacks,
 } from './HandsFreeModeManager';
+
+// ============================================================
+// Phase 5: Proactive Intelligence & Autonomous Alerting Engine
+// ============================================================
+
+// ProactivePreferences - User preferences for proactive mode
+export {
+  getProactivePreferences,
+  createProactivePreferences,
+  type AlertCategoryPreference,
+  type BriefingPreference,
+  type ProactivePreferencesData,
+  type PreferencesConfig,
+} from './ProactivePreferences';
