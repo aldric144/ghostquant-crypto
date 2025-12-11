@@ -41,6 +41,12 @@ export type IntentCategory =
   | 'greeting'
   | 'help'
   | 'unknown'
+  // Phase 3 Real-Time Intelligence Awareness - New Intent Categories
+  | 'ui_explanation'
+  | 'intelligence_summary'
+  | 'alert_explanation'
+  | 'fusion_engine'
+  | 'entity_query'
   // Phase 1 Intelligence Expansion - New Intent Categories
   | 'sentinel'
   | 'predict'
@@ -240,6 +246,87 @@ const CONTEXTUAL_PATTERNS: IntentPattern[] = [
   { pattern: /what\s*(page|screen)\s*(is\s*this|am\s*i\s*on)/i, intent: 'contextual', subIntent: 'location', confidence: 0.9 },
   { pattern: /the\s*(chart|graph|number|metric|score)/i, intent: 'contextual', subIntent: 'element', confidence: 0.8, requiresContext: true },
   { pattern: /this\s*(entity|wallet|address|cluster)/i, intent: 'contextual', subIntent: 'selected_entity', confidence: 0.85, requiresContext: true },
+];
+
+// ============================================
+// PHASE 3 REAL-TIME INTELLIGENCE AWARENESS - NEW PATTERNS
+// ============================================
+
+const UI_EXPLANATION_PATTERNS: IntentPattern[] = [
+  // "What am I looking at?" patterns
+  { pattern: /^what\s*(am\s*i|are\s*we)\s*(looking\s*at|seeing)\??$/i, intent: 'ui_explanation', subIntent: 'explain_view', confidence: 0.95, requiresContext: true },
+  { pattern: /^what\s*(is\s*this|does\s*this\s*show)\??$/i, intent: 'ui_explanation', subIntent: 'explain_view', confidence: 0.9, requiresContext: true },
+  { pattern: /^explain\s*(this|what\s*i'?m\s*seeing)\.?$/i, intent: 'ui_explanation', subIntent: 'explain_view', confidence: 0.95, requiresContext: true },
+  
+  // "Explain this chart" patterns
+  { pattern: /^explain\s*(this\s*)?(chart|graph|visualization)\.?$/i, intent: 'ui_explanation', subIntent: 'explain_chart', confidence: 0.95, requiresContext: true },
+  { pattern: /^what\s*(does\s*)?(this\s*)?(chart|graph)\s*(show|mean)\??$/i, intent: 'ui_explanation', subIntent: 'explain_chart', confidence: 0.9, requiresContext: true },
+  { pattern: /^(describe|interpret)\s*(this\s*)?(chart|graph)\.?$/i, intent: 'ui_explanation', subIntent: 'explain_chart', confidence: 0.9, requiresContext: true },
+  
+  // "Explain this spike" patterns
+  { pattern: /^explain\s*(this\s*)?(spike|jump|drop|dip|surge)\.?$/i, intent: 'ui_explanation', subIntent: 'explain_spike', confidence: 0.95, requiresContext: true },
+  { pattern: /^what\s*(caused|is)\s*(this\s*)?(spike|jump|drop|dip|surge)\??$/i, intent: 'ui_explanation', subIntent: 'explain_spike', confidence: 0.9, requiresContext: true },
+  { pattern: /^why\s*(did\s*)?(it|this)\s*(spike|jump|drop|dip|surge)\??$/i, intent: 'ui_explanation', subIntent: 'explain_spike', confidence: 0.9, requiresContext: true },
+  
+  // "Why is this risk level high?" patterns
+  { pattern: /^why\s*(is\s*)?(this\s*)?(risk|threat)\s*(level\s*)?(high|elevated|critical)\??$/i, intent: 'ui_explanation', subIntent: 'explain_risk', confidence: 0.95, requiresContext: true },
+  { pattern: /^what\s*(makes|caused)\s*(this\s*)?(risk|threat)\s*(level\s*)?(high|elevated)\??$/i, intent: 'ui_explanation', subIntent: 'explain_risk', confidence: 0.9, requiresContext: true },
+  { pattern: /^explain\s*(the\s*)?(high\s*)?(risk|threat)\s*(level)?\.?$/i, intent: 'ui_explanation', subIntent: 'explain_risk', confidence: 0.85, requiresContext: true },
+  
+  // "What is this map showing?" patterns
+  { pattern: /^what\s*(is\s*)?(this\s*)?(map|heatmap)\s*(showing|displaying)\??$/i, intent: 'ui_explanation', subIntent: 'explain_heatmap', confidence: 0.95, requiresContext: true },
+  { pattern: /^explain\s*(this\s*)?(heat)?map\.?$/i, intent: 'ui_explanation', subIntent: 'explain_heatmap', confidence: 0.9, requiresContext: true },
+  { pattern: /^(describe|interpret)\s*(the\s*)?(heat)?map\.?$/i, intent: 'ui_explanation', subIntent: 'explain_heatmap', confidence: 0.85, requiresContext: true },
+  
+  // "Interpret this dashboard" patterns
+  { pattern: /^(interpret|explain)\s*(this\s*)?dashboard\.?$/i, intent: 'ui_explanation', subIntent: 'explain_dashboard', confidence: 0.95, requiresContext: true },
+  { pattern: /^what\s*(does\s*)?(this\s*)?dashboard\s*(show|mean)\??$/i, intent: 'ui_explanation', subIntent: 'explain_dashboard', confidence: 0.9, requiresContext: true },
+  { pattern: /^walk\s*me\s*through\s*(this\s*)?dashboard\.?$/i, intent: 'ui_explanation', subIntent: 'explain_dashboard', confidence: 0.9, requiresContext: true },
+];
+
+const INTELLIGENCE_SUMMARY_PATTERNS: IntentPattern[] = [
+  // "Summarize the current picture" patterns
+  { pattern: /^summarize\s*(the\s*)?(current\s*)?(picture|situation|status)\.?$/i, intent: 'intelligence_summary', subIntent: 'summarize', confidence: 0.95 },
+  { pattern: /^give\s*me\s*(a\s*)?(the\s*)?(high[- ]?level\s*)?(summary|overview)\.?$/i, intent: 'intelligence_summary', subIntent: 'summarize', confidence: 0.95 },
+  { pattern: /^what'?s\s*(the\s*)?(current\s*)?(situation|status|picture)\??$/i, intent: 'intelligence_summary', subIntent: 'summarize', confidence: 0.9 },
+  { pattern: /^(brief|quick)\s*me\.?$/i, intent: 'intelligence_summary', subIntent: 'summarize', confidence: 0.85 },
+  
+  // "What's happening right now?" patterns
+  { pattern: /^what'?s\s*happening\s*(right\s*now|currently|at\s*the\s*moment)\??$/i, intent: 'intelligence_summary', subIntent: 'current_activity', confidence: 0.95 },
+  { pattern: /^what\s*(is|are)\s*(going\s*on|the\s*latest)\??$/i, intent: 'intelligence_summary', subIntent: 'current_activity', confidence: 0.9 },
+  { pattern: /^(any|what)\s*(new\s*)?(activity|developments|updates)\??$/i, intent: 'intelligence_summary', subIntent: 'current_activity', confidence: 0.85 },
+];
+
+const ALERT_EXPLANATION_PATTERNS: IntentPattern[] = [
+  // "What does this alert mean?" patterns
+  { pattern: /^what\s*(does\s*)?(this\s*)?alert\s*(mean|indicate)\??$/i, intent: 'alert_explanation', subIntent: 'explain_alert', confidence: 0.95, requiresContext: true },
+  { pattern: /^explain\s*(this\s*)?alert\.?$/i, intent: 'alert_explanation', subIntent: 'explain_alert', confidence: 0.95, requiresContext: true },
+  { pattern: /^(describe|interpret)\s*(this\s*)?alert\.?$/i, intent: 'alert_explanation', subIntent: 'explain_alert', confidence: 0.9, requiresContext: true },
+  { pattern: /^why\s*(am\s*i|are\s*we)\s*(seeing\s*)?(this\s*)?alert\??$/i, intent: 'alert_explanation', subIntent: 'explain_alert', confidence: 0.9, requiresContext: true },
+  
+  // Alert severity patterns
+  { pattern: /^(how\s*)?(serious|critical|urgent)\s*(is\s*)?(this\s*)?alert\??$/i, intent: 'alert_explanation', subIntent: 'alert_severity', confidence: 0.9, requiresContext: true },
+  { pattern: /^should\s*i\s*(be\s*)?(worried|concerned)\s*(about\s*)?(this\s*)?alert\??$/i, intent: 'alert_explanation', subIntent: 'alert_severity', confidence: 0.85, requiresContext: true },
+];
+
+const FUSION_ENGINE_PATTERNS: IntentPattern[] = [
+  // "Explain the Fusion Engine activity" patterns
+  { pattern: /^explain\s*(the\s*)?(fusion\s*engine|constellation)\s*(activity)?\??$/i, intent: 'fusion_engine', subIntent: 'fusion', confidence: 0.95 },
+  { pattern: /^what\s*(is\s*)?(the\s*)?(fusion\s*engine|constellation)\s*(detecting|showing|doing)\??$/i, intent: 'fusion_engine', subIntent: 'fusion', confidence: 0.95 },
+  { pattern: /^(describe|interpret)\s*(the\s*)?(fusion\s*engine|constellation)\.?$/i, intent: 'fusion_engine', subIntent: 'fusion', confidence: 0.9 },
+  { pattern: /^what\s*(patterns|connections|clusters)\s*(is\s*)?(the\s*)?(fusion\s*engine|constellation)\s*(finding|detecting)\??$/i, intent: 'fusion_engine', subIntent: 'fusion_patterns', confidence: 0.9 },
+];
+
+const ENTITY_EXPLANATION_PATTERNS: IntentPattern[] = [
+  // "Why is this entity high-risk?" patterns
+  { pattern: /^why\s*(is\s*)?(this\s*)?(entity|wallet|address)\s*(high[- ]?risk|risky|flagged)\??$/i, intent: 'entity_query', subIntent: 'entity_risk', confidence: 0.95, requiresContext: true },
+  { pattern: /^what\s*(makes|caused)\s*(this\s*)?(entity|wallet|address)\s*(high[- ]?risk|risky)\??$/i, intent: 'entity_query', subIntent: 'entity_risk', confidence: 0.9, requiresContext: true },
+  { pattern: /^explain\s*(the\s*)?(risk\s*for\s*)?(this\s*)?(entity|wallet|address)\.?$/i, intent: 'entity_query', subIntent: 'entity_risk', confidence: 0.85, requiresContext: true },
+  
+  // Entity description patterns
+  { pattern: /^(describe|explain|tell\s*me\s*about)\s*(this\s*)?(entity|wallet|address)\.?$/i, intent: 'entity_query', subIntent: 'entity_description', confidence: 0.9, requiresContext: true },
+  { pattern: /^what\s*(do\s*we\s*know\s*about|is)\s*(this\s*)?(entity|wallet|address)\??$/i, intent: 'entity_query', subIntent: 'entity_description', confidence: 0.85, requiresContext: true },
+  { pattern: /^who\s*(is|owns)\s*(this\s*)?(entity|wallet|address)\??$/i, intent: 'entity_query', subIntent: 'entity_identity', confidence: 0.85, requiresContext: true },
 ];
 
 const GREETING_PATTERNS: IntentPattern[] = [
@@ -508,6 +595,12 @@ const ALL_PATTERNS: IntentPattern[] = [
   ...NAVIGATION_PATTERNS,
   ...VAGUE_RECOVERY_PATTERNS,
   ...CONTEXTUAL_PATTERNS,
+  // Phase 3 Real-Time Intelligence Awareness - New Patterns
+  ...UI_EXPLANATION_PATTERNS,
+  ...INTELLIGENCE_SUMMARY_PATTERNS,
+  ...ALERT_EXPLANATION_PATTERNS,
+  ...FUSION_ENGINE_PATTERNS,
+  ...ENTITY_EXPLANATION_PATTERNS,
   ...GREETING_PATTERNS,
   ...HELP_PATTERNS,
   // Phase 1 Intelligence Expansion - New Patterns
@@ -756,6 +849,12 @@ export function getIntentDisplayName(category: IntentCategory): string {
     greeting: 'Greeting',
     help: 'Help Request',
     unknown: 'Unknown Intent',
+    // Phase 3 Real-Time Intelligence Awareness - New Intent Display Names
+    ui_explanation: 'UI Explanation',
+    intelligence_summary: 'Intelligence Summary',
+    alert_explanation: 'Alert Explanation',
+    fusion_engine: 'Fusion Engine Query',
+    entity_query: 'Entity Query',
     // Phase 1 Intelligence Expansion - New Intent Display Names
     sentinel: 'Sentinel Command Console',
     predict: 'Prediction Console',
@@ -814,6 +913,12 @@ export function suggestFollowUpIntents(currentIntent: IntentCategory): IntentCat
     greeting: ['help', 'summary', 'dashboard'],
     help: ['beginner_mode', 'summary', 'navigation'],
     unknown: ['help', 'beginner_mode'],
+    // Phase 3 Real-Time Intelligence Awareness - New Follow-up Suggestions
+    ui_explanation: ['intelligence_summary', 'help', 'contextual'],
+    intelligence_summary: ['ui_explanation', 'dashboard', 'alert_explanation'],
+    alert_explanation: ['intelligence_summary', 'risk_score', 'help'],
+    fusion_engine: ['constellation', 'intelligence_summary', 'entity_query'],
+    entity_query: ['constellation', 'risk_score', 'whale_intel'],
     // Phase 1 Intelligence Expansion - New Follow-up Suggestions
     sentinel: ['hydra', 'radar', 'health'],
     predict: ['dashboard', 'risk_score', 'timeline'],

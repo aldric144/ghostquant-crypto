@@ -1,15 +1,18 @@
 /**
- * CopilotOrchestrator - Phase 2 Conversational Engine Integration
+ * CopilotOrchestrator - Phase 2 & 3 Conversational Engine Integration
  * 
- * Integrates all Phase 2 modules into a unified response pipeline:
+ * Integrates all Phase 2 and Phase 3 modules into a unified response pipeline:
  * 
  * Flow:
  * 1. STT → IntentModel
  * 2. IntentModel → DialogueManager (context + follow-up)
- * 3. DialogueManager → KnowledgeBase (topic resolution)
- * 4. KnowledgeBase → NaturalExpansionEngine
- * 5. ToneEngine → apply conversational tone
- * 6. InterruptibleTTSPipeline → speak the final output
+ * 3. CopilotStateMonitor → fetch real-time state (Phase 3)
+ * 4. CopilotDataAggregator → fetch live intelligence (Phase 3)
+ * 5. CopilotUIInterpreter → generate explanation (Phase 3)
+ * 6. DialogueManager → KnowledgeBase (topic resolution)
+ * 7. KnowledgeBase → NaturalExpansionEngine
+ * 8. ToneEngine → apply conversational tone
+ * 9. InterruptibleTTSPipeline → speak the final output
  * 
  * This is an ADDITIVE module - does NOT modify existing Copilot logic.
  * It wraps and extends the existing system.
@@ -29,6 +32,11 @@ import {
 } from '../CopilotToneEngine';
 import { recognizeIntent, type RecognizedIntent } from '../CopilotIntentModel';
 
+// Phase 3 imports
+import { getCopilotStateMonitor, type CopilotState, type GhostQuantModule } from '../state/CopilotStateMonitor';
+import { getCopilotDataAggregator, type AggregatedIntelligence } from '../state/CopilotDataAggregator';
+import { getCopilotUIInterpreter, type ViewDescription } from '../ui/CopilotUIInterpreter';
+
 export interface OrchestratorConfig {
   enableDialogueTracking: boolean;
   enableInterruption: boolean;
@@ -37,6 +45,10 @@ export interface OrchestratorConfig {
   enableInterruptibleTTS: boolean;
   defaultExpansionMode: ExpansionMode;
   enableLogging: boolean;
+  // Phase 3 options
+  enableRealTimeAwareness: boolean;
+  enableLiveIntelligence: boolean;
+  enableUIInterpretation: boolean;
 }
 
 const DEFAULT_CONFIG: OrchestratorConfig = {
@@ -47,6 +59,10 @@ const DEFAULT_CONFIG: OrchestratorConfig = {
   enableInterruptibleTTS: true,
   defaultExpansionMode: 'standard',
   enableLogging: true,
+  // Phase 3 defaults
+  enableRealTimeAwareness: true,
+  enableLiveIntelligence: true,
+  enableUIInterpretation: true,
 };
 
 export interface ProcessedQuery {
@@ -372,6 +388,226 @@ class CopilotOrchestratorImpl {
 
     const ttsPipeline = getInterruptibleTTSPipeline();
     return ttsPipeline.isPlaying();
+  }
+
+  // ============================================================
+  // Phase 3: Real-Time Intelligence Awareness Methods
+  // ============================================================
+
+  /**
+   * Update the active page in the state monitor
+   */
+  updateActivePage(route: string): void {
+    if (!this.config.enableRealTimeAwareness) return;
+
+    const stateMonitor = getCopilotStateMonitor();
+    stateMonitor.updateActivePage(route);
+    this.setPageContext(route);
+    this.log('Active page updated:', route);
+  }
+
+  /**
+   * Update the active module in the state monitor
+   */
+  updateActiveModule(module: GhostQuantModule): void {
+    if (!this.config.enableRealTimeAwareness) return;
+
+    const stateMonitor = getCopilotStateMonitor();
+    stateMonitor.updateActiveModule(module);
+    this.log('Active module updated:', module);
+  }
+
+  /**
+   * Update selected entity in the state monitor
+   */
+  updateSelectedEntity(entity: { id: string; type: string; name?: string } | null): void {
+    if (!this.config.enableRealTimeAwareness) return;
+
+    const stateMonitor = getCopilotStateMonitor();
+    stateMonitor.updateSelectedEntity(entity ? {
+      id: entity.id,
+      type: entity.type as 'wallet' | 'token' | 'cluster' | 'transaction' | 'alert' | 'unknown',
+      name: entity.name,
+    } : null);
+    this.log('Selected entity updated:', entity);
+  }
+
+  /**
+   * Get the current application state
+   */
+  getCurrentState(): CopilotState | null {
+    if (!this.config.enableRealTimeAwareness) return null;
+
+    const stateMonitor = getCopilotStateMonitor();
+    return stateMonitor.getCurrentState();
+  }
+
+  /**
+   * Get a human-readable context summary
+   */
+  getStateSummary(): string {
+    if (!this.config.enableRealTimeAwareness) return '';
+
+    const stateMonitor = getCopilotStateMonitor();
+    return stateMonitor.getContextSummary().summary;
+  }
+
+  /**
+   * Fetch aggregated intelligence from all sources
+   */
+  async fetchLiveIntelligence(): Promise<AggregatedIntelligence | null> {
+    if (!this.config.enableLiveIntelligence) return null;
+
+    try {
+      const aggregator = getCopilotDataAggregator();
+      const intel = await aggregator.aggregateAll();
+      this.log('Live intelligence fetched');
+      return intel;
+    } catch (error) {
+      this.log('Failed to fetch live intelligence:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Fetch intelligence for a specific module
+   */
+  async fetchModuleIntelligence(module: string): Promise<unknown> {
+    if (!this.config.enableLiveIntelligence) return null;
+
+    try {
+      const aggregator = getCopilotDataAggregator();
+      return await aggregator.fetchModuleIntelligence(module);
+    } catch (error) {
+      this.log('Failed to fetch module intelligence:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Describe the current view to the user
+   */
+  async describeActiveView(): Promise<ViewDescription | null> {
+    if (!this.config.enableUIInterpretation) return null;
+
+    try {
+      const interpreter = getCopilotUIInterpreter();
+      const description = await interpreter.describeActiveView();
+      this.log('Active view described');
+      return description;
+    } catch (error) {
+      this.log('Failed to describe active view:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Describe an entity
+   */
+  async describeEntity(entityId: string): Promise<string> {
+    if (!this.config.enableUIInterpretation) {
+      return 'Entity description is not available.';
+    }
+
+    try {
+      const interpreter = getCopilotUIInterpreter();
+      const description = await interpreter.describeEntity(entityId);
+      return description.summary;
+    } catch (error) {
+      this.log('Failed to describe entity:', error);
+      return 'I was unable to fetch information about this entity.';
+    }
+  }
+
+  /**
+   * Generate a high-level intelligence summary
+   */
+  async generateIntelligenceSummary(): Promise<string> {
+    if (!this.config.enableUIInterpretation) {
+      return 'Intelligence summary is not available.';
+    }
+
+    try {
+      const interpreter = getCopilotUIInterpreter();
+      return await interpreter.generateIntelligenceSummary();
+    } catch (error) {
+      this.log('Failed to generate intelligence summary:', error);
+      return 'I was unable to generate an intelligence summary at this time.';
+    }
+  }
+
+  /**
+   * Describe what the Fusion Engine is detecting
+   */
+  async describeFusionEngineActivity(): Promise<string> {
+    if (!this.config.enableUIInterpretation) {
+      return 'Fusion Engine description is not available.';
+    }
+
+    try {
+      const interpreter = getCopilotUIInterpreter();
+      return await interpreter.describeFusionEngineActivity();
+    } catch (error) {
+      this.log('Failed to describe Fusion Engine activity:', error);
+      return 'I was unable to fetch Fusion Engine data at this time.';
+    }
+  }
+
+  /**
+   * Get a graceful fallback response when data is unavailable
+   */
+  getUnavailableDataResponse(module: string): string {
+    if (!this.config.enableUIInterpretation) {
+      return 'Data is not available for this module.';
+    }
+
+    const interpreter = getCopilotUIInterpreter();
+    return interpreter.getUnavailableDataResponse(module);
+  }
+
+  /**
+   * Process a real-time awareness query (Phase 3 specific)
+   * Handles queries like "What am I looking at?", "Explain this chart", etc.
+   */
+  async processRealTimeQuery(query: string): Promise<string> {
+    if (!this.config.enableRealTimeAwareness) {
+      return 'Real-time awareness is not enabled.';
+    }
+
+    const intent = recognizeIntent(query);
+    this.log('Processing real-time query with intent:', intent.category);
+
+    // Handle different real-time query types
+    if (intent.category === 'ui_explanation' || intent.subIntent === 'explain_view') {
+      const description = await this.describeActiveView();
+      if (description) {
+        return description.summary + ' ' + description.details.join(' ');
+      }
+      return this.getUnavailableDataResponse('unknown');
+    }
+
+    if (intent.category === 'intelligence_summary' || intent.subIntent === 'summarize') {
+      return await this.generateIntelligenceSummary();
+    }
+
+    if (intent.category === 'fusion_engine' || intent.subIntent === 'fusion') {
+      return await this.describeFusionEngineActivity();
+    }
+
+    if (intent.category === 'entity_query' && this.getCurrentState()?.selectedEntity) {
+      const entity = this.getCurrentState()?.selectedEntity;
+      if (entity) {
+        return await this.describeEntity(entity.id);
+      }
+    }
+
+    // Default to view description
+    const description = await this.describeActiveView();
+    if (description) {
+      return description.summary;
+    }
+
+    return 'I\'m not sure what you\'re asking about. Could you be more specific?';
   }
 
   /**
