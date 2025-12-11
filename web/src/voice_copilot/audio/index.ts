@@ -65,3 +65,36 @@ export {
   type MicEngineHookConfig,
   type MicEngineHookState,
 } from './MicEngineHooks';
+
+// ============================================================
+// Phase 8: STT Restoration + Wake-Word Linking
+// ============================================================
+
+// SpeechRecognizer - WebSpeech API wrapper with fallback
+export {
+  getSpeechRecognizer,
+  createSpeechRecognizer,
+  type SpeechRecognizerConfig,
+  type SpeechRecognizerCallbacks,
+  type RecognizerState,
+} from './SpeechRecognizer';
+
+// WakeWordInputStream - Transcript streaming with wake word detection
+export {
+  getWakeWordInputStream,
+  createWakeWordInputStream,
+  type WakeWordInputStreamConfig,
+  type WakeWordInputStreamCallbacks,
+  type WakeWordInputStreamState,
+} from './WakeWordInputStream';
+
+// SpeechPipelineController - Master STT binding layer
+export {
+  getSpeechPipelineController,
+  createSpeechPipelineController,
+  type SpeechPipelineConfig,
+  type SpeechPipelineCallbacks,
+  type SpeechPipelineState,
+  type TranscriptListener,
+  type VoidListener,
+} from './SpeechPipelineController';
