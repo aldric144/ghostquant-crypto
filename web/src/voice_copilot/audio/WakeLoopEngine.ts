@@ -183,6 +183,8 @@ class WakeLoopEngineImpl {
     }
 
     console.log('[WakeLoop] Starting continuous listening loop');
+    // Wake-Word & Intent Router Final Fix Patch - Add [WakeWord] Listening... logging
+    console.log('[WakeWord] Listening...');
     this.isRunning = true;
     this.startTime = Date.now();
     this.stats.lastActivityTime = Date.now();
@@ -619,16 +621,19 @@ class WakeLoopEngineImpl {
     ];
 
     let wakeWordDetected = false;
+    let detectedPattern = '';
     for (const pattern of wakeWordPatterns) {
       if (lowerText.includes(pattern)) {
         wakeWordDetected = true;
-        console.log('[WakeLoop] Wake word detected:', pattern);
+        detectedPattern = pattern;
+        // Wake-Word & Intent Router Final Fix Patch - Add [WakeWord] Detected: logging
+        console.log('[WakeWord] Detected:', pattern);
         break;
       }
     }
 
     if (wakeWordDetected) {
-      console.log('[WakeLoop] Wake word detected');
+      console.log('[WakeLoop] Wake word detected:', detectedPattern);
       
       // Trigger wake detection (enters listening/capture state)
       this.triggerWake();
