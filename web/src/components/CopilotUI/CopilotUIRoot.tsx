@@ -46,6 +46,7 @@ import { WakeWordIndicator } from './WakeWordIndicator';
 import { CopilotPanel } from './CopilotPanel';
 import { copilotEvents, CopilotUIState } from '../../voice_copilot/CopilotEvents';
 import { speak } from '../../voice_copilot/TTSEngine';
+import { getCopilotVoiceAdapter } from '../../voice_copilot/ui/CopilotVoiceAdapter';
 import './CopilotUIStyles.css';
 
 export interface CopilotUIRootProps {
@@ -133,10 +134,11 @@ export function CopilotUIRoot({
     }
   }, []);
 
-  // Handle mic activation
+  // Handle mic activation - uses CopilotVoiceAdapter for Phase 8 pipeline
   const handleMicActivate = useCallback(async () => {
+    console.log('[CopilotUI] Mic activation requested');
     try {
-      // Request microphone permission
+      // Request microphone permission for volume monitoring
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       micStreamRef.current = stream;
 
@@ -160,11 +162,16 @@ export function CopilotUIRoot({
         }
       }, 50);
 
-      // Emit mic start event
-      copilotEvents.emitMicStart();
-
-      // Start speech recognition if available
-      startSpeechRecognition();
+      // Start manual mic session via CopilotVoiceAdapter (Phase 8 pipeline)
+      // This routes transcripts through TranscriptRouter -> CopilotOrchestrator
+      const voiceAdapter = getCopilotVoiceAdapter();
+      const success = await voiceAdapter.startManualMicSession();
+      
+      if (!success) {
+        console.warn('[CopilotUI] Voice adapter failed, falling back to legacy STT');
+        // Fallback to legacy speech recognition if Phase 8 fails
+        startSpeechRecognition();
+      }
 
     } catch (error) {
       console.error('[CopilotUI] Mic activation failed:', error);
@@ -172,10 +179,16 @@ export function CopilotUIRoot({
     }
   }, []);
 
-  // Handle mic deactivation
+  // Handle mic deactivation - stops CopilotVoiceAdapter
   const handleMicDeactivate = useCallback(() => {
+    console.log('[CopilotUI] Mic deactivation requested');
     cleanup();
-    copilotEvents.emitMicStop();
+    
+    // Stop manual mic session via CopilotVoiceAdapter
+    const voiceAdapter = getCopilotVoiceAdapter();
+    voiceAdapter.stopManualMicSession();
+    
+    // Also stop legacy recognition if it was used as fallback
     stopSpeechRecognition();
   }, [cleanup]);
 
@@ -298,13 +311,24 @@ export function CopilotUIRoot({
     // Additional state handling if needed
   }, []);
 
-  // Toggle wake word
-  const handleToggleWakeWord = useCallback((enabled: boolean) => {
+  // Toggle wake word - uses CopilotVoiceAdapter for Phase 8 pipeline
+  const handleToggleWakeWord = useCallback(async (enabled: boolean) => {
+    console.log('[CopilotUI] Wake-word toggle:', enabled);
     setWakeWordEnabled(enabled);
+    
+    const voiceAdapter = getCopilotVoiceAdapter();
+    
     if (enabled) {
-      copilotEvents.setState('wake_listening');
+      // Start wake-word mode via CopilotVoiceAdapter
+      // This starts SpeechInputBridge + WakeLoopEngine for continuous listening
+      const success = await voiceAdapter.startWakeWordMode();
+      if (!success) {
+        console.error('[CopilotUI] Failed to start wake-word mode');
+        setWakeWordEnabled(false);
+      }
     } else {
-      copilotEvents.setState('idle');
+      // Stop wake-word mode
+      voiceAdapter.stopWakeWordMode();
     }
   }, []);
 
