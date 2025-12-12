@@ -577,6 +577,63 @@ class WakeLoopEngineImpl {
       this.setPowerMode('active');
     }
   }
+
+  // ============================================================
+  // STT Restoration Patch - Transcript Input
+  // ============================================================
+
+  /**
+   * Handle incoming transcript from SpeechInputBridge
+   * Normalizes text, checks for wake-word match, and triggers listening state
+   * 
+   * This is an ADDITIVE method - does NOT modify existing logic.
+   * 
+   * @param text - Normalized transcript from STT
+   */
+  onTranscript(text: string): void {
+    if (!text || !text.trim()) return;
+
+    console.log('[WakeLoop] onTranscript:', text);
+
+    // Record activity to prevent power saving
+    this.recordActivity();
+
+    // Check if we're in a state where we can detect wake words
+    if (this.state !== 'listening') {
+      console.log('[WakeLoop] Not in listening state, ignoring transcript');
+      return;
+    }
+
+    // Check for wake-word match (text should already be normalized by WakeWordNormalizationPipeline)
+    const lowerText = text.toLowerCase();
+    
+    // Check for G3 wake words
+    const wakeWordPatterns = [
+      'hey g3',
+      'g3',
+      'ok g3',
+      'hi g3',
+      'yo g3',
+      'gee three',
+      'hey gee three',
+    ];
+
+    let wakeWordDetected = false;
+    for (const pattern of wakeWordPatterns) {
+      if (lowerText.includes(pattern)) {
+        wakeWordDetected = true;
+        console.log('[WakeLoop] Wake word detected:', pattern);
+        break;
+      }
+    }
+
+    if (wakeWordDetected) {
+      console.log('[WakeLoop] Wake word detected');
+      
+      // Trigger wake detection (enters listening/capture state)
+      this.triggerWake();
+    }
+  }
 }
 
 // ============================================================

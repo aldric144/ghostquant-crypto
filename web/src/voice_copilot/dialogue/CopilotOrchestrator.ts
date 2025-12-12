@@ -1135,6 +1135,62 @@ class CopilotOrchestratorImpl {
     return this.processQuery(parsed.cleaned);
   }
 
+  // ============================================================
+  // STT Restoration Patch - Final Transcript Handler
+  // ============================================================
+
+  /**
+   * Handle final STT transcript from SpeechInputBridge
+   * 
+   * This method:
+   * 1. Strips wake word if present
+   * 2. Sends remaining text to processVoiceInput for processing
+   * 
+   * This is an ADDITIVE method - does NOT modify existing logic.
+   * 
+   * @param text - Final transcript from STT (may contain wake word)
+   */
+  async handleSTTFinal(text: string): Promise<void> {
+    if (!text || !text.trim()) {
+      this.log('handleSTTFinal: Empty text, ignoring');
+      return;
+    }
+
+    this.log('handleSTTFinal:', text);
+
+    // Step 1: Parse and strip wake word using existing parser
+    const parsed = this.parseRawInput(text);
+    
+    // Step 2: Get the cleaned query (wake word stripped)
+    const cleanedQuery = parsed.cleaned || parsed.raw;
+    
+    // Step 3: If query is empty after stripping, just log and return
+    if (!cleanedQuery || cleanedQuery.trim().length === 0) {
+      this.log('handleSTTFinal: Empty query after wake word stripping');
+      return;
+    }
+
+    this.log('handleSTTFinal: Cleaned query:', cleanedQuery);
+
+    // Step 4: Process through the existing voice input pipeline
+    const result = this.processVoiceInput(text);
+    
+    // Step 5: If not a fallback response, generate and speak the response
+    if (!this.isFallbackResponse(result)) {
+      const processedResponse = this.processResponse(
+        `Processing your request: ${cleanedQuery}`,
+        result
+      );
+      
+      // Speak the response
+      await this.speakResponseText(processedResponse.finalResponse);
+    } else {
+      // Handle fallback response
+      this.log('handleSTTFinal: Fallback response:', result);
+      await this.speakResponseText(result.text);
+    }
+  }
+
   /**
    * Check if a response is a fallback response
    */

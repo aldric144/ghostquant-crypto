@@ -28,6 +28,9 @@ import { getWakeWordSensitivityController, type SensitivityLevel, type Sensitivi
 import { getNoiseSuppressionEngine, type NoiseSuppressionStats } from './NoiseSuppressionEngine';
 import { getInterruptibleTTSPipeline } from './InterruptibleTTSPipeline';
 
+// STT Restoration Patch - Import SpeechInputBridge
+import { getSpeechInputBridge } from '../../services/stt/SpeechInputBridge';
+
 // ============================================================
 // Types
 // ============================================================
@@ -303,6 +306,11 @@ class ContinuousListeningControllerImpl {
     await this.wakeLoopEngine.start();
     this.setState('listening');
 
+    // STT Restoration Patch - Start SpeechInputBridge
+    const speechInputBridge = getSpeechInputBridge();
+    speechInputBridge.start();
+    console.log('[ContinuousListening] SpeechInputBridge started');
+
     // Start interruption monitoring if enabled
     if (this.config.enableInterruption) {
       this.startInterruptionMonitoring();
@@ -317,6 +325,11 @@ class ContinuousListeningControllerImpl {
     
     this.wakeLoopEngine.stop();
     this.stopInterruptionMonitoring();
+
+    // STT Restoration Patch - Stop SpeechInputBridge
+    const speechInputBridge = getSpeechInputBridge();
+    speechInputBridge.stop();
+    console.log('[ContinuousListening] SpeechInputBridge stopped');
     
     this.stats.isActive = false;
     this.stats.uptime += Date.now() - this.startTime;
