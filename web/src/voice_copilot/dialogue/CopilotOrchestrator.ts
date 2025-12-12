@@ -1142,9 +1142,8 @@ class CopilotOrchestratorImpl {
   /**
    * Handle final STT transcript from SpeechInputBridge
    * 
-   * This method:
-   * 1. Strips wake word if present
-   * 2. Sends remaining text to processVoiceInput for processing
+   * This is a thin adapter that delegates to the existing processVoiceInput pipeline.
+   * It strips the wake word and processes the cleaned query through the canonical flow.
    * 
    * This is an ADDITIVE method - does NOT modify existing logic.
    * 
@@ -1158,36 +1157,24 @@ class CopilotOrchestratorImpl {
 
     this.log('handleSTTFinal:', text);
 
-    // Step 1: Parse and strip wake word using existing parser
-    const parsed = this.parseRawInput(text);
-    
-    // Step 2: Get the cleaned query (wake word stripped)
-    const cleanedQuery = parsed.cleaned || parsed.raw;
-    
-    // Step 3: If query is empty after stripping, just log and return
-    if (!cleanedQuery || cleanedQuery.trim().length === 0) {
-      this.log('handleSTTFinal: Empty query after wake word stripping');
-      return;
-    }
-
-    this.log('handleSTTFinal: Cleaned query:', cleanedQuery);
-
-    // Step 4: Process through the existing voice input pipeline
+    // Delegate to the existing voice input pipeline which handles:
+    // 1. Wake word stripping via parseRawInput()
+    // 2. Intent recognition
+    // 3. Query processing
+    // 4. Response generation
     const result = this.processVoiceInput(text);
     
-    // Step 5: If not a fallback response, generate and speak the response
-    if (!this.isFallbackResponse(result)) {
-      const processedResponse = this.processResponse(
-        `Processing your request: ${cleanedQuery}`,
-        result
-      );
-      
-      // Speak the response
-      await this.speakResponseText(processedResponse.finalResponse);
-    } else {
-      // Handle fallback response
-      this.log('handleSTTFinal: Fallback response:', result);
+    // Speak the response using the existing TTS pipeline
+    if (this.isFallbackResponse(result)) {
+      // Fallback response (greeting, clarification, suggestion)
+      this.log('handleSTTFinal: Fallback response:', result.type);
       await this.speakResponseText(result.text);
+    } else {
+      // Normal processed query - generate response based on intent and speak it
+      // Follow the same pattern as handleContinuousListeningInput
+      const response = this.generateResponseForIntent(result);
+      const processedResponse = this.processResponse(response, result);
+      await this.speakResponseText(processedResponse.finalResponse);
     }
   }
 
