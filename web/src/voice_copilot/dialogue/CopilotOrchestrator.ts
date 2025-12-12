@@ -1145,6 +1145,10 @@ class CopilotOrchestratorImpl {
    * This is a thin adapter that delegates to the existing processVoiceInput pipeline.
    * It strips the wake word and processes the cleaned query through the canonical flow.
    * 
+   * Wake-Word & Intent Router Final Fix Patch:
+   * - Added [STT Final] and [Intent] logging
+   * - Added real-time query branch (mirrors handleContinuousListeningInput)
+   * 
    * This is an ADDITIVE method - does NOT modify existing logic.
    * 
    * @param text - Final transcript from STT (may contain wake word)
@@ -1155,6 +1159,8 @@ class CopilotOrchestratorImpl {
       return;
     }
 
+    // Wake-Word & Intent Router Final Fix Patch - Add [STT Final] logging
+    console.log('[STT Final] Text:', text);
     this.log('handleSTTFinal:', text);
 
     // Delegate to the existing voice input pipeline which handles:
@@ -1170,11 +1176,27 @@ class CopilotOrchestratorImpl {
       this.log('handleSTTFinal: Fallback response:', result.type);
       await this.speakResponseText(result.text);
     } else {
-      // Normal processed query - generate response based on intent and speak it
-      // Follow the same pattern as handleContinuousListeningInput
-      const response = this.generateResponseForIntent(result);
-      const processedResponse = this.processResponse(response, result);
-      await this.speakResponseText(processedResponse.finalResponse);
+      // Wake-Word & Intent Router Final Fix Patch - Add [Intent] logging
+      console.log('[Intent] Parsed:', result.intent);
+      
+      // Wake-Word & Intent Router Final Fix Patch:
+      // Mirror handleContinuousListeningInput - check for real-time queries
+      // This fixes the issue where STT final transcripts bypass real-time query processing
+      if (this.isRealTimeQuery(result.intent.category)) {
+        console.log('[Intent] Response generator called (real-time query)');
+        const response = await this.processRealTimeQuery(text);
+        const processedResponse = this.processResponse(response, result);
+        await this.speakResponseText(processedResponse.finalResponse);
+      } else {
+        // Normal processed query - generate response based on intent and speak it
+        console.log('[Intent] Response generator called');
+        const response = this.generateResponseForIntent(result);
+        const processedResponse = this.processResponse(response, result);
+        await this.speakResponseText(processedResponse.finalResponse);
+      }
+      
+      // Update dialogue state (mirrors handleContinuousListeningInput)
+      this.updateDialogueState(text, result.intent.category);
     }
   }
 
