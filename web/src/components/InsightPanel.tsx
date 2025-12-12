@@ -36,10 +36,10 @@ export default function InsightPanel({ isOpen, onClose }: InsightPanelProps) {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const alphaBrainRes = await fetch('/alphabrain/summary')
+      const alphaBrainRes = await fetch('/api/alphabrain/summary')
       const alphaBrainJson = await alphaBrainRes.json()
       
-      const ecoscanRes = await fetch('/ecoscan/summary')
+      const ecoscanRes = await fetch('/api/ecoscan/summary')
       const ecoscanJson = await ecoscanRes.json()
 
       const alphaBrain: AlphaBrainSummary = {
