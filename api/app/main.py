@@ -6,7 +6,7 @@ from datetime import datetime
 import logging
 from app.db import init_db_pool, close_db_pool
 from app.cache import init_redis
-from app.routers import health, assets, signals, metrics, screener, alerts, market, dashboard, insights, liquidity, whales, heatmap, notes, patterns, backtests
+from app.routers import health, assets, signals, metrics, screener, alerts, market, dashboard, insights, liquidity, whales, heatmap, notes, patterns, backtests, stt_proxy
 from app.gde.fabric import intelligence_api
 from app.gde.predictor import predictor_api
 from app.gde.api import predict_api
@@ -226,6 +226,9 @@ app.include_router(widb_router)
 # Demo Engine - Subscriber demo mode endpoints
 from app.demo_engine import demo_engine_router
 app.include_router(demo_engine_router)
+
+# STT Proxy - Server-side ElevenLabs STT proxy (eliminates domain restrictions)
+app.include_router(stt_proxy.router)
 
 @app.post("/intel/sim/start")
 async def start_sim():
