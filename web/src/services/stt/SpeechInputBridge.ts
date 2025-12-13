@@ -127,17 +127,23 @@ class SpeechInputBridgeImpl {
 
   /**
    * Start listening for speech
+   * @returns true if started successfully, false otherwise
    */
-  start(): void {
+  start(): boolean {
+    console.log('[STT Debug A] SpeechInputBridge.start() called');
+    
     if (this.isListening) {
       console.log('[SpeechInputBridge] Already listening');
-      return;
+      return true; // Already running is considered success
     }
 
-    if (!this.isSupported()) {
+    const supported = this.isSupported();
+    console.log('[STT Debug B] isSupported =', supported);
+    
+    if (!supported) {
       console.error('[SpeechInputBridge] Web Speech API not supported');
       this.callbacks.onError?.(new Error('Web Speech API not supported'));
-      return;
+      return false;
     }
 
     console.log('[SpeechInputBridge] Starting speech recognition');
@@ -154,12 +160,14 @@ class SpeechInputBridgeImpl {
 
       // Set up event handlers
       this.recognition.onstart = () => {
+        console.log('[STT Debug C] recognition.onstart fired');
         console.log('[SpeechInputBridge] Recognition started');
         this.isListening = true;
         this.callbacks.onStart?.();
       };
 
       this.recognition.onend = () => {
+        console.log('[STT Debug D] recognition.onend fired');
         console.log('[SpeechInputBridge] Recognition ended');
         this.isListening = false;
         this.callbacks.onEnd?.();
@@ -169,6 +177,7 @@ class SpeechInputBridgeImpl {
           console.log('[SpeechInputBridge] Auto-restarting...');
           setTimeout(() => {
             if (this.shouldRestart) {
+              console.log('[STT Debug E] Auto-restart triggered');
               this.recognition?.start();
             }
           }, 100);
@@ -176,10 +185,12 @@ class SpeechInputBridgeImpl {
       };
 
       this.recognition.onresult = (event: SpeechRecognitionEvent) => {
+        console.log('[STT Debug F] recognition.onresult fired, resultIndex:', event.resultIndex);
         this.handleResult(event);
       };
 
       this.recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+        console.error('[STT Debug G] recognition.onerror fired:', event.error);
         console.error('[SpeechInputBridge] Error:', event.error);
         
         // Don't treat 'no-speech' or 'aborted' as fatal errors
@@ -190,10 +201,14 @@ class SpeechInputBridgeImpl {
 
       this.shouldRestart = true;
       this.recognition.start();
+      console.log('[STT Debug H] recognition.start() called successfully');
+      return true;
 
     } catch (error) {
+      console.error('[STT Debug I] Failed to start:', error);
       console.error('[SpeechInputBridge] Failed to start:', error);
       this.callbacks.onError?.(error as Error);
+      return false;
     }
   }
 

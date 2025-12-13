@@ -148,6 +148,7 @@ class CopilotVoiceAdapterImpl {
    */
   async startManualMicSession(): Promise<boolean> {
     console.log('[VoiceAdapter] Starting manual mic session');
+    console.log('[STT Debug J] startManualMicSession() called');
 
     try {
       // Initialize if needed
@@ -158,15 +159,27 @@ class CopilotVoiceAdapterImpl {
       // Start SpeechInputBridge directly for manual mode
       const bridge = getSpeechInputBridge();
       
+      // Check if Web Speech API is supported before proceeding
+      if (!bridge.isSupported()) {
+        console.error('[VoiceAdapter] Web Speech API not supported, returning false');
+        console.error('[STT Debug K] isSupported() returned false');
+        this.state.lastError = 'Web Speech API not supported';
+        this.notifyStateChange();
+        this.callbacks.onError?.('Web Speech API not supported');
+        return false;
+      }
+      
       // Set up callbacks to emit events
       bridge.setCallbacks({
         onPartial: (text: string) => {
           console.log('[VoiceAdapter] Partial transcript:', text);
+          console.log('[STT Debug L] onPartial callback fired:', text);
           this.callbacks.onTranscript?.(text, false);
           copilotEvents.emitTranscript(text, false);
         },
         onFinal: (text: string) => {
           console.log('[VoiceAdapter] Final transcript:', text);
+          console.log('[STT Debug M] onFinal callback fired:', text);
           this.callbacks.onTranscript?.(text, true);
           copilotEvents.emitTranscript(text, true);
           // Note: handleFinal is already called by SpeechInputBridge
@@ -174,22 +187,35 @@ class CopilotVoiceAdapterImpl {
         },
         onStart: () => {
           console.log('[VoiceAdapter] STT started');
+          console.log('[STT Debug N] onStart callback fired');
           this.state.isListening = true;
           this.notifyStateChange();
         },
         onEnd: () => {
           console.log('[VoiceAdapter] STT ended');
+          console.log('[STT Debug O] onEnd callback fired');
           // Don't set isListening to false here - let stopManualMicSession handle it
         },
         onError: (error: Error) => {
           console.error('[VoiceAdapter] STT error:', error.message);
+          console.error('[STT Debug P] onError callback fired:', error.message);
           this.state.lastError = error.message;
           this.notifyStateChange();
           this.callbacks.onError?.(error.message);
         },
       });
 
-      bridge.start();
+      // Start the bridge and check if it succeeded
+      const started = bridge.start();
+      console.log('[STT Debug Q] bridge.start() returned:', started);
+      
+      if (!started) {
+        console.error('[VoiceAdapter] SpeechInputBridge.start() failed, returning false');
+        this.state.lastError = 'Failed to start speech recognition';
+        this.notifyStateChange();
+        this.callbacks.onError?.('Failed to start speech recognition');
+        return false;
+      }
 
       this.state.isManualMicMode = true;
       this.state.isListening = true;
@@ -200,11 +226,13 @@ class CopilotVoiceAdapterImpl {
       copilotEvents.emitMicStart();
 
       console.log('[VoiceAdapter] Manual mic session started successfully');
+      console.log('[STT Debug R] Manual mic session started successfully');
       return true;
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('[VoiceAdapter] Failed to start manual mic session:', errorMessage);
+      console.error('[STT Debug S] Exception in startManualMicSession:', errorMessage);
       
       this.state.lastError = errorMessage;
       this.notifyStateChange();
