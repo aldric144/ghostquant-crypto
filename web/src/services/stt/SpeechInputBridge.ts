@@ -1,10 +1,10 @@
 /**
  * SpeechInputBridge.ts
  * 
- * STT Restoration Patch - Bridge between Web Speech API and GhostQuant voice pipeline
+ * STT Restoration Patch - Bridge between STT Engine and GhostQuant voice pipeline
  * 
  * Responsibilities:
- * - Subscribe to Web Speech API (or existing STT engine)
+ * - Subscribe to STTEngine (ElevenLabs primary, Web Speech fallback)
  * - Provide partial and final transcript callbacks
  * - Dispatch transcripts to:
  *   - WakeLoopEngine
@@ -13,10 +13,11 @@
  * 
  * Logging prefix: [SpeechInputBridge]
  * 
- * This is an ADDITIVE module - does NOT modify existing logic.
+ * This module now delegates to STTEngine for provider selection and fallback.
  */
 
 import { handlePartial, handleFinal } from './TranscriptRouter';
+import * as STTEngine from '../../voice_copilot/STTEngine';
 
 // ============================================================
 // Types
@@ -115,120 +116,96 @@ class SpeechInputBridgeImpl {
   // ============================================================
 
   /**
-   * Check if Web Speech API is supported
+   * Check if any STT provider is supported (ElevenLabs or Web Speech)
    */
   isSupported(): boolean {
-    if (typeof window === 'undefined') return false;
-    
-    const SpeechRecognition = (window as any).SpeechRecognition || 
-                              (window as any).webkitSpeechRecognition;
-    return !!SpeechRecognition;
+    return STTEngine.isSTTAvailable();
   }
 
   /**
-   * Start listening for speech
+   * Start listening for speech via STTEngine
+   * Uses ElevenLabs as primary, Web Speech as fallback
    * @returns true if started successfully, false otherwise
    */
   start(): boolean {
-    console.log('[STT Debug A] SpeechInputBridge.start() called');
+    console.log('[SpeechInputBridge] start() called - delegating to STTEngine');
     
     if (this.isListening) {
       console.log('[SpeechInputBridge] Already listening');
-      return true; // Already running is considered success
+      return true;
     }
 
-    const supported = this.isSupported();
-    console.log('[STT Debug B] isSupported =', supported);
-    
-    if (!supported) {
-      console.error('[SpeechInputBridge] Web Speech API not supported');
-      this.callbacks.onError?.(new Error('Web Speech API not supported'));
+    if (!this.isSupported()) {
+      console.error('[SpeechInputBridge] No STT provider available');
+      this.callbacks.onError?.(new Error('No STT provider available'));
       return false;
     }
 
-    console.log('[SpeechInputBridge] Starting speech recognition');
+    console.log('[SpeechInputBridge] Starting STTEngine...');
 
-    try {
-      const SpeechRecognition = (window as any).SpeechRecognition || 
-                                (window as any).webkitSpeechRecognition;
-      
-      this.recognition = new SpeechRecognition();
-      this.recognition.continuous = this.config.continuous;
-      this.recognition.interimResults = this.config.interimResults;
-      this.recognition.lang = this.config.lang;
-      this.recognition.maxAlternatives = this.config.maxAlternatives;
-
-      // Set up event handlers
-      this.recognition.onstart = () => {
-        console.log('[STT Debug C] recognition.onstart fired');
-        console.log('[SpeechInputBridge] Recognition started');
+    // Configure STTEngine callbacks to route through this bridge
+    STTEngine.setCallbacks({
+      onStart: () => {
+        console.log('[SpeechInputBridge] STTEngine started');
         this.isListening = true;
         this.callbacks.onStart?.();
-      };
-
-      this.recognition.onend = () => {
-        console.log('[STT Debug D] recognition.onend fired');
-        console.log('[SpeechInputBridge] Recognition ended');
+      },
+      onPartial: (text: string) => {
+        console.log('[SpeechInputBridge] partial:', text);
+        this.callbacks.onPartial?.(text);
+        handlePartial(text);
+      },
+      onFinal: (text: string) => {
+        console.log('[SpeechInputBridge] final:', text);
+        this.callbacks.onFinal?.(text);
+        handleFinal(text);
+      },
+      onError: (error: Error) => {
+        console.error('[SpeechInputBridge] STTEngine error:', error.message);
+        this.callbacks.onError?.(error);
+      },
+      onEnd: () => {
+        console.log('[SpeechInputBridge] STTEngine ended');
         this.isListening = false;
         this.callbacks.onEnd?.();
+      },
+    });
 
-        // Auto-restart if continuous mode and should restart
-        if (this.shouldRestart && this.config.continuous) {
-          console.log('[SpeechInputBridge] Auto-restarting...');
-          setTimeout(() => {
-            if (this.shouldRestart) {
-              console.log('[STT Debug E] Auto-restart triggered');
-              this.recognition?.start();
-            }
-          }, 100);
-        }
-      };
+    // Start STTEngine asynchronously
+    this.shouldRestart = true;
+    STTEngine.startListening({
+      language: this.config.lang,
+      continuous: this.config.continuous,
+      fallbackEnabled: true,
+    }).then((result) => {
+      if (result.success) {
+        console.log(`[SpeechInputBridge] STTEngine started with provider: ${result.provider}`);
+      } else {
+        console.error('[SpeechInputBridge] STTEngine failed to start:', result.error);
+        this.callbacks.onError?.(new Error(result.error || 'Failed to start STT'));
+      }
+    }).catch((error) => {
+      console.error('[SpeechInputBridge] STTEngine exception:', error);
+      this.callbacks.onError?.(error);
+    });
 
-      this.recognition.onresult = (event: SpeechRecognitionEvent) => {
-        console.log('[STT Debug F] recognition.onresult fired, resultIndex:', event.resultIndex);
-        this.handleResult(event);
-      };
-
-      this.recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-        console.error('[STT Debug G] recognition.onerror fired:', event.error);
-        console.error('[SpeechInputBridge] Error:', event.error);
-        
-        // Don't treat 'no-speech' or 'aborted' as fatal errors
-        if (event.error !== 'no-speech' && event.error !== 'aborted') {
-          this.callbacks.onError?.(new Error(event.error));
-        }
-      };
-
-      this.shouldRestart = true;
-      this.recognition.start();
-      console.log('[STT Debug H] recognition.start() called successfully');
-      return true;
-
-    } catch (error) {
-      console.error('[STT Debug I] Failed to start:', error);
-      console.error('[SpeechInputBridge] Failed to start:', error);
-      this.callbacks.onError?.(error as Error);
-      return false;
-    }
+    return true; // Return true optimistically, actual status comes via callbacks
   }
 
   /**
-   * Stop listening for speech
+   * Stop listening for speech via STTEngine
    */
   stop(): void {
-    if (!this.isListening && !this.recognition) {
+    if (!this.isListening) {
       console.log('[SpeechInputBridge] Not listening');
       return;
     }
 
-    console.log('[SpeechInputBridge] Stopping speech recognition');
+    console.log('[SpeechInputBridge] Stopping STTEngine...');
     this.shouldRestart = false;
 
     try {
-      if (this.recognition) {
-        this.recognition.stop();
-        this.recognition = null;
-      }
+      STTEngine.stopListening();
       this.isListening = false;
     } catch (error) {
       console.error('[SpeechInputBridge] Failed to stop:', error);
