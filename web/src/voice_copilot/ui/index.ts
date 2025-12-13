@@ -11,3 +11,11 @@ export {
   type EntityDescription,
   type AlertDescription,
 } from './CopilotUIInterpreter';
+
+// CopilotVoiceAdapter - Bridge between CopilotUIRoot and Phase 8 voice pipeline
+export {
+  getCopilotVoiceAdapter,
+  createCopilotVoiceAdapter,
+  type VoiceAdapterState,
+  type VoiceAdapterCallbacks,
+} from './CopilotVoiceAdapter';
