@@ -36,23 +36,6 @@ export default function TopMovers({ limit = 100, sort = "momentum" }: TopMoversP
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [whaleModalSymbol, setWhaleModalSymbol] = useState<string | null>(null);
-  const [supportedSymbols, setSupportedSymbols] = useState<Set<string>>(new Set());
-
-  const fetchSupportedAssets = async () => {
-    try {
-      const apiBase = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
-      const response = await fetch(`${apiBase}/assets`);
-      
-      if (response.ok) {
-        const assets = await response.json();
-        const symbols = new Set<string>(assets.map((a: any) => a.symbol.toUpperCase()));
-        setSupportedSymbols(symbols);
-      }
-    } catch (err) {
-      console.error("Error fetching supported assets:", err);
-    }
-  };
-
   const fetchTopMovers = async () => {
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
@@ -97,7 +80,6 @@ export default function TopMovers({ limit = 100, sort = "momentum" }: TopMoversP
   };
 
   useEffect(() => {
-    fetchSupportedAssets();
     fetchTopMovers();
     
     const interval = setInterval(fetchTopMovers, 30000);
@@ -112,10 +94,6 @@ export default function TopMovers({ limit = 100, sort = "momentum" }: TopMoversP
 
   const handleWhaleClick = (symbol: string) => {
     setWhaleModalSymbol(symbol);
-  };
-
-  const canExplainWhale = (symbol: string) => {
-    return supportedSymbols.has(symbol.toUpperCase());
   };
 
   const getSignalColor = (signal: string) => {
@@ -248,25 +226,15 @@ export default function TopMovers({ limit = 100, sort = "momentum" }: TopMoversP
                 </td>
                 <td className="py-3 px-4 text-center">
                   {coin.whale_confidence > 0.6 ? (
-                    canExplainWhale(coin.symbol) ? (
-                      <button
-                        onClick={() => handleWhaleClick(coin.symbol)}
-                        className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500/20 border border-amber-500/30 rounded-full hover:bg-amber-500/30 transition-colors cursor-pointer"
-                        aria-haspopup="dialog"
-                        title="Click for explanation — why this asset shows whale activity"
-                      >
-                        <Fish className="w-4 h-4 text-amber-400" />
-                        <span className="text-xs text-amber-400">{(coin.whale_confidence * 100).toFixed(0)}%</span>
-                      </button>
-                    ) : (
-                      <div
-                        className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full opacity-60"
-                        title="Whale activity detected — detailed explanation coming soon"
-                      >
-                        <Fish className="w-4 h-4 text-amber-400" />
-                        <span className="text-xs text-amber-400">{(coin.whale_confidence * 100).toFixed(0)}%</span>
-                      </div>
-                    )
+                    <button
+                      onClick={() => handleWhaleClick(coin.symbol)}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500/20 border border-amber-500/30 rounded-full hover:bg-amber-500/30 transition-colors cursor-pointer"
+                      aria-haspopup="dialog"
+                      title="Click for explanation — why this asset shows whale activity"
+                    >
+                      <Fish className="w-4 h-4 text-amber-400" />
+                      <span className="text-xs text-amber-400">{(coin.whale_confidence * 100).toFixed(0)}%</span>
+                    </button>
                   ) : (
                     <span className="text-gray-500 text-xs">-</span>
                   )}
@@ -342,25 +310,15 @@ export default function TopMovers({ limit = 100, sort = "momentum" }: TopMoversP
                   {coin.signal}
                 </span>
                 {coin.whale_confidence > 0.6 && (
-                  canExplainWhale(coin.symbol) ? (
-                    <button
-                      onClick={() => handleWhaleClick(coin.symbol)}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500/20 border border-amber-500/30 rounded-full hover:bg-amber-500/30 transition-colors cursor-pointer"
-                      aria-haspopup="dialog"
-                      title="Click for explanation — why this asset shows whale activity"
-                    >
-                      <Fish className="w-3 h-3 text-amber-400" />
-                      <span className="text-xs text-amber-400">{(coin.whale_confidence * 100).toFixed(0)}%</span>
-                    </button>
-                  ) : (
-                    <div
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full opacity-60"
-                      title="Whale activity detected — detailed explanation coming soon"
-                    >
-                      <Fish className="w-3 h-3 text-amber-400" />
-                      <span className="text-xs text-amber-400">{(coin.whale_confidence * 100).toFixed(0)}%</span>
-                    </div>
-                  )
+                  <button
+                    onClick={() => handleWhaleClick(coin.symbol)}
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500/20 border border-amber-500/30 rounded-full hover:bg-amber-500/30 transition-colors cursor-pointer"
+                    aria-haspopup="dialog"
+                    title="Click for explanation — why this asset shows whale activity"
+                  >
+                    <Fish className="w-3 h-3 text-amber-400" />
+                    <span className="text-xs text-amber-400">{(coin.whale_confidence * 100).toFixed(0)}%</span>
+                  </button>
                 )}
               </div>
               <button
