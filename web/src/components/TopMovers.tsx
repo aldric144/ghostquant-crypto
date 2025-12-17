@@ -45,7 +45,7 @@ export default function TopMovers({ limit = 100, sort = "momentum" }: TopMoversP
       
       if (response.ok) {
         const assets = await response.json();
-        const symbols = new Set(assets.map((a: any) => a.symbol.toUpperCase()));
+        const symbols = new Set<string>(assets.map((a: any) => a.symbol.toUpperCase()));
         setSupportedSymbols(symbols);
       }
     } catch (err) {
