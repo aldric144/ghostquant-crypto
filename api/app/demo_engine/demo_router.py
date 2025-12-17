@@ -128,6 +128,7 @@ async def demo_riskmap():
         raise HTTPException(status_code=500, detail=f"Demo risk map failed: {str(e)}")
 
 
+
 # Analytics Dashboard Endpoints
 
 @demo_engine_router.get("/analytics/market", response_model=MarketAnalyticsResponse)
