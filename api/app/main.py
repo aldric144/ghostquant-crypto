@@ -230,6 +230,7 @@ app.include_router(demo_engine_router)
 # STT Proxy - Server-side ElevenLabs STT proxy (eliminates domain restrictions)
 app.include_router(stt_proxy.router)
 
+
 @app.post("/intel/sim/start")
 async def start_sim():
     """Start the intelligence feed simulator."""
