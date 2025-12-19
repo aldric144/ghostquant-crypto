@@ -94,7 +94,7 @@ const DEFAULT_LANGUAGE_CODE = 'en';
 function getBackendWsUrl(): string {
   // Check for explicit backend URL
   const backendUrl = typeof process !== 'undefined' 
-    ? process.env.NEXT_PUBLIC_API_URL 
+    ? process.env.NEXT_PUBLIC_API_BASE 
     : null;
   
   if (backendUrl) {
@@ -103,10 +103,10 @@ function getBackendWsUrl(): string {
     return `${wsUrl}/stt/stream`;
   }
   
-  // Fallback: use current host with WebSocket protocol
-  if (typeof window !== 'undefined') {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    return `${protocol}//${window.location.host}/api/stt/stream`;
+  // Fallback: use NEXT_PUBLIC_API_BASE if available
+  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_API_BASE) {
+    const wsUrl = process.env.NEXT_PUBLIC_API_BASE.replace(/^http/, 'ws');
+    return `${wsUrl}/stt/stream`;
   }
   
   // Default for SSR
@@ -471,7 +471,7 @@ export function isElevenLabsSTTAvailable(): boolean {
   
   // In SSR, check if backend URL is configured
   const backendUrl = typeof process !== 'undefined' 
-    ? process.env.NEXT_PUBLIC_API_URL 
+    ? process.env.NEXT_PUBLIC_API_BASE 
     : null;
   
   const available = !!backendUrl;
