@@ -225,8 +225,8 @@ const API_ENDPOINTS = {
     activity: '/whale/intel/activity',
   },
   ecoscan: {
-    summary: '/ecoscan/summary',
-    trends: '/ecoscan/trends',
+    summary: '/api/ecoscan/summary',
+    trends: '/api/ecoscan/trends',
   },
   hydra: {
     status: '/hydra-adapter/detect',
@@ -241,8 +241,8 @@ const API_ENDPOINTS = {
     movers: '/momentum/movers',
   },
   alphaBrain: {
-    predictions: '/alphabrain/predictions',
-    summary: '/alphabrain/summary',
+    predictions: '/api/alphabrain/predictions',
+    summary: '/api/alphabrain/summary',
   },
   marketGrid: {
     signals: '/market/signals',
