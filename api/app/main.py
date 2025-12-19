@@ -224,8 +224,9 @@ from app.widb import widb_router
 app.include_router(widb_router)
 
 # Demo Engine - Subscriber demo mode endpoints
-from app.demo_engine import demo_engine_router
-app.include_router(demo_engine_router)
+# REMOVED: demo_engine_router import causes ModuleNotFoundError on DigitalOcean
+# from app.demo_engine import demo_engine_router
+# app.include_router(demo_engine_router)
 
 # STT Proxy - Server-side ElevenLabs STT proxy (eliminates domain restrictions)
 app.include_router(stt_proxy.router)
