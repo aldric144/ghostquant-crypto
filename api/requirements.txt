@@ -18,3 +18,4 @@ python-socketio
 rq==1.15.1
 apscheduler
 pandas
+websockets
