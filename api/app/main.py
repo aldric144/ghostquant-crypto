@@ -231,6 +231,14 @@ app.include_router(widb_router)
 # STT Proxy - Server-side ElevenLabs STT proxy (eliminates domain restrictions)
 app.include_router(stt_proxy.router)
 
+# Global Threat Map - Unified threat detection and monitoring
+from app.routers import darkpool, manipulation, stablecoin, derivatives, unified_risk
+app.include_router(darkpool.router, tags=["Global Threat Map"])
+app.include_router(manipulation.router, tags=["Global Threat Map"])
+app.include_router(stablecoin.router, tags=["Global Threat Map"])
+app.include_router(derivatives.router, tags=["Global Threat Map"])
+app.include_router(unified_risk.router, tags=["Global Threat Map"])
+
 
 @app.post("/intel/sim/start")
 async def start_sim():
