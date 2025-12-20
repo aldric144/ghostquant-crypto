@@ -2,51 +2,116 @@
 Redis caching utilities for expensive endpoints.
 Transparent caching with configurable TTL.
 
-Uses lazy imports to allow the app to start in serverless mode without redis installed.
+Uses Upstash Redis REST API for serverless-compatible caching.
 """
-try:
-    import redis
-except ImportError:
-    redis = None
-
 import json
 import os
+import httpx
 from typing import Optional, Any, Callable
 from functools import wraps
 import logging
 
 logger = logging.getLogger(__name__)
 
-# Redis client - initialized lazily
-redis_client: Optional[Any] = None
+
+class UpstashSyncCache:
+    """
+    Synchronous Upstash Redis REST API cache wrapper.
+    Used for the cache_response decorator which needs sync operations.
+    """
+    
+    def __init__(self):
+        self.rest_url = os.getenv("REDIS_REST_URL")
+        self.rest_token = os.getenv("REDIS_REST_TOKEN")
+        self.enabled = bool(self.rest_url and self.rest_token)
+        
+        if not self.enabled:
+            logger.warning("REDIS_REST_URL and REDIS_REST_TOKEN not set - cache disabled")
+        
+        self.headers = {
+            "Authorization": f"Bearer {self.rest_token}",
+            "Content-Type": "application/json"
+        } if self.enabled else {}
+    
+    def _execute(self, *args) -> Optional[Any]:
+        """Execute a Redis command via REST API (sync)."""
+        if not self.enabled:
+            return None
+        
+        try:
+            with httpx.Client(timeout=10.0) as client:
+                response = client.post(
+                    self.rest_url,
+                    headers=self.headers,
+                    json=list(args)
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    return data.get("result")
+                else:
+                    logger.error(f"Upstash error: {response.status_code} - {response.text}")
+                    return None
+                    
+        except Exception as e:
+            logger.error(f"Upstash request error: {e}")
+            return None
+    
+    def get(self, key: str) -> Optional[str]:
+        """Get value from cache."""
+        return self._execute("GET", key)
+    
+    def setex(self, key: str, ttl: int, value: str) -> bool:
+        """Set value with expiration."""
+        result = self._execute("SETEX", key, ttl, value)
+        return result == "OK"
+    
+    def keys(self, pattern: str) -> list:
+        """Get keys matching pattern."""
+        result = self._execute("KEYS", pattern)
+        return result if result else []
+    
+    def delete(self, *keys) -> bool:
+        """Delete keys."""
+        if not keys:
+            return True
+        self._execute("DEL", *keys)
+        return True
+
+
+# Cache client - initialized lazily
+redis_client: Optional[UpstashSyncCache] = None
 
 def _is_serverless_mode():
     """Check if running in serverless mode (no Redis required)."""
     return os.getenv("SERVERLESS_MODE", "false").lower() == "true"
 
 def init_redis():
-    """Initialize Redis connection. No-op in serverless mode."""
+    """Initialize Upstash Redis REST connection. No-op in serverless mode."""
     global redis_client
     
     if _is_serverless_mode():
         logger.info("Running in serverless mode - Redis cache disabled")
         return
     
-    try:
-        # Lazy import - only import when actually needed
-        import redis as redis_lib
-        redis_url = os.getenv("REDIS_URL", "redis://redis:6379/0")
-        redis_client = redis_lib.from_url(redis_url, decode_responses=True)
-        redis_client.ping()
-        logger.info("Redis cache initialized successfully")
-    except ImportError:
-        logger.warning("Redis package not installed. Caching disabled.")
+    rest_url = os.getenv("REDIS_REST_URL")
+    rest_token = os.getenv("REDIS_REST_TOKEN")
+    
+    if not rest_url or not rest_token:
+        logger.warning("REDIS_REST_URL and REDIS_REST_TOKEN not set. Caching disabled.")
         redis_client = None
+        return
+    
+    try:
+        redis_client = UpstashSyncCache()
+        # Test connection
+        redis_client._execute("PING")
+        logger.info("Upstash Redis cache initialized successfully")
     except Exception as e:
-        logger.warning(f"Redis cache initialization failed: {e}. Caching disabled.")
+        logger.warning(f"Upstash Redis cache initialization failed: {e}. Caching disabled.")
         redis_client = None
 
-def get_redis() -> Optional[Any]:
+def get_redis() -> Optional[UpstashSyncCache]:
     """Get Redis client instance."""
     return redis_client
 

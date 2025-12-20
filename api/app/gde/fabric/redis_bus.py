@@ -44,6 +44,7 @@ class RedisBus:
     async def publish(self, channel: str, message: Dict[str, Any]) -> bool:
         """
         Publish a message to a Redis channel via REST API.
+        Uses list-based pub/sub simulation since Upstash REST doesn't support native pub/sub.
         
         Args:
             channel: Channel name (e.g., "intel.signals")
@@ -61,18 +62,25 @@ class RedisBus:
             
             payload = json.dumps(message)
             
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                # Use LPUSH to add message to list (simulating pub/sub)
                 response = await client.post(
-                    f"{self.rest_url}/publish/{channel}",
+                    self.rest_url,
                     headers=self.headers,
-                    json={"message": payload}
+                    json=["LPUSH", channel, payload]
                 )
                 
                 if response.status_code == 200:
+                    # Trim list to keep only last 100 messages
+                    await client.post(
+                        self.rest_url,
+                        headers=self.headers,
+                        json=["LTRIM", channel, 0, 99]
+                    )
                     print(f"[RedisBus] Published to {channel}")
                     return True
                 else:
-                    print(f"[RedisBus] Failed to publish to {channel}: {response.status_code}")
+                    print(f"[RedisBus] Failed to publish to {channel}: {response.status_code} - {response.text}")
                     return False
                     
         except Exception as e:
@@ -110,10 +118,11 @@ class RedisBus:
             return []
         
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.post(
-                    f"{self.rest_url}/lrange/{channel}/0/{count-1}",
-                    headers=self.headers
+                    self.rest_url,
+                    headers=self.headers,
+                    json=["LRANGE", channel, 0, count - 1]
                 )
                 
                 if response.status_code == 200:
