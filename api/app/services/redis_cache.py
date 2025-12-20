@@ -1,11 +1,13 @@
 """
 Redis caching layer for momentum scores and coin data.
+Uses Upstash Redis REST API for serverless-compatible caching.
 """
 import os
 import logging
 import json
 from typing import Optional, List, Dict, Any, Union
-import redis.asyncio as redis
+
+from app.services.upstash_cache import get_upstash_cache, UpstashCache
 
 logger = logging.getLogger(__name__)
 
@@ -13,18 +15,18 @@ logger = logging.getLogger(__name__)
 class RedisCache:
     """
     Async Redis cache for momentum scores, coin data, and rank history.
+    Uses Upstash REST API instead of TCP-based redis client.
     """
     
     def __init__(self):
-        self.redis_url = os.getenv("REDIS_URL", "redis://redis:6379/0")
-        self.client: Optional[redis.Redis] = None
         self.default_ttl = int(os.getenv("MOMENTUM_CACHE_TTL", 60))
+        self._upstash: Optional[UpstashCache] = None
     
-    async def _get_client(self) -> redis.Redis:
-        """Get or create Redis client."""
-        if self.client is None:
-            self.client = await redis.from_url(self.redis_url, decode_responses=True)
-        return self.client
+    async def _get_client(self) -> UpstashCache:
+        """Get or create Upstash client."""
+        if self._upstash is None:
+            self._upstash = get_upstash_cache()
+        return self._upstash
     
     async def get(self, key: str) -> Optional[Any]:
         """Get value from cache, automatically deserializing JSON."""
@@ -50,8 +52,7 @@ class RedisCache:
             if not isinstance(value, str):
                 value = json.dumps(value)
             
-            await client.setex(key, ttl, value)
-            return True
+            return await client.set(key, value, ttl)
         except Exception as e:
             logger.error(f"Redis SET error for key {key}: {e}")
             return False
@@ -108,7 +109,7 @@ class RedisCache:
                 else:
                     hash_data[k] = str(v)
             
-            await client.hset(f"ghostquant:coin:{coin_id}", mapping=hash_data)
+            await client.hset(f"ghostquant:coin:{coin_id}", hash_data)
             
             await client.expire(f"ghostquant:coin:{coin_id}", self.default_ttl * 2)
             
@@ -144,13 +145,13 @@ class RedisCache:
                     else:
                         hash_data[k] = str(v)
                 
-                await client.hset(f"ghostquant:coin:{coin_id}", mapping=hash_data)
+                await client.hset(f"ghostquant:coin:{coin_id}", hash_data)
                 await client.expire(f"ghostquant:coin:{coin_id}", self.default_ttl * 2)
             
             if scores:
                 await client.zadd("ghostquant:momentum:latest", scores)
             
-            logger.info(f"Stored {len(coins)} scored coins in Redis")
+            logger.info(f"Stored {len(coins)} scored coins in Upstash")
             return True
         
         except Exception as e:
@@ -185,7 +186,7 @@ class RedisCache:
             cutoff = timestamp - (minutes * 60)
             
             key = f"ghostquant:rank_history:{coin_id}"
-            entries = await client.zrangebyscore(key, cutoff, timestamp, withscores=True)
+            entries = await client.zrangebyscore(key, cutoff, timestamp)
             
             history = []
             for entry, ts in entries:
@@ -224,9 +225,9 @@ class RedisCache:
             return 0
     
     async def close(self):
-        """Close Redis connection."""
-        if self.client:
-            await self.client.close()
+        """Close Redis connection (no-op for REST API)."""
+        if self._upstash:
+            await self._upstash.close()
 
 
 from datetime import datetime
