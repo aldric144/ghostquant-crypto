@@ -91,7 +91,7 @@ export default function AllThreatsTab() {
           <ThreatRiskDial score={dashboard?.overall_risk_score || 0} size="lg" />
           <div className="mt-2 text-sm text-gray-400">{dashboard?.threat_level || "Unknown"}</div>
           <div className={`text-xs mt-1 ${getSentimentColor(dashboard?.market_sentiment || "neutral")}`}>
-            Market: {dashboard?.market_sentiment?.toUpperCase()}
+            Market: {(dashboard?.market_sentiment || "neutral").toUpperCase()}
           </div>
         </div>
 
@@ -124,7 +124,7 @@ export default function AllThreatsTab() {
               <div key={threat.id} className="flex items-center justify-between bg-slate-900/50 rounded-lg p-3">
                 <div className="flex items-center gap-3">
                   <span className="px-2 py-1 rounded text-xs font-semibold bg-red-900/30 text-red-400">
-                    {threat.severity.toUpperCase()}
+                    {(threat.severity || "unknown").toUpperCase()}
                   </span>
                   <span className="text-sm text-white">{threat.symbol}</span>
                   <span className="text-sm text-gray-400 capitalize">{threat.type.replace(/_/g, " ")}</span>
