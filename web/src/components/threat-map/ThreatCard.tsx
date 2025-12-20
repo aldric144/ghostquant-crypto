@@ -74,8 +74,8 @@ export default function ThreatCard({ threat, onClick }: ThreatCardProps) {
           <span className="text-2xl">{getSourceIcon(threat.source)}</span>
           <div>
             <span className="font-semibold text-white">{threat.symbol}</span>
-            <span className={`ml-2 px-2 py-0.5 rounded text-xs font-semibold border ${getSeverityColor(threat.severity)}`}>
-              {threat.severity.toUpperCase()}
+            <span className={`ml-2 px-2 py-0.5 rounded text-xs font-semibold border ${getSeverityColor(threat.severity || "unknown")}`}>
+              {(threat.severity || "unknown").toUpperCase()}
             </span>
           </div>
         </div>
