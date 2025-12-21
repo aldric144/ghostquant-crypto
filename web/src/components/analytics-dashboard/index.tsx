@@ -90,14 +90,15 @@ export default function AnalyticsDashboard() {
     
     setIsLoading(true);
     try {
+      // Use correct existing endpoints
       const [riskRes, whaleRes, entityRes, trendRes, mapRes, anomalyRes, narrativeRes] = await Promise.allSettled([
-        fetch(`${API_BASE}/unified-risk/summary`),
-        fetch(`${API_BASE}/whale-intel/top?count=20`),
-        fetch(`${API_BASE}/entity-intel/top`),
-        fetch(`${API_BASE}/unified-risk/timeline`),
-        fetch(`${API_BASE}/geo-intel/map`),
-        fetch(`${API_BASE}/anomaly-detection/latest`),
-        fetch(`${API_BASE}/narrative-engine/summary`),
+        fetch(`${API_BASE}/unified-risk/dashboard`),     // Correct endpoint for risk dashboard
+        fetch(`${API_BASE}/whales/top?limit=20`),        // Correct endpoint for top whales
+        fetch(`${API_BASE}/widb/wallets?limit=20`),      // Use WIDB for entity data
+        fetch(`${API_BASE}/unified-risk/timeline`),      // This endpoint exists
+        fetch(`${API_BASE}/unified-risk/heatmap`),       // Use heatmap for map data
+        fetch(`${API_BASE}/unified-risk/all-threats?severity=critical&limit=20`), // Use threats for anomalies
+        fetch(`${API_BASE}/unified-risk/dashboard`),     // Reuse dashboard for narrative summary
       ]);
 
       const newData: AnalyticsData = {

@@ -99,12 +99,13 @@ export default function RingVisualization({ severityFilter, timeFilter }: RingVi
       setLoading(true);
       setError(null);
 
+      // Use correct existing endpoints for ring/cluster data
       const endpoints = [
-        "/manipulation/rings",
-        "/manipulation/cluster-events",
-        "/unified-risk/rings",
-        "/darkpool/cluster",
-        "/whale-intel/clusters",
+        "/manipulation/alerts",           // Manipulation alerts (rings/patterns)
+        "/widb/cluster/history",           // WIDB cluster history
+        "/unified-risk/all-threats",       // Unified risk threats
+        "/darkpool/activity",              // Darkpool activity
+        "/whales/movements",               // Whale movements
       ];
 
       const windowParam = timeFilter !== "all" ? `?window=${timeFilter}` : "";
@@ -123,7 +124,21 @@ export default function RingVisualization({ severityFilter, timeFilter }: RingVi
       responses.forEach((result, idx) => {
         if (result.status === "fulfilled" && result.value) {
           const data = result.value;
-          const ringList = Array.isArray(data) ? data : data.rings || data.clusters || [];
+          // Handle different response structures from each endpoint
+          let ringList: Record<string, unknown>[] = [];
+          if (Array.isArray(data)) {
+            ringList = data;
+          } else if (data.alerts) {
+            ringList = data.alerts; // manipulation/alerts
+          } else if (data.clusters) {
+            ringList = data.clusters; // widb/cluster/history
+          } else if (data.threats) {
+            ringList = data.threats; // unified-risk/all-threats
+          } else if (data.events) {
+            ringList = data.events; // darkpool/activity
+          } else if (data.rings) {
+            ringList = data.rings;
+          }
           const source = endpoints[idx].split("/")[1];
 
           ringList.forEach((ring: Record<string, unknown>) => {
