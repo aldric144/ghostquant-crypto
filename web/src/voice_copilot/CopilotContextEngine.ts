@@ -186,8 +186,8 @@ const PAGE_CONTEXTS: Record<string, PageContext> = {
     description: 'Real-time market intelligence with risk indices and anomaly feeds',
     keyElements: ['risk index', 'whale activity', 'market trends', 'anomaly feed', 'narrative summary'],
   },
-  '/terminal/map': {
-    path: '/terminal/map',
+  '/threat-map': {
+    path: '/threat-map',
     name: 'Global Threat Map',
     category: 'map',
     description: 'Geographic 3D globe visualization of real-time threat distribution with whale activity and manipulation rings',
