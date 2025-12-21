@@ -29,6 +29,7 @@ const PAGE_NAMES: Record<string, string> = {
   '/influence-graph': 'Influence Graph',
   '/threat-map': 'Global Threat Map',
   '/terminal/ghostmind': 'GhostMind AI Console',
+  '/ghostmind': 'GhostMind AI',
   '/terminal/predict': 'Prediction Engine',
   '/terminal/entity': 'Entity Scanner',
   '/entity-explorer': 'Entity Explorer',

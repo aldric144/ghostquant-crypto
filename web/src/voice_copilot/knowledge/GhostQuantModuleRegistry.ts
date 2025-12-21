@@ -405,14 +405,14 @@ const UI_SYSTEMS_MODULES: ModuleEntry[] = [
     id: 'ghostmind',
     name: 'GhostMind AI',
     category: 'ui_systems',
-    route: '/terminal/ghostmind',
-    summary: 'AI-powered conversational intelligence interface for natural language queries and contextual assistance.',
+    route: '/ghostmind',
+    summary: 'AI-powered conversational intelligence interface with live insights, system metrics, suggested queries, and context-aware responses.',
     sampleQuestions: [
       'Open GhostMind',
       'Ask GhostMind a question',
       'Get AI assistance'
     ],
-    keywords: ['ghostmind', 'ai', 'chat', 'conversation', 'assistant', 'query', 'help'],
+    keywords: ['ghostmind', 'ai', 'chat', 'conversation', 'assistant', 'query', 'help', 'insights', 'metrics'],
     relatedModules: ['copilot', 'home', 'settings']
   },
   {
