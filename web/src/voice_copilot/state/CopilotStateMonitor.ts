@@ -129,7 +129,7 @@ const ROUTE_TO_MODULE: Record<string, GhostQuantModule> = {
   '/terminal/risk': 'risk_heatmap',
   '/terminal/alerts': 'alerts',
   '/terminal/ultrafusion': 'ultrafusion',
-  '/terminal/graph': 'graph',
+  '/influence-graph': 'graph',
 };
 
 const MODULE_DESCRIPTIONS: Record<GhostQuantModule, string> = {

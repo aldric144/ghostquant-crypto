@@ -158,7 +158,7 @@ const CONSTELLATION_KNOWLEDGE: KnowledgeEntry[] = [
     technical: 'Constellation uses graph neural networks combined with temporal analysis to identify entity clusters. The system applies community detection algorithms (Louvain, label propagation) on transaction graphs, then validates clusters using behavioral fingerprinting. Risk propagation is modeled using belief propagation on the entity graph with iterative message passing.',
     investor: 'Constellation reveals the hidden network of relationships in crypto markets. It can identify when seemingly unrelated wallets are actually controlled by the same entity, exposing coordinated manipulation that would otherwise be invisible.',
     relatedTopics: ['entity_clustering', 'risk_propagation', 'behavioral_fingerprinting'],
-    pageContext: ['/terminal/constellation', '/terminal/graph'],
+    pageContext: ['/terminal/constellation', '/influence-graph'],
   },
   {
     id: 'entity_clustering',
@@ -180,7 +180,7 @@ const CONSTELLATION_KNOWLEDGE: KnowledgeEntry[] = [
     technical: 'Risk propagation uses belief propagation on the entity graph with edge weights derived from transaction volume, frequency, and recency. The algorithm iteratively updates risk beliefs until convergence, with damping factors to prevent oscillation. Risk decay is modeled as a function of graph distance and connection strength.',
     investor: 'Risk propagation helps you understand not just direct risks, but also exposure through connections. An entity might look clean individually but have dangerous connections that our system reveals.',
     relatedTopics: ['constellation_overview', 'entity_clustering', 'risk_scoring'],
-    pageContext: ['/terminal/constellation', '/terminal/graph'],
+    pageContext: ['/terminal/constellation', '/influence-graph'],
   },
 ];
 

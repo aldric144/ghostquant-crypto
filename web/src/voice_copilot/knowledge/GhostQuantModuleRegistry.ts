@@ -258,7 +258,7 @@ const MARKET_BLOCKCHAIN_MODULES: ModuleEntry[] = [
     id: 'graph',
     name: 'Influence Graph',
     category: 'market_blockchain',
-    route: '/terminal/graph',
+    route: '/influence-graph',
     summary: 'Visual network graph of entity connections and relationships with interactive node exploration and cluster highlighting.',
     sampleQuestions: [
       'Show me the influence graph',
