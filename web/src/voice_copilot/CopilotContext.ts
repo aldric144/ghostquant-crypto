@@ -32,7 +32,7 @@ const PAGE_NAMES: Record<string, string> = {
   '/terminal/predict': 'Prediction Engine',
   '/terminal/entity': 'Entity Scanner',
   '/terminal/ultrafusion': 'UltraFusion',
-  '/terminal/timeline': 'Threat Timeline',
+  '/ai-timeline': 'AI Timeline',
   '/terminal/rings': 'Ring Detection',
   '/terminal/token': 'Token Analysis',
   '/terminal/settings': 'Settings',
