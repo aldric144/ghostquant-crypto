@@ -153,7 +153,7 @@ const CORE_INTELLIGENCE_MODULES: ModuleEntry[] = [
     id: 'rings',
     name: 'Ring Detector',
     category: 'core_intelligence',
-    route: '/terminal/rings',
+    route: '/ring-detector',
     summary: 'Manipulation ring and coordinated wallet cluster detection system that visualizes connected entities engaged in coordinated activity.',
     sampleQuestions: [
       'Any manipulation rings detected?',
