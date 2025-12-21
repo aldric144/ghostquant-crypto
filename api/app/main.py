@@ -239,6 +239,12 @@ app.include_router(stablecoin.router, tags=["Global Threat Map"])
 app.include_router(derivatives.router, tags=["Global Threat Map"])
 app.include_router(unified_risk.router, tags=["Global Threat Map"])
 
+# System Health & Settings V2 - Real-time monitoring and control
+from app.routers.system import router as system_router, simulation_router, danger_router
+app.include_router(system_router)
+app.include_router(simulation_router)
+app.include_router(danger_router)
+
 
 @app.post("/intel/sim/start")
 async def start_sim():

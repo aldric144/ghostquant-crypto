@@ -800,7 +800,7 @@ export function isNavigationRequest(query: string): { isNavigation: boolean; des
     // UI-Driven Systems
     home: '/terminal/home',
     ghostmind: '/ghostmind',
-    settings: '/terminal/settings',
+    settings: '/settings-v2',
     billing: '/terminal/billing',
     pricing: '/terminal/pricing',
     licenses: '/terminal/licenses',
