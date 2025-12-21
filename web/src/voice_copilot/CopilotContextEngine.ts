@@ -193,8 +193,8 @@ const PAGE_CONTEXTS: Record<string, PageContext> = {
     description: 'Geographic 3D globe visualization of real-time threat distribution with whale activity and manipulation rings',
     keyElements: ['threat points', 'flow arcs', 'regional hotspots', 'threat filters'],
   },
-  '/terminal/timeline': {
-    path: '/terminal/timeline',
+  '/ai-timeline': {
+    path: '/ai-timeline',
     name: 'AI Timeline',
     category: 'timeline',
     description: 'Chronological intelligence event stream showing all alerts grouped by time with search and filtering',

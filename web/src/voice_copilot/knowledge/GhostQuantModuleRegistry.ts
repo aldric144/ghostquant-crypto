@@ -244,7 +244,7 @@ const MARKET_BLOCKCHAIN_MODULES: ModuleEntry[] = [
     id: 'timeline',
     name: 'AI Timeline',
     category: 'market_blockchain',
-    route: '/terminal/timeline',
+    route: '/ai-timeline',
     summary: 'Chronological intelligence event stream showing all alerts grouped by time with search and filtering capabilities.',
     sampleQuestions: [
       'Show me recent events',

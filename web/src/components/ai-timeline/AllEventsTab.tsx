@@ -1,0 +1,497 @@
+"use client";
+
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { useIntelFeed } from "@/hooks/useIntelFeed";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
+
+interface TimelineEvent {
+  id: string;
+  timestamp: number;
+  type: string;
+  severity: "high" | "medium" | "low";
+  score: number;
+  message: string;
+  token?: string;
+  wallet?: string;
+  chain?: string;
+  riskType?: string;
+  source?: string;
+  intelligence?: Record<string, unknown>;
+  isNew: boolean;
+}
+
+interface AllEventsTabProps {
+  timeWindow: string;
+}
+
+const severityColors = {
+  high: { bg: "bg-red-500/20", text: "text-red-400", border: "border-red-500/30" },
+  medium: { bg: "bg-yellow-500/20", text: "text-yellow-400", border: "border-yellow-500/30" },
+  low: { bg: "bg-green-500/20", text: "text-green-400", border: "border-green-500/30" },
+};
+
+const getEventColor = (type: string): string => {
+  const typeStr = type.toLowerCase();
+  if (typeStr.includes("manipulation")) return "#ef4444";
+  if (typeStr.includes("whale")) return "#06b6d4";
+  if (typeStr.includes("ai") || typeStr.includes("signal")) return "#fbbf24";
+  if (typeStr.includes("stablecoin")) return "#10b981";
+  if (typeStr.includes("derivative")) return "#f97316";
+  if (typeStr.includes("billionaire") || typeStr.includes("institution")) return "#a855f7";
+  if (typeStr.includes("darkpool")) return "#6366f1";
+  return "#06b6d4";
+};
+
+const getEventIcon = (type: string): string => {
+  const typeStr = type.toLowerCase();
+  if (typeStr.includes("whale")) return "\u{1F40B}";
+  if (typeStr.includes("manipulation")) return "\u26A0\uFE0F";
+  if (typeStr.includes("ai") || typeStr.includes("signal")) return "\u{1F916}";
+  if (typeStr.includes("stablecoin")) return "\u{1F4B5}";
+  if (typeStr.includes("derivative")) return "\u{1F4CA}";
+  if (typeStr.includes("billionaire")) return "\u{1F48E}";
+  if (typeStr.includes("institution")) return "\u{1F3DB}\uFE0F";
+  if (typeStr.includes("darkpool")) return "\u{1F576}\uFE0F";
+  return "\u{1F4E1}";
+};
+
+export default function AllEventsTab({ timeWindow }: AllEventsTabProps) {
+  const [events, setEvents] = useState<TimelineEvent[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const { latestAlert, alertHistory, connectionStatus } = useIntelFeed();
+
+  const fetchEvents = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const endpoints = [
+        "/unified-risk/events",
+        "/manipulation/events",
+        "/darkpool/events",
+        "/stablecoin/events",
+        "/derivatives/events",
+        "/whale-intel/events",
+      ];
+
+      const windowParam = timeWindow ? `?window=${timeWindow}` : "";
+
+      const responses = await Promise.allSettled(
+        endpoints.map((endpoint) =>
+          fetch(`${API_BASE}${endpoint}${windowParam}`).then((res) =>
+            res.ok ? res.json() : null
+          )
+        )
+      );
+
+      const allEvents: TimelineEvent[] = [];
+
+      responses.forEach((result, index) => {
+        if (result.status === "fulfilled" && result.value) {
+          const data = result.value;
+          const eventList = Array.isArray(data) ? data : data.events || [];
+          const source = endpoints[index].split("/")[1];
+
+          eventList.forEach((event: Record<string, unknown>, i: number) => {
+            const score = (event.score as number) || (event.risk_score as number) || 0;
+            const severity: "high" | "medium" | "low" =
+              score >= 0.7 ? "high" : score >= 0.4 ? "medium" : "low";
+
+            allEvents.push({
+              id: `${source}-${i}-${Date.now()}`,
+              timestamp: event.timestamp
+                ? new Date(event.timestamp as string).getTime()
+                : Date.now() - i * 60000,
+              type: (event.event_type as string) || (event.type as string) || source,
+              severity,
+              score,
+              message:
+                (event.message as string) ||
+                (event.description as string) ||
+                `${source} event detected`,
+              token: event.token as string | undefined,
+              wallet: (event.wallet as string) || (event.address as string) || undefined,
+              chain: event.chain as string | undefined,
+              riskType: (event.risk_type as string) || source,
+              source,
+              intelligence: event,
+              isNew: false,
+            });
+          });
+        }
+      });
+
+      allEvents.sort((a, b) => b.timestamp - a.timestamp);
+      setEvents(allEvents.slice(0, 500));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load events");
+    } finally {
+      setLoading(false);
+    }
+  }, [timeWindow]);
+
+  useEffect(() => {
+    fetchEvents();
+    const interval = setInterval(fetchEvents, 30000);
+    return () => clearInterval(interval);
+  }, [fetchEvents]);
+
+  useEffect(() => {
+    if (!latestAlert) return;
+
+    const alertType =
+      latestAlert.intelligence?.event?.event_type || latestAlert.type || "alert";
+    const score = latestAlert.score || 0;
+    const severity: "high" | "medium" | "low" =
+      score >= 0.7 ? "high" : score >= 0.4 ? "medium" : "low";
+
+    const newEvent: TimelineEvent = {
+      id: `live-${Date.now()}-${Math.random()}`,
+      timestamp: Date.now(),
+      type: alertType,
+      severity,
+      score,
+      message: alertType,
+      token: latestAlert.intelligence?.event?.token || undefined,
+      wallet: latestAlert.intelligence?.entity?.entity_id || undefined,
+      chain: latestAlert.intelligence?.event?.chain || undefined,
+      riskType: latestAlert.intelligence?.event?.risk_type || "live",
+      source: "live",
+      intelligence: latestAlert.intelligence,
+      isNew: true,
+    };
+
+    setEvents((prev) => [newEvent, ...prev].slice(0, 500));
+
+    setTimeout(() => {
+      setEvents((prev) =>
+        prev.map((event) =>
+          event.id === newEvent.id ? { ...event, isNew: false } : event
+        )
+      );
+    }, 3000);
+  }, [latestAlert]);
+
+  useEffect(() => {
+    if (alertHistory && alertHistory.length > 0 && events.length === 0) {
+      const initialEvents: TimelineEvent[] = alertHistory.map((alert, index) => {
+        const alertType =
+          alert.intelligence?.event?.event_type || alert.type || "alert";
+        const score = alert.score || 0;
+        const severity: "high" | "medium" | "low" =
+          score >= 0.7 ? "high" : score >= 0.4 ? "medium" : "low";
+
+        return {
+          id: `init-${index}`,
+          timestamp: Date.now() - index * 60000,
+          type: alertType,
+          severity,
+          score,
+          message: alertType,
+          token: alert.intelligence?.event?.token || undefined,
+          wallet: alert.intelligence?.entity?.entity_id || undefined,
+          chain: alert.intelligence?.event?.chain || undefined,
+          riskType: alert.intelligence?.event?.risk_type || "history",
+          source: "history",
+          intelligence: alert.intelligence,
+          isNew: false,
+        };
+      });
+
+      setEvents((prev) => [...initialEvents, ...prev].slice(0, 500));
+    }
+  }, [alertHistory, events.length]);
+
+  const filteredEvents = useMemo(() => {
+    if (!searchQuery.trim()) return events;
+
+    const query = searchQuery.toLowerCase();
+    return events.filter(
+      (event) =>
+        event.message.toLowerCase().includes(query) ||
+        event.type.toLowerCase().includes(query) ||
+        event.token?.toLowerCase().includes(query) ||
+        event.wallet?.toLowerCase().includes(query) ||
+        event.chain?.toLowerCase().includes(query) ||
+        event.riskType?.toLowerCase().includes(query) ||
+        event.severity.toLowerCase().includes(query)
+    );
+  }, [events, searchQuery]);
+
+  const groupedEvents = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStart = today.getTime();
+
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStart = yesterday.getTime();
+
+    const thisWeek = new Date(today);
+    thisWeek.setDate(thisWeek.getDate() - 7);
+    const thisWeekStart = thisWeek.getTime();
+
+    const groups: { [key: string]: TimelineEvent[] } = {
+      Today: [],
+      Yesterday: [],
+      "This Week": [],
+      Older: [],
+    };
+
+    filteredEvents.forEach((event) => {
+      if (event.timestamp >= todayStart) {
+        groups["Today"].push(event);
+      } else if (event.timestamp >= yesterdayStart) {
+        groups["Yesterday"].push(event);
+      } else if (event.timestamp >= thisWeekStart) {
+        groups["This Week"].push(event);
+      } else {
+        groups["Older"].push(event);
+      }
+    });
+
+    return groups;
+  }, [filteredEvents]);
+
+  const formatTimestamp = (timestamp: number): string => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - timestamp;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    return date.toLocaleDateString();
+  };
+
+  if (loading && events.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+      </div>
+    );
+  }
+
+  if (error && events.length === 0) {
+    return (
+      <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 text-red-400">
+        {error}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
+              connectionStatus === "connected"
+                ? "bg-green-500/20 text-green-400"
+                : "bg-red-500/20 text-red-400"
+            }`}
+          >
+            <div
+              className={`w-2 h-2 rounded-full ${
+                connectionStatus === "connected"
+                  ? "bg-green-400 animate-pulse"
+                  : "bg-red-400"
+              }`}
+            />
+            <span className="text-xs font-medium">
+              {connectionStatus === "connected" ? "Live" : "Disconnected"}
+            </span>
+          </div>
+          <span className="text-sm text-gray-400">
+            {filteredEvents.length} events
+          </span>
+        </div>
+
+        <div className="relative flex-1 max-w-md">
+          <input
+            type="text"
+            placeholder="Search by token, wallet, chain, message, risk type, severity..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 pl-10 bg-slate-900/50 border border-cyan-500/20 rounded-lg text-gray-300 placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 transition-colors"
+          />
+          <svg
+            className="absolute left-3 top-2.5 w-5 h-5 text-gray-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
+      </div>
+
+      {filteredEvents.length === 0 ? (
+        <div className="flex flex-col items-center justify-center h-64 text-center py-12">
+          <svg
+            className="w-16 h-16 text-gray-600 mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <p className="text-gray-500 text-lg">No events found</p>
+          <p className="text-gray-600 text-sm mt-2">
+            Try adjusting your filters or search query
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {Object.entries(groupedEvents).map(([groupName, groupEvents]) => {
+            if (groupEvents.length === 0) return null;
+
+            return (
+              <div key={groupName}>
+                <div className="flex items-center gap-3 mb-4">
+                  <h2 className="text-lg font-bold text-cyan-400">{groupName}</h2>
+                  <div className="flex-1 h-px bg-gradient-to-r from-cyan-500/20 to-transparent" />
+                  <span className="text-xs text-gray-500">
+                    {groupEvents.length} events
+                  </span>
+                </div>
+
+                <div className="relative pl-8 space-y-4">
+                  <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-gradient-to-b from-cyan-500/50 via-cyan-500/20 to-transparent" />
+
+                  {groupEvents.map((event) => {
+                    const color = getEventColor(event.type);
+                    const icon = getEventIcon(event.type);
+                    const severityStyle = severityColors[event.severity];
+
+                    return (
+                      <div
+                        key={event.id}
+                        className={`relative transition-all duration-500 ${
+                          event.isNew
+                            ? "animate-pulse"
+                            : "opacity-100"
+                        }`}
+                      >
+                        <div
+                          className="absolute left-[-1.75rem] top-3 w-4 h-4 rounded-full border-2 border-slate-950 z-10"
+                          style={{ backgroundColor: color }}
+                        />
+
+                        <div
+                          className={`bg-slate-800/50 backdrop-blur-sm border rounded-xl p-4 hover:border-cyan-500/30 transition-all ${
+                            event.isNew ? "shadow-lg shadow-cyan-500/20" : ""
+                          }`}
+                          style={{ borderColor: `${color}20` }}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="text-2xl flex-shrink-0">{icon}</div>
+
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <span
+                                  className="text-xs px-2 py-0.5 rounded font-medium"
+                                  style={{
+                                    backgroundColor: `${color}20`,
+                                    color: color,
+                                  }}
+                                >
+                                  {event.type}
+                                </span>
+                                <span
+                                  className={`text-xs px-2 py-0.5 rounded ${severityStyle.bg} ${severityStyle.text}`}
+                                >
+                                  {event.severity.toUpperCase()}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {formatTimestamp(event.timestamp)}
+                                </span>
+                                {event.isNew && (
+                                  <span className="text-xs px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-400 animate-pulse">
+                                    NEW
+                                  </span>
+                                )}
+                              </div>
+
+                              <p className="text-sm text-gray-300 mb-2">
+                                {event.message}
+                              </p>
+
+                              {(event.token || event.chain || event.wallet) && (
+                                <div className="flex flex-wrap gap-3 text-xs">
+                                  {event.token && (
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-gray-500">Token:</span>
+                                      <span className="text-cyan-400 font-medium">
+                                        {event.token}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {event.chain && (
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-gray-500">Chain:</span>
+                                      <span className="text-cyan-400 font-medium">
+                                        {event.chain}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {event.wallet && (
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-gray-500">Wallet:</span>
+                                      <span className="text-cyan-400 font-mono text-xs">
+                                        {event.wallet.substring(0, 8)}...
+                                        {event.wallet.substring(event.wallet.length - 6)}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              <div className="mt-2 flex items-center gap-2">
+                                <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full transition-all"
+                                    style={{
+                                      width: `${event.score * 100}%`,
+                                      backgroundColor: color,
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-xs text-gray-500 font-mono">
+                                  {(event.score * 100).toFixed(0)}%
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

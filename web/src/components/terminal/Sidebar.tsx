@@ -35,7 +35,7 @@ export default function Sidebar() {
       )
     },
     {
-      href: '/terminal/timeline',
+      href: '/ai-timeline',
       label: 'AI Timeline',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
