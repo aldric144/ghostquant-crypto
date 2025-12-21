@@ -774,7 +774,7 @@ export function isNavigationRequest(query: string): { isNavigation: boolean; des
     hydra: '/terminal/hydra',
     constellation: '/terminal/constellation',
     ecoscan: '/ecoscan',
-    whale: '/terminal/whales',
+    whale: '/whale-intelligence',
     widb: '/terminal/whale-intel',
     sentinel: '/terminal/sentinel',
     predict: '/terminal/predict',

@@ -269,6 +269,10 @@ const CONTEXT_TEMPLATES: Record<string, { description: string; elements: string[
     description: 'You\'re on the Whale Intelligence page, tracking large holder movements.',
     elements: ['whale list', 'movement alerts', 'impact predictions', 'activity timeline'],
   },
+  '/whale-intelligence': {
+    description: 'You\'re on the Whale Intelligence V2 page with advanced whale tracking features.',
+    elements: ['whale metrics', 'top 50 whales', 'influence heatmap', 'live movements', 'whale search'],
+  },
   '/terminal/whale-intel': {
     description: 'You\'re viewing the Whale Intelligence Database (WIDB) with entity profiles.',
     elements: ['entity profiles', 'risk scores', 'transaction history', 'watchlist status'],
@@ -665,8 +669,8 @@ export function processQuestion(question: string, context: CopilotContextState):
       path = '/terminal/hydra';
     } else if (lowerQuestion.includes('whale')) {
       destination = 'Whale Intelligence';
-      path = '/terminal/whales';
-    } else if (lowerQuestion.includes('constellation') || lowerQuestion.includes('graph')) {
+      path = '/whale-intelligence';
+    }else if (lowerQuestion.includes('constellation') || lowerQuestion.includes('graph')) {
       destination = 'Constellation Graph';
       path = '/terminal/constellation';
     } else if (lowerQuestion.includes('map') || lowerQuestion.includes('anomaly')) {

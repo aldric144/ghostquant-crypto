@@ -71,7 +71,7 @@ export default function Sidebar() {
       )
     },
     {
-      href: '/terminal/whales',
+      href: '/whale-intelligence',
       label: 'Whale Intelligence',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

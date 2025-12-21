@@ -25,6 +25,7 @@ const PAGE_NAMES: Record<string, string> = {
   '/terminal/constellation': 'Constellation Fusion',
   '/terminal/analytics': 'Analytics Dashboard',
   '/terminal/whales': 'Whale Intelligence',
+  '/whale-intelligence': 'Whale Intelligence',
   '/terminal/whale-intel': 'Whale Intelligence Database',
   '/influence-graph': 'Influence Graph',
   '/threat-map': 'Global Threat Map',

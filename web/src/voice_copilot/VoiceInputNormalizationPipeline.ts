@@ -108,6 +108,12 @@ const PAGE_METADATA: Record<string, PageContext> = {
     description: 'Real-time tracking of significant cryptocurrency movements by large holders.',
     features: ['Live Movement Feed', 'Whale Profiles', 'Transaction Analysis', 'Alert System'],
   },
+  '/whale-intelligence': {
+    path: '/whale-intelligence',
+    title: 'Whale Intelligence V2',
+    description: 'Advanced whale tracking with metrics panel, top 50 whales table, influence heatmap, and live movements feed.',
+    features: ['Whale Metrics', 'Top 50 Whales', 'Influence Heatmap', 'Live Movements', 'Whale Search', 'Detail Modal'],
+  },
   '/influence-graph': {
     path: '/influence-graph',
     title: 'Influence Graph',

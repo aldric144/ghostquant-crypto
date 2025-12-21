@@ -106,6 +106,7 @@ const DEFAULT_PLATFORM_METADATA: PlatformMetadata = {
     { path: '/terminal/constellation', name: 'Constellation Map', category: 'constellation', description: 'Entity fusion and mapping', addedAt: 0, isNew: false },
     { path: '/terminal/analytics', name: 'Analytics Dashboard', category: 'analytics', description: 'Market intelligence overview', addedAt: 0, isNew: false },
     { path: '/terminal/whales', name: 'Whale Intelligence', category: 'whale_intel', description: 'Large holder tracking', addedAt: 0, isNew: false },
+    { path: '/whale-intelligence', name: 'Whale Intelligence V2', category: 'whale_intel', description: 'Advanced whale tracking with metrics, heatmap, and live movements', addedAt: 0, isNew: false },
     { path: '/terminal/whale-intel', name: 'WIDB', category: 'whale_intel', description: 'Whale Intelligence Database', addedAt: 0, isNew: false },
     { path: '/terminal/entity', name: 'Entity Scanner', category: 'ecoscan', description: 'Entity risk assessment', addedAt: 0, isNew: false },
     { path: '/ecoscan', name: 'EcoScan', category: 'ecoscan', description: 'Wallet scanning tool', addedAt: 0, isNew: false },
