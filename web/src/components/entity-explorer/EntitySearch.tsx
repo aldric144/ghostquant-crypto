@@ -40,10 +40,11 @@ export default function EntitySearch({
 
     setLoading(true);
     try {
+      // Use correct existing endpoints for search
       const endpoints = [
-        `/unified-risk/search?q=${encodeURIComponent(query)}`,
-        `/whale-intel/search?q=${encodeURIComponent(query)}`,
-        `/manipulation/search?q=${encodeURIComponent(query)}`,
+        `/whales/search?q=${encodeURIComponent(query)}`,        // Whale search endpoint
+        `/widb/wallets?limit=50`,                                // WIDB wallets for entity data
+        `/manipulation/alerts?limit=20`,                         // Manipulation alerts
       ];
 
       const responses = await Promise.allSettled(

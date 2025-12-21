@@ -27,8 +27,11 @@ interface UseIntelFeedReturn {
 }
 
 const MAX_HISTORY_SIZE = 50;
-const WEBSOCKET_URL = process.env.REACT_APP_WS_URL || 'wss://ghostquant-mewzi.ondigitalocean.app/ws/alerts';
-const SOCKETIO_URL = process.env.REACT_APP_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app';
+// Use NEXT_PUBLIC_* env vars for Next.js compatibility
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://ghostquant-mewzi.ondigitalocean.app';
+const WEBSOCKET_URL = process.env.NEXT_PUBLIC_WS_URL || `wss://${API_BASE.replace(/^https?:\/\//, '')}/ws/alerts`;
+const SOCKETIO_URL = process.env.NEXT_PUBLIC_API_URL || API_BASE;
+const POLLING_INTERVAL = 10000; // 10 second fallback polling as requested
 
 export const useIntelFeed = (): UseIntelFeedReturn => {
   const [latestAlert, setLatestAlert] = useState<Alert | null>(null);
@@ -45,8 +48,10 @@ export const useIntelFeed = (): UseIntelFeedReturn => {
   const wsRef = useRef<WebSocket | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const useSocketIORef = useRef(false);
+  const usePollingRef = useRef(false);
 
   const addToHistory = useCallback((alert: Alert) => {
     setAlertHistory((prev) => {
@@ -138,6 +143,54 @@ export const useIntelFeed = (): UseIntelFeedReturn => {
     }
   }, [handleMessage]);
 
+  // Polling fallback when WebSocket and Socket.IO both fail
+  const startPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+
+    console.log(`[useIntelFeed] Starting API polling every ${POLLING_INTERVAL / 1000}s...`);
+    
+    const pollAPI = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/unified-risk/all-threats?limit=5`);
+        if (response.ok) {
+          const data = await response.json();
+          const threats = data.threats || data || [];
+          
+          if (Array.isArray(threats) && threats.length > 0) {
+            // Convert threat to alert format
+            const latestThreat = threats[0];
+            const alert: Alert = {
+              timestamp: latestThreat.timestamp || new Date().toISOString(),
+              score: latestThreat.risk_score || latestThreat.score || 50,
+              alert: true,
+              intelligence: latestThreat,
+              type: latestThreat.type || 'threat',
+            };
+            
+            handleMessage(alert);
+            
+            setConnectionStatus('connected');
+            setStats((prev) => ({
+              ...prev,
+              connected: true,
+              connectionType: null, // Polling mode
+              lastConnected: new Date().toISOString(),
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('[useIntelFeed] Polling error:', error);
+        setConnectionStatus('error');
+      }
+    };
+
+    // Poll immediately, then every POLLING_INTERVAL
+    pollAPI();
+    pollingIntervalRef.current = setInterval(pollAPI, POLLING_INTERVAL);
+  }, [handleMessage]);
+
   const connectSocketIO = useCallback(() => {
     if (socketRef.current?.connected) {
       return;
@@ -186,13 +239,22 @@ export const useIntelFeed = (): UseIntelFeedReturn => {
 
       socket.on('connect_error', (error) => {
         console.error('[useIntelFeed] Socket.IO connection error:', error);
-        setConnectionStatus('error');
         reconnectAttemptsRef.current += 1;
         
         setStats((prev) => ({
           ...prev,
           reconnectAttempts: reconnectAttemptsRef.current,
         }));
+        
+        // After 3 failed Socket.IO attempts, fall back to polling
+        if (reconnectAttemptsRef.current >= 3) {
+          console.log('[useIntelFeed] Socket.IO failed 3 times, falling back to API polling...');
+          usePollingRef.current = true;
+          setConnectionStatus('connecting');
+          startPolling();
+        } else {
+          setConnectionStatus('error');
+        }
       });
 
       socket.on('subscribed', (data) => {
@@ -204,10 +266,16 @@ export const useIntelFeed = (): UseIntelFeedReturn => {
       console.error('[useIntelFeed] Socket.IO connection failed:', error);
       setConnectionStatus('error');
     }
-  }, [handleMessage]);
+  }, [handleMessage, startPolling]);
 
   const reconnect = useCallback(() => {
     console.log('[useIntelFeed] Manual reconnect triggered');
+    
+    // Stop polling if active
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
     
     if (wsRef.current) {
       wsRef.current.close();
@@ -221,6 +289,7 @@ export const useIntelFeed = (): UseIntelFeedReturn => {
     
     reconnectAttemptsRef.current = 0;
     useSocketIORef.current = false;
+    usePollingRef.current = false;
     
     setStats((prev) => ({
       ...prev,
@@ -236,6 +305,11 @@ export const useIntelFeed = (): UseIntelFeedReturn => {
     return () => {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+      }
+      
+      // Clear polling interval on cleanup
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
       }
       
       if (wsRef.current) {

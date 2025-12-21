@@ -48,11 +48,14 @@ export default function WhaleIntelligence() {
 
   const fetchWhales = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE}/whale-intel/top?count=50`);
+      // Use correct endpoint: /whales/top instead of /whale-intel/top
+      const response = await fetch(`${API_BASE}/whales/top?limit=50`);
       if (response.ok) {
         const data = await response.json();
-        if (data.whales) {
-          setWhales(data.whales);
+        // Handle both array response and object with whales property
+        const whales = Array.isArray(data) ? data : data.whales || [];
+        if (whales.length > 0) {
+          setWhales(whales);
         } else {
           // Generate mock data if endpoint returns empty
           setWhales(generateMockWhales(50));
@@ -73,11 +76,14 @@ export default function WhaleIntelligence() {
 
   const fetchMovements = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE}/whale-intel/events?limit=20`);
+      // Use correct endpoint: /whales/movements instead of /whale-intel/events
+      const response = await fetch(`${API_BASE}/whales/movements?limit=20`);
       if (response.ok) {
         const data = await response.json();
-        if (data.events) {
-          setMovements(data.events);
+        // Handle both array response and object with events property
+        const movements = Array.isArray(data) ? data : data.events || data.movements || [];
+        if (movements.length > 0) {
+          setMovements(movements);
         } else {
           // Add a new mock movement occasionally
           if (Math.random() > 0.7) {

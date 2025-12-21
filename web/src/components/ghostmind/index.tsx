@@ -74,11 +74,12 @@ export default function GhostMindConsole() {
   }, [context, contextValue]);
 
   const fetchIntelligenceData = useCallback(async (query: string) => {
+    // Use correct existing endpoints for intelligence data
     const endpoints = [
-      `/unified-risk/events?limit=10`,
-      `/manipulation/events?limit=5`,
-      `/whale-intel/events?limit=5`,
-      `/darkpool/events?limit=5`,
+      `/unified-risk/all-threats?limit=10`,    // Correct endpoint for unified risk events
+      `/manipulation/alerts?limit=5`,           // Correct endpoint for manipulation events
+      `/whales/movements?limit=5`,              // Correct endpoint for whale events
+      `/darkpool/activity?limit=5`,             // Correct endpoint for darkpool events
     ];
 
     try {
