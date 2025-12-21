@@ -33,9 +33,13 @@ export default function WhalePanel({ data, isLoading, compact, onViewMore }: Wha
     return `$${vol.toFixed(2)}`;
   };
 
-  const totalVolume = data.topWhales.reduce((sum, w) => sum + w.volume, 0);
-  const totalMovements = data.topWhales.reduce((sum, w) => sum + w.movements, 0);
-  const avgInfluence = data.topWhales.reduce((sum, w) => sum + w.influence, 0) / data.topWhales.length;
+  // Defensive: ensure arrays exist and handle empty arrays
+  const topWhales = Array.isArray(data.topWhales) ? data.topWhales : [];
+  const activityTrend = Array.isArray(data.activityTrend) ? data.activityTrend : [];
+  
+  const totalVolume = topWhales.reduce((sum, w) => sum + (w.volume || 0), 0);
+  const totalMovements = topWhales.reduce((sum, w) => sum + (w.movements || 0), 0);
+  const avgInfluence = topWhales.length > 0 ? topWhales.reduce((sum, w) => sum + (w.influence || 0), 0) / topWhales.length : 0;
 
   return (
     <div className={`bg-slate-800/50 rounded-xl border border-cyan-500/20 p-6 ${compact ? "" : "min-h-[500px]"}`}>
@@ -72,11 +76,11 @@ export default function WhalePanel({ data, isLoading, compact, onViewMore }: Wha
       </div>
 
       {/* Activity Trend Mini Chart */}
-      {!compact && (
+      {!compact && activityTrend.length > 0 && (
         <div className="mb-4">
           <h4 className="text-sm font-medium text-gray-400 mb-2">24h Activity Trend</h4>
           <div className="h-20 flex items-end gap-1">
-            {data.activityTrend.map((point, i) => (
+            {activityTrend.map((point, i) => (
               <div
                 key={i}
                 className="flex-1 bg-gradient-to-t from-cyan-500/50 to-cyan-400/80 rounded-t transition-all hover:from-cyan-400/60 hover:to-cyan-300/90"
