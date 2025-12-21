@@ -40,6 +40,7 @@ const PAGE_NAMES: Record<string, string> = {
   '/ring-detector': 'Ring Detector',
   '/terminal/token': 'Token Analysis',
   '/terminal/settings': 'Settings',
+  '/settings-v2': 'Settings V2',
   '/terminal/billing': 'Billing',
   '/demo': 'Demo Mode',
   '/pricing': 'Pricing',
