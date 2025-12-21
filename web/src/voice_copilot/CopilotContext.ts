@@ -31,6 +31,7 @@ const PAGE_NAMES: Record<string, string> = {
   '/terminal/ghostmind': 'GhostMind AI Console',
   '/terminal/predict': 'Prediction Engine',
   '/terminal/entity': 'Entity Scanner',
+  '/entity-explorer': 'Entity Explorer',
   '/terminal/ultrafusion': 'UltraFusion',
   '/ai-timeline': 'AI Timeline',
   '/ring-detector': 'Ring Detector',

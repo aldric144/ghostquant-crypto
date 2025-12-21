@@ -283,6 +283,20 @@ const MARKET_BLOCKCHAIN_MODULES: ModuleEntry[] = [
     relatedModules: ['ecoscan', 'constellation', 'whale_intel']
   },
   {
+    id: 'entity_explorer',
+    name: 'Entity Explorer',
+    category: 'market_blockchain',
+    route: '/entity-explorer',
+    summary: 'Forensic intelligence dossiers for wallets, tokens, and entities with 6 backend engine integrations, network visualization, and AI-powered analysis.',
+    sampleQuestions: [
+      'Open entity explorer',
+      'Search for this wallet',
+      'Show entity dossier'
+    ],
+    keywords: ['entity', 'explorer', 'dossier', 'forensic', 'intelligence', 'wallet', 'token', 'network', 'graph'],
+    relatedModules: ['entity', 'constellation', 'graph', 'whale_intel']
+  },
+  {
     id: 'token',
     name: 'Token Intelligence',
     category: 'market_blockchain',

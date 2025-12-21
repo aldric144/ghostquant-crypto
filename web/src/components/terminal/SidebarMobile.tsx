@@ -67,7 +67,7 @@ export default function SidebarMobile({ isOpen, onClose }: SidebarMobileProps) {
       )
     },
     {
-      href: '/terminal/entity',
+      href: '/entity-explorer',
       label: 'Entity Explorer',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -214,6 +214,13 @@ const PAGE_CONTEXTS: Record<string, PageContext> = {
     description: 'Detailed entity analysis tool showing risk breakdown, connection maps, and activity logs',
     keyElements: ['entity profile', 'risk breakdown', 'connection map', 'activity log'],
   },
+  '/entity-explorer': {
+    path: '/entity-explorer',
+    name: 'Entity Explorer',
+    category: 'entity',
+    description: 'Forensic intelligence dossiers for wallets, tokens, and entities with 6 backend engine integrations',
+    keyElements: ['entity search', 'dossier sections', 'network graph', 'real-time updates', 'AI summary'],
+  },
   '/terminal/token': {
     path: '/terminal/token',
     name: 'Token Intelligence',
