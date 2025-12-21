@@ -788,7 +788,7 @@ export function isNavigationRequest(query: string): { isNavigation: boolean; des
     dashboard: '/terminal/analytics',
     map: '/threat-map',
     timeline: '/terminal/timeline',
-    graph: '/terminal/graph',
+    graph: '/influence-graph',
     entity: '/terminal/entity',
     token: '/terminal/token',
     contracts: '/terminal/contracts',

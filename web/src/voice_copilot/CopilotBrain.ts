@@ -273,7 +273,7 @@ const CONTEXT_TEMPLATES: Record<string, { description: string; elements: string[
     description: 'You\'re viewing the Whale Intelligence Database (WIDB) with entity profiles.',
     elements: ['entity profiles', 'risk scores', 'transaction history', 'watchlist status'],
   },
-  '/terminal/graph': {
+  '/influence-graph': {
     description: 'You\'re on the Influence Graph, visualizing entity connections.',
     elements: ['connection nodes', 'relationship edges', 'cluster highlights', 'risk indicators'],
   },

@@ -108,8 +108,8 @@ const PAGE_METADATA: Record<string, PageContext> = {
     description: 'Real-time tracking of significant cryptocurrency movements by large holders.',
     features: ['Live Movement Feed', 'Whale Profiles', 'Transaction Analysis', 'Alert System'],
   },
-  '/terminal/graph': {
-    path: '/terminal/graph',
+  '/influence-graph': {
+    path: '/influence-graph',
     title: 'Influence Graph',
     description: 'Visualize relationships and influence patterns between entities in the crypto ecosystem.',
     features: ['Influence Mapping', 'Relationship Analysis', 'Network Visualization', 'Centrality Metrics'],

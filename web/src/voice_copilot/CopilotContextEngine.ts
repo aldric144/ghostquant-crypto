@@ -200,8 +200,8 @@ const PAGE_CONTEXTS: Record<string, PageContext> = {
     description: 'Chronological intelligence event stream showing all alerts grouped by time with search and filtering',
     keyElements: ['event stream', 'severity classification', 'time grouping', 'search filters'],
   },
-  '/terminal/graph': {
-    path: '/terminal/graph',
+  '/influence-graph': {
+    path: '/influence-graph',
     name: 'Influence Graph',
     category: 'graph',
     description: 'Visual network graph of entity connections and relationships with interactive node exploration',

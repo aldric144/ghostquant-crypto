@@ -26,7 +26,7 @@ const PAGE_NAMES: Record<string, string> = {
   '/terminal/analytics': 'Analytics Dashboard',
   '/terminal/whales': 'Whale Intelligence',
   '/terminal/whale-intel': 'Whale Intelligence Database',
-  '/terminal/graph': 'Influence Graph',
+  '/influence-graph': 'Influence Graph',
   '/threat-map': 'Global Threat Map',
   '/terminal/ghostmind': 'GhostMind AI Console',
   '/terminal/predict': 'Prediction Engine',
