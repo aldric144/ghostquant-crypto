@@ -33,7 +33,12 @@ export default function TrendPanel({ data, isLoading, compact, onViewMore }: Tre
     stablecoin: "bg-green-500",
   };
 
-  const maxValue = Math.max(...data.hourlyActivity.map((h) => h.value));
+  // Defensive: ensure arrays exist and handle empty arrays
+  const hourlyActivity = Array.isArray(data.hourlyActivity) ? data.hourlyActivity : [];
+  const heatmap = Array.isArray(data.heatmap) ? data.heatmap : [];
+  const events = Array.isArray(data.events) ? data.events : [];
+  
+  const maxValue = hourlyActivity.length > 0 ? Math.max(...hourlyActivity.map((h) => h.value || 0)) : 1;
 
   return (
     <div className={`bg-slate-800/50 rounded-xl border border-cyan-500/20 p-6 ${compact ? "" : "min-h-[500px]"}`}>
@@ -54,24 +59,26 @@ export default function TrendPanel({ data, isLoading, compact, onViewMore }: Tre
       </div>
 
       {/* 24h Activity Chart */}
-      <div className="mb-4">
-        <h4 className="text-sm font-medium text-gray-400 mb-2">24h Activity</h4>
-        <div className="h-24 flex items-end gap-0.5">
-          {data.hourlyActivity.map((point, i) => (
-            <div
-              key={i}
-              className={`flex-1 rounded-t transition-all hover:opacity-80 ${typeColors[point.type] || "bg-cyan-500"}`}
-              style={{ height: `${(point.value / maxValue) * 100}%`, minHeight: "4px" }}
-              title={`${point.hour}: ${point.value} (${point.type})`}
-            ></div>
-          ))}
+      {hourlyActivity.length > 0 && (
+        <div className="mb-4">
+          <h4 className="text-sm font-medium text-gray-400 mb-2">24h Activity</h4>
+          <div className="h-24 flex items-end gap-0.5">
+            {hourlyActivity.map((point, i) => (
+              <div
+                key={i}
+                className={`flex-1 rounded-t transition-all hover:opacity-80 ${typeColors[point.type] || "bg-cyan-500"}`}
+                style={{ height: `${((point.value || 0) / maxValue) * 100}%`, minHeight: "4px" }}
+                title={`${point.hour}: ${point.value} (${point.type})`}
+              ></div>
+            ))}
+          </div>
+          <div className="flex justify-between mt-1">
+            <span className="text-xs text-gray-500">0:00</span>
+            <span className="text-xs text-gray-500">12:00</span>
+            <span className="text-xs text-gray-500">23:00</span>
+          </div>
         </div>
-        <div className="flex justify-between mt-1">
-          <span className="text-xs text-gray-500">0:00</span>
-          <span className="text-xs text-gray-500">12:00</span>
-          <span className="text-xs text-gray-500">23:00</span>
-        </div>
-      </div>
+      )}
 
       {/* Legend */}
       <div className="flex flex-wrap gap-3 mb-4">
@@ -84,15 +91,15 @@ export default function TrendPanel({ data, isLoading, compact, onViewMore }: Tre
       </div>
 
       {/* Weekly Heatmap */}
-      {!compact && (
+      {!compact && heatmap.length > 0 && (
         <div className="mb-4">
           <h4 className="text-sm font-medium text-gray-400 mb-2">Weekly Heatmap</h4>
           <div className="grid grid-cols-24 gap-0.5">
             {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
               <div key={day} className="contents">
                 {Array.from({ length: 24 }, (_, hour) => {
-                  const point = data.heatmap.find((h) => h.day === day && h.hour === hour);
-                  const intensity = point ? point.value / 100 : 0;
+                  const point = heatmap.find((h) => h.day === day && h.hour === hour);
+                  const intensity = point ? (point.value || 0) / 100 : 0;
                   return (
                     <div
                       key={`${day}-${hour}`}
@@ -114,7 +121,7 @@ export default function TrendPanel({ data, isLoading, compact, onViewMore }: Tre
       <div>
         <h4 className="text-sm font-medium text-gray-400 mb-2">Recent Events</h4>
         <div className="space-y-1 max-h-[120px] overflow-y-auto">
-          {data.events.slice(0, compact ? 4 : 8).map((event, i) => (
+          {events.slice(0, compact ? 4 : 8).map((event, i) => (
             <div key={i} className="flex items-center justify-between bg-slate-700/50 rounded px-2 py-1">
               <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${typeColors[event.type] || "bg-gray-500"}`}></div>

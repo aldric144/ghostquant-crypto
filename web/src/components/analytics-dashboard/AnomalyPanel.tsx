@@ -51,6 +51,11 @@ export default function AnomalyPanel({ data, isLoading, compact, onViewMore }: A
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
+  // Defensive: ensure arrays and objects exist
+  const summary = data.summary || { total: 0, high: 0, medium: 0, low: 0 };
+  const timeline = Array.isArray(data.timeline) ? data.timeline : [];
+  const outliers = Array.isArray(data.outliers) ? data.outliers : [];
+
   return (
     <div className={`bg-slate-800/50 rounded-xl border border-cyan-500/20 p-6 ${compact ? "" : "min-h-[500px]"}`}>
       <div className="flex items-center justify-between mb-4">
@@ -73,30 +78,30 @@ export default function AnomalyPanel({ data, isLoading, compact, onViewMore }: A
       <div className="grid grid-cols-4 gap-2 mb-4">
         <div className="bg-slate-700/50 rounded-lg p-2 text-center">
           <p className="text-xs text-gray-400">Total</p>
-          <p className="text-lg font-bold text-white">{data.summary.total}</p>
+          <p className="text-lg font-bold text-white">{summary.total}</p>
         </div>
         <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-2 text-center">
           <p className="text-xs text-red-400">High</p>
-          <p className="text-lg font-bold text-red-400">{data.summary.high}</p>
+          <p className="text-lg font-bold text-red-400">{summary.high}</p>
         </div>
         <div className="bg-yellow-500/20 border border-yellow-500/30 rounded-lg p-2 text-center">
           <p className="text-xs text-yellow-400">Medium</p>
-          <p className="text-lg font-bold text-yellow-400">{data.summary.medium}</p>
+          <p className="text-lg font-bold text-yellow-400">{summary.medium}</p>
         </div>
         <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-2 text-center">
           <p className="text-xs text-green-400">Low</p>
-          <p className="text-lg font-bold text-green-400">{data.summary.low}</p>
+          <p className="text-lg font-bold text-green-400">{summary.low}</p>
         </div>
       </div>
 
       {/* Timeline Chart */}
-      {!compact && (
+      {!compact && timeline.length > 0 && (
         <div className="mb-4">
           <h4 className="text-sm font-medium text-gray-400 mb-2">24h Timeline</h4>
           <div className="h-16 flex items-end gap-0.5">
-            {data.timeline.map((point, i) => {
-              const maxCount = Math.max(...data.timeline.map((t) => t.count));
-              const height = (point.count / maxCount) * 100;
+            {timeline.map((point, i) => {
+              const maxCount = Math.max(...timeline.map((t) => t.count || 0), 1);
+              const height = ((point.count || 0) / maxCount) * 100;
               return (
                 <div
                   key={i}
@@ -116,7 +121,7 @@ export default function AnomalyPanel({ data, isLoading, compact, onViewMore }: A
       <div>
         <h4 className="text-sm font-medium text-gray-400 mb-2">Recent Outliers</h4>
         <div className="space-y-2 max-h-[200px] overflow-y-auto">
-          {data.outliers.slice(0, compact ? 3 : 8).map((outlier) => (
+          {outliers.slice(0, compact ? 3 : 8).map((outlier) => (
             <div key={outlier.id} className="bg-slate-700/50 rounded-lg p-3">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm text-white font-mono">{outlier.entity}</span>
@@ -132,12 +137,12 @@ export default function AnomalyPanel({ data, isLoading, compact, onViewMore }: A
       </div>
 
       {/* Anomaly Types */}
-      {!compact && (
+      {!compact && outliers.length > 0 && (
         <div className="mt-4">
           <h4 className="text-sm font-medium text-gray-400 mb-2">Anomaly Types</h4>
           <div className="flex flex-wrap gap-2">
             {["Volume Spike", "Price Deviation", "Unusual Pattern", "Statistical Outlier"].map((type) => {
-              const count = data.outliers.filter((o) => o.type === type).length;
+              const count = outliers.filter((o) => o.type === type).length;
               return (
                 <div key={type} className="bg-slate-700/50 rounded-lg px-3 py-1.5 flex items-center gap-2">
                   <span className="text-xs text-gray-300">{type}</span>
