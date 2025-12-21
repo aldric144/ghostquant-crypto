@@ -280,6 +280,13 @@ const PAGE_CONTEXTS: Record<string, PageContext> = {
     description: 'AI-powered conversational intelligence interface for natural language queries',
     keyElements: ['chat interface', 'query history', 'suggested questions', 'context panel'],
   },
+  '/ghostmind': {
+    path: '/ghostmind',
+    name: 'GhostMind AI Console',
+    category: 'ghostmind',
+    description: 'AI-powered conversational intelligence interface with live insights, system metrics, and context-aware queries',
+    keyElements: ['chat interface', 'suggested queries', 'live insights', 'system metrics', 'context dropdown'],
+  },
   '/terminal/settings': {
     path: '/terminal/settings',
     name: 'Settings',

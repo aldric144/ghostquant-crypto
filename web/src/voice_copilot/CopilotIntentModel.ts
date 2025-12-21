@@ -799,7 +799,7 @@ export function isNavigationRequest(query: string): { isNavigation: boolean; des
     compliance: '/terminal/compliance-report',
     // UI-Driven Systems
     home: '/terminal/home',
-    ghostmind: '/terminal/ghostmind',
+    ghostmind: '/ghostmind',
     settings: '/terminal/settings',
     billing: '/terminal/billing',
     pricing: '/terminal/pricing',
