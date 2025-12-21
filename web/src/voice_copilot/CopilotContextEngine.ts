@@ -148,8 +148,8 @@ const PAGE_CONTEXTS: Record<string, PageContext> = {
     description: 'Real-time manipulation risk heatmap with spike detection across chains, entities, tokens, and networks',
     keyElements: ['heatmap', 'manipulation spikes', 'volatility spikes', 'risk levels'],
   },
-  '/terminal/rings': {
-    path: '/terminal/rings',
+  '/ring-detector': {
+    path: '/ring-detector',
     name: 'Ring Detector',
     category: 'rings',
     description: 'Detects manipulation rings and coordinated wallet clusters with real-time severity scoring',

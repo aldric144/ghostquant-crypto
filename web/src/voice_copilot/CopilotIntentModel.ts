@@ -779,7 +779,7 @@ export function isNavigationRequest(query: string): { isNavigation: boolean; des
     sentinel: '/terminal/sentinel',
     predict: '/terminal/predict',
     radar: '/terminal/radar',
-    rings: '/terminal/rings',
+    rings: '/ring-detector',
     ultrafusion: '/terminal/ultrafusion',
     valkyrie: '/terminal/valkyrie',
     phantom: '/terminal/phantom',
