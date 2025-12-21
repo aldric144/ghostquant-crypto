@@ -39,6 +39,11 @@ system_metrics = {
     "graph_nodes": 0,
     "graph_edges": 0,
     "ring_systems": 0,
+    "ws_client_count": 0,
+    "last_ws_connect": None,
+    "high_severity": 0,
+    "medium_severity": 0,
+    "low_severity": 0,
 }
 
 
@@ -104,19 +109,25 @@ async def get_socket_health():
     from app.cache import get_redis
     
     redis = get_redis()
-    connection_status = "connected" if redis and redis.enabled else "disconnected"
+    redis_connected = redis and redis.enabled
     
-    # Measure latency
+    # Check if we have active WebSocket clients
+    ws_client_count = system_metrics.get("ws_client_count", 0)
+    
+    # Connection is "connected" if either:
+    # 1. We have active WebSocket clients, OR
+    # 2. Redis is connected (backend can receive events)
+    connection_status = "connected" if (ws_client_count > 0 or redis_connected) else "disconnected"
+    
+    # Measure Redis latency
     start = time.time()
-    if redis and redis.enabled:
+    latency = 0
+    if redis_connected:
         try:
             redis._execute("PING")
             latency = int((time.time() - start) * 1000)
         except Exception:
             latency = -1
-            connection_status = "disconnected"
-    else:
-        latency = 0
     
     return SocketHealthResponse(
         connection=connection_status,

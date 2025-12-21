@@ -176,6 +176,11 @@ class BackgroundIntelWorker:
         
         print(f"[BackgroundIntelWorker][TIMELINE] Timeline update for {entity_id}")
     
+    @property
+    def is_running(self) -> bool:
+        """Check if the worker is currently running."""
+        return self.running
+    
     def get_stats(self) -> Dict[str, Any]:
         """Get worker statistics."""
         return {

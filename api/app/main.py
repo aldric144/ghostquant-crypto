@@ -261,26 +261,42 @@ async def stop_sim():
     await gde_worker.stop()
     return {"status": "simulator-stopped"}
 
-@app.websocket("/ws/alerts")
-async def websocket_alerts(websocket: WebSocket):
+async def _handle_intel_websocket(websocket: WebSocket):
     """
-    WebSocket endpoint for real-time intelligence alerts.
+    Shared WebSocket handler for real-time intelligence alerts.
+    Used by both /ws/alerts and /ws/intel endpoints.
     
     Features:
     - Real-time alert streaming from Redis
     - Automatic reconnect handling
     - Multiple concurrent clients
     - Graceful slow client handling
+    - Auto-starts workers on first connection
     
     Connection flow:
     1. Client connects
-    2. Receives connection confirmation
-    3. Receives real-time alerts as they are generated
-    4. Receives periodic heartbeats (every 30s)
+    2. Workers auto-start if not running
+    3. Receives connection confirmation
+    4. Receives real-time alerts as they are generated
+    5. Receives periodic heartbeats (every 30s)
     """
+    import asyncio
+    
+    # Auto-start workers on WebSocket connection (idempotent)
+    if not background_worker.is_running:
+        try:
+            await background_worker.start()
+            logger.info("Background worker auto-started on WebSocket connection")
+        except Exception as e:
+            logger.warning(f"Failed to auto-start background worker: {e}")
+    
+    # Update system metrics for connected clients
+    from app.routers.system import update_system_metric, increment_system_metric
+    increment_system_metric("ws_client_count", 1)
+    update_system_metric("last_ws_connect", datetime.utcnow().isoformat())
+    
     await alert_engine.connect(websocket)
     
-    import asyncio
     heartbeat_task = asyncio.create_task(alert_engine.send_heartbeat(websocket))
     
     try:
@@ -302,10 +318,22 @@ async def websocket_alerts(websocket: WebSocket):
     except WebSocketDisconnect:
         heartbeat_task.cancel()
         alert_engine.disconnect(websocket)
+        increment_system_metric("ws_client_count", -1)
     except Exception as e:
         logger.error(f"WebSocket alert error: {e}")
         heartbeat_task.cancel()
         alert_engine.disconnect(websocket)
+        increment_system_metric("ws_client_count", -1)
+
+@app.websocket("/ws/alerts")
+async def websocket_alerts(websocket: WebSocket):
+    """WebSocket endpoint for real-time intelligence alerts (legacy route)."""
+    await _handle_intel_websocket(websocket)
+
+@app.websocket("/ws/intel")
+async def websocket_intel(websocket: WebSocket):
+    """WebSocket endpoint for real-time intelligence alerts (new unified route)."""
+    await _handle_intel_websocket(websocket)
 
 @app.websocket("/ws/momentum")
 async def websocket_momentum(websocket: WebSocket):

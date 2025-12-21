@@ -109,8 +109,8 @@ function getBackendWsUrl(): string {
     return `${wsUrl}/stt/stream`;
   }
   
-  // Default for SSR
-  return 'wss://localhost:8000/stt/stream';
+  // Default for SSR - use production backend
+  return 'wss://ghostquant-mewzi.ondigitalocean.app/stt/stream';
 }
 
 // ============================================================
