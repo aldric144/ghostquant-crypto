@@ -110,7 +110,7 @@ const DEFAULT_PLATFORM_METADATA: PlatformMetadata = {
     { path: '/terminal/entity', name: 'Entity Scanner', category: 'ecoscan', description: 'Entity risk assessment', addedAt: 0, isNew: false },
     { path: '/ecoscan', name: 'EcoScan', category: 'ecoscan', description: 'Wallet scanning tool', addedAt: 0, isNew: false },
     { path: '/terminal/graph', name: 'Influence Graph', category: 'constellation', description: 'Entity relationship visualization', addedAt: 0, isNew: false },
-    { path: '/terminal/map', name: 'Threat Map', category: 'analytics', description: 'Geographic threat visualization', addedAt: 0, isNew: false },
+    { path: '/threat-map', name: 'Threat Map', category: 'analytics', description: 'Geographic threat visualization', addedAt: 0, isNew: false },
   ],
   features: [
     { id: 'hydra_detection', name: 'Threat Detection', category: 'hydra', description: 'Real-time manipulation detection', addedAt: 0, isNew: false },

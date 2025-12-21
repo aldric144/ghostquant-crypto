@@ -277,7 +277,7 @@ const CONTEXT_TEMPLATES: Record<string, { description: string; elements: string[
     description: 'You\'re on the Influence Graph, visualizing entity connections.',
     elements: ['connection nodes', 'relationship edges', 'cluster highlights', 'risk indicators'],
   },
-  '/terminal/map': {
+  '/threat-map': {
     description: 'You\'re viewing the Global Threat Map with geographic risk distribution.',
     elements: ['regional risk levels', 'threat hotspots', 'activity density', 'trend indicators'],
   },
@@ -671,7 +671,7 @@ export function processQuestion(question: string, context: CopilotContextState):
       path = '/terminal/constellation';
     } else if (lowerQuestion.includes('map') || lowerQuestion.includes('anomaly')) {
       destination = 'Threat Map';
-      path = '/terminal/map';
+      path = '/threat-map';
     }
     
     if (destination) {

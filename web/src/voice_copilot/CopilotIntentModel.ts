@@ -786,7 +786,7 @@ export function isNavigationRequest(query: string): { isNavigation: boolean; des
     // Market + Blockchain Intelligence
     analytics: '/terminal/analytics',
     dashboard: '/terminal/analytics',
-    map: '/terminal/map',
+    map: '/threat-map',
     timeline: '/terminal/timeline',
     graph: '/terminal/graph',
     entity: '/terminal/entity',

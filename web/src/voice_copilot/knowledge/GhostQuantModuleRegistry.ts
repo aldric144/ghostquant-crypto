@@ -230,7 +230,7 @@ const MARKET_BLOCKCHAIN_MODULES: ModuleEntry[] = [
     id: 'map',
     name: 'Global Threat Map',
     category: 'market_blockchain',
-    route: '/terminal/map',
+    route: '/threat-map',
     summary: 'Geographic 3D globe visualization of real-time threat distribution with whale activity, manipulation rings, and darkpool flows.',
     sampleQuestions: [
       'Show me the threat map',
