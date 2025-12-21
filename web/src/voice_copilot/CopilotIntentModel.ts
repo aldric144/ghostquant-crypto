@@ -784,8 +784,8 @@ export function isNavigationRequest(query: string): { isNavigation: boolean; des
     valkyrie: '/terminal/valkyrie',
     phantom: '/terminal/phantom',
     // Market + Blockchain Intelligence
-    analytics: '/terminal/analytics',
-    dashboard: '/terminal/analytics',
+    analytics: '/analytics-dashboard',
+    dashboard: '/analytics-dashboard',
     map: '/threat-map',
     timeline: '/ai-timeline',
     graph: '/influence-graph',

@@ -216,15 +216,15 @@ const MARKET_BLOCKCHAIN_MODULES: ModuleEntry[] = [
     id: 'analytics',
     name: 'Analytics Dashboard',
     category: 'market_blockchain',
-    route: '/terminal/analytics',
-    summary: 'Real-time market intelligence dashboard with risk indices, whale activity metrics, market trends, and anomaly feeds.',
+    route: '/analytics-dashboard',
+    summary: 'Advanced analytics dashboard with 7 panels: risk analytics, whale analytics, entity analytics, trend analytics, geographic map, anomaly detection, and narrative engine with live auto-refresh.',
     sampleQuestions: [
       'Give me a market briefing',
       'What is the current risk level?',
-      'Any anomalies to watch?'
+      'Show me whale analytics'
     ],
-    keywords: ['analytics', 'dashboard', 'market', 'risk', 'index', 'trends', 'anomaly', 'metrics'],
-    relatedModules: ['sentinel', 'whale_intel', 'timeline']
+    keywords: ['analytics', 'dashboard', 'market', 'risk', 'index', 'trends', 'anomaly', 'metrics', 'whale', 'entity', 'narrative'],
+    relatedModules: ['sentinel', 'whale_intel', 'timeline', 'map']
   },
   {
     id: 'map',

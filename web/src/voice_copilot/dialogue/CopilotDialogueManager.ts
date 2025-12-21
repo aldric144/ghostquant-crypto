@@ -483,6 +483,7 @@ class CopilotDialogueManagerImpl {
       '/terminal/radar': 'Radar market scanner',
       '/terminal/ultrafusion': 'UltraFusion analytics',
       '/terminal/analytics': 'Analytics dashboard',
+      '/analytics-dashboard': 'Analytics Dashboard V2 with 7 panels: risk, whales, entities, trends, map, anomalies, narratives',
       '/terminal/whales': 'Whale Intelligence database',
       '/whale-intelligence': 'Whale Intelligence V2 with metrics, heatmap, and live movements',
     };

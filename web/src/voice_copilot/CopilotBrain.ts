@@ -265,6 +265,10 @@ const CONTEXT_TEMPLATES: Record<string, { description: string; elements: string[
     description: 'You\'re viewing the Analytics Dashboard with real-time market intelligence.',
     elements: ['risk index', 'whale activity', 'market trends', 'anomaly feed', 'narrative summary'],
   },
+  '/analytics-dashboard': {
+    description: 'You\'re on the Analytics Dashboard V2 with 7 analytics panels and live auto-refresh.',
+    elements: ['risk analytics', 'whale analytics', 'entity analytics', 'trend analytics', 'geographic map', 'anomaly detection', 'narrative engine'],
+  },
   '/terminal/whales': {
     description: 'You\'re on the Whale Intelligence page, tracking large holder movements.',
     elements: ['whale list', 'movement alerts', 'impact predictions', 'activity timeline'],

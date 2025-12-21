@@ -193,6 +193,13 @@ const PAGE_CONTEXTS: Record<string, PageContext> = {
     description: 'Real-time market intelligence with risk indices and anomaly feeds',
     keyElements: ['risk index', 'whale activity', 'market trends', 'anomaly feed', 'narrative summary'],
   },
+  '/analytics-dashboard': {
+    path: '/analytics-dashboard',
+    name: 'Analytics Dashboard V2',
+    category: 'analytics',
+    description: 'Advanced analytics dashboard with 7 panels: risk, whales, entities, trends, map, anomalies, and narratives with live auto-refresh',
+    keyElements: ['risk analytics', 'whale analytics', 'entity analytics', 'trend analytics', 'geographic map', 'anomaly detection', 'narrative engine', 'live mode', 'demo mode'],
+  },
   '/threat-map': {
     path: '/threat-map',
     name: 'Global Threat Map',

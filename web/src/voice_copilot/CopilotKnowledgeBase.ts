@@ -264,7 +264,7 @@ const RISK_SCORING_KNOWLEDGE: KnowledgeEntry[] = [
     technical: 'Risk scoring uses a gradient-boosted ensemble model trained on labeled entity data. Features include transaction graph metrics, behavioral anomaly scores, network centrality measures, and sanctions proximity. The model is calibrated to maintain consistent precision-recall characteristics across score thresholds.',
     investor: 'Our risk scoring provides a single, actionable metric for entity assessment. It combines multiple intelligence sources into one number that compliance teams and traders can use for quick decisions.',
     relatedTopics: ['risk_factors', 'risk_propagation', 'ecoscan_overview'],
-    pageContext: ['/terminal/entity', '/ecoscan', '/terminal/analytics'],
+    pageContext: ['/terminal/entity', '/ecoscan', '/terminal/analytics', '/analytics-dashboard'],
   },
   {
     id: 'risk_factors',
@@ -292,7 +292,7 @@ const ANALYTICS_KNOWLEDGE: KnowledgeEntry[] = [
     technical: 'The dashboard aggregates signals from all GhostQuant subsystems, applying weighted scoring to compute composite risk indices. Market narratives are generated using fine-tuned LLMs with retrieval-augmented generation from our proprietary intelligence database.',
     investor: 'Our Analytics Dashboard gives institutional clients a single pane of glass view into market health, combining multiple intelligence streams into actionable insights that would take hours to compile manually.',
     relatedTopics: ['risk_index', 'whale_activity', 'anomaly_feed'],
-    pageContext: ['/terminal/analytics'],
+    pageContext: ['/terminal/analytics', '/analytics-dashboard'],
   },
   {
     id: 'risk_index',
@@ -303,7 +303,7 @@ const ANALYTICS_KNOWLEDGE: KnowledgeEntry[] = [
     technical: 'The index is computed as a weighted average of normalized threat scores across asset classes, with weights derived from market capitalization and trading volume. Temporal smoothing prevents noise while maintaining responsiveness to genuine risk changes.',
     investor: 'The Global Risk Index gives you an instant read on market conditions. When it spikes, it\'s time to be cautious. When it\'s low, market conditions are relatively clean.',
     relatedTopics: ['analytics_overview', 'risk_score_overview', 'anomaly_feed'],
-    pageContext: ['/terminal/analytics'],
+    pageContext: ['/terminal/analytics', '/analytics-dashboard'],
   },
   {
     id: 'anomaly_feed',
@@ -314,7 +314,7 @@ const ANALYTICS_KNOWLEDGE: KnowledgeEntry[] = [
     technical: 'The feed aggregates alerts from Hydra, EcoScan, and Whale Intelligence with deduplication and correlation. Alert ranking uses a multi-factor scoring model considering severity, confidence, market impact potential, and user relevance.',
     investor: 'The Anomaly Feed keeps you informed of market events as they happen. Our clients use it to stay ahead of market-moving events and adjust their strategies in real-time.',
     relatedTopics: ['analytics_overview', 'hydra_overview', 'ecoscan_anomaly'],
-    pageContext: ['/terminal/analytics'],
+    pageContext: ['/terminal/analytics', '/analytics-dashboard'],
   },
 ];
 
@@ -378,10 +378,10 @@ const NAVIGATION_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ['go to analytics', 'show analytics', 'open analytics', 'navigate analytics', 'dashboard', 'show dashboard'],
     simple: 'I can take you to the Analytics Dashboard where you can see the market overview.',
     standard: 'The Analytics Dashboard provides real-time market intelligence. Access it from the terminal sidebar.',
-    technical: 'Navigate to /terminal/analytics for the aggregated intelligence dashboard.',
+    technical: 'Navigate to /analytics-dashboard for the aggregated intelligence dashboard with 7 analytics panels.',
     investor: 'The Analytics Dashboard is your command center for market intelligence.',
     relatedTopics: ['analytics_overview'],
-    pageContext: ['/terminal/analytics'],
+    pageContext: ['/terminal/analytics', '/analytics-dashboard'],
   },
   {
     id: 'nav_whales',

@@ -105,6 +105,7 @@ const DEFAULT_PLATFORM_METADATA: PlatformMetadata = {
     { path: '/terminal/hydra', name: 'Hydra Console', category: 'hydra', description: 'Multi-head threat detection', addedAt: 0, isNew: false },
     { path: '/terminal/constellation', name: 'Constellation Map', category: 'constellation', description: 'Entity fusion and mapping', addedAt: 0, isNew: false },
     { path: '/terminal/analytics', name: 'Analytics Dashboard', category: 'analytics', description: 'Market intelligence overview', addedAt: 0, isNew: false },
+    { path: '/analytics-dashboard', name: 'Analytics Dashboard V2', category: 'analytics', description: 'Advanced analytics with 7 panels: risk, whales, entities, trends, map, anomalies, narratives', addedAt: 0, isNew: false },
     { path: '/terminal/whales', name: 'Whale Intelligence', category: 'whale_intel', description: 'Large holder tracking', addedAt: 0, isNew: false },
     { path: '/whale-intelligence', name: 'Whale Intelligence V2', category: 'whale_intel', description: 'Advanced whale tracking with metrics, heatmap, and live movements', addedAt: 0, isNew: false },
     { path: '/terminal/whale-intel', name: 'WIDB', category: 'whale_intel', description: 'Whale Intelligence Database', addedAt: 0, isNew: false },

@@ -24,6 +24,7 @@ const PAGE_NAMES: Record<string, string> = {
   '/terminal/hydra': 'Hydra Console',
   '/terminal/constellation': 'Constellation Fusion',
   '/terminal/analytics': 'Analytics Dashboard',
+  '/analytics-dashboard': 'Analytics Dashboard V2',
   '/terminal/whales': 'Whale Intelligence',
   '/whale-intelligence': 'Whale Intelligence',
   '/terminal/whale-intel': 'Whale Intelligence Database',
