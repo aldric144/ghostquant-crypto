@@ -484,6 +484,7 @@ class CopilotDialogueManagerImpl {
       '/terminal/ultrafusion': 'UltraFusion analytics',
       '/terminal/analytics': 'Analytics dashboard',
       '/terminal/whales': 'Whale Intelligence database',
+      '/whale-intelligence': 'Whale Intelligence V2 with metrics, heatmap, and live movements',
     };
 
     return pageDescriptions[pagePath] || null;

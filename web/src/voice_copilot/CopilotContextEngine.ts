@@ -120,6 +120,13 @@ const PAGE_CONTEXTS: Record<string, PageContext> = {
     description: 'Large holder tracking and movement analysis',
     keyElements: ['whale list', 'movement alerts', 'impact predictions', 'activity timeline'],
   },
+  '/whale-intelligence': {
+    path: '/whale-intelligence',
+    name: 'Whale Intelligence V2',
+    category: 'whale_intel',
+    description: 'Advanced whale tracking with metrics panel, heatmap, live movements feed, and search functionality',
+    keyElements: ['whale metrics', 'top 50 whales', 'influence heatmap', 'live movements', 'whale search', 'whale detail modal'],
+  },
   '/terminal/whale-intel': {
     path: '/terminal/whale-intel',
     name: 'Whale Intelligence Database',

@@ -118,6 +118,7 @@ const ROUTE_TO_MODULE: Record<string, GhostQuantModule> = {
   '/terminal/home': 'terminal',
   '/terminal/whales': 'whale_intel',
   '/terminal/whale-intel': 'whale_intel',
+  '/whale-intelligence': 'whale_intel',
   '/terminal/ecoscan': 'ecoscan',
   '/terminal/hydra': 'hydra',
   '/terminal/constellation': 'constellation',

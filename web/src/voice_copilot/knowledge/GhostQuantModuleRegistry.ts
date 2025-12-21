@@ -83,14 +83,14 @@ const CORE_INTELLIGENCE_MODULES: ModuleEntry[] = [
     id: 'whale_intel',
     name: 'Whale Intelligence',
     category: 'core_intelligence',
-    route: '/terminal/whales',
-    summary: 'Large holder tracking system that monitors whale movements, accumulation patterns, and market impact predictions in real-time.',
+    route: '/whale-intelligence',
+    summary: 'Advanced whale tracking with metrics panel, top 50 whales table, influence heatmap, live movements feed, and search functionality.',
     sampleQuestions: [
       'What are the whales doing?',
       'Any significant whale movements?',
       'Who are the biggest holders?'
     ],
-    keywords: ['whale', 'whales', 'large holder', 'movement', 'accumulation', 'impact', 'tracking', 'big money'],
+    keywords: ['whale', 'whales', 'large holder', 'movement', 'accumulation', 'impact', 'tracking', 'big money', 'heatmap', 'metrics'],
     relatedModules: ['whale_intel_db', 'analytics', 'map']
   },
   {

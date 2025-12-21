@@ -225,7 +225,7 @@ const WHALE_INTEL_KNOWLEDGE: KnowledgeEntry[] = [
     technical: 'Whale identification uses clustering on transaction volumes and wallet balances, with dynamic thresholds adjusted per asset. Movement prediction employs time-series analysis and order flow modeling to estimate market impact using Kyle\'s lambda and similar microstructure metrics.',
     investor: 'Whale movements often precede major market moves. Our system identifies and tracks these large holders, giving our clients early warning of potential market shifts before they happen.',
     relatedTopics: ['whale_movement', 'market_impact', 'widb'],
-    pageContext: ['/terminal/whales', '/terminal/whale-intel'],
+    pageContext: ['/terminal/whales', '/terminal/whale-intel', '/whale-intelligence'],
   },
   {
     id: 'whale_movement',
@@ -236,7 +236,7 @@ const WHALE_INTEL_KNOWLEDGE: KnowledgeEntry[] = [
     technical: 'Movement analysis tracks on-chain flows with volume-weighted directional indicators. Accumulation/distribution is computed using modified OBV (On-Balance Volume) adapted for on-chain data. Exchange flow analysis distinguishes between internal transfers and market-impacting movements.',
     investor: 'Understanding whale movements gives you an edge. When whales accumulate, it often signals confidence in an asset. When they distribute, it may signal upcoming selling pressure.',
     relatedTopics: ['whale_overview', 'market_impact', 'analytics_dashboard'],
-    pageContext: ['/terminal/whales', '/terminal/whale-intel'],
+    pageContext: ['/terminal/whales', '/terminal/whale-intel', '/whale-intelligence'],
   },
   {
     id: 'widb',
@@ -247,7 +247,7 @@ const WHALE_INTEL_KNOWLEDGE: KnowledgeEntry[] = [
     technical: 'WIDB maintains entity profiles with behavioral fingerprints, transaction histories, and risk scores computed using gradient-boosted models. Sanctions screening uses fuzzy matching against OFAC, EU, and other watchlists with configurable similarity thresholds and phonetic matching.',
     investor: 'WIDB is our proprietary intelligence database containing profiles on thousands of crypto entities. It\'s the foundation that powers our risk assessment capabilities and compliance screening.',
     relatedTopics: ['whale_overview', 'ecoscan_overview', 'risk_scoring'],
-    pageContext: ['/terminal/whale-intel', '/terminal/whales'],
+    pageContext: ['/terminal/whale-intel', '/terminal/whales', '/whale-intelligence'],
   },
 ];
 
@@ -389,10 +389,10 @@ const NAVIGATION_KNOWLEDGE: KnowledgeEntry[] = [
     keywords: ['go to whales', 'show whales', 'open whales', 'navigate whales', 'whale intel', 'whale intelligence'],
     simple: 'I can take you to Whale Intelligence where you can track big players.',
     standard: 'The Whale Intelligence page tracks large holders and their movements. Access it from the terminal sidebar.',
-    technical: 'Navigate to /terminal/whales or /terminal/whale-intel for whale tracking interfaces.',
+    technical: 'Navigate to /whale-intelligence for the advanced whale tracking interface with metrics, heatmap, and live movements.',
     investor: 'Whale Intelligence gives you early warning of major market moves.',
     relatedTopics: ['whale_overview'],
-    pageContext: ['/terminal/whales', '/terminal/whale-intel'],
+    pageContext: ['/terminal/whales', '/terminal/whale-intel', '/whale-intelligence'],
   },
 ];
 
