@@ -141,21 +141,28 @@ export default function HomePage() {
               transition={{ duration: 0.8, delay: 1 }}
             >
               <Link 
-                href="/terminal/home"
+                href="/pricing"
                 className="group relative px-10 py-5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-lg rounded-xl shadow-lg shadow-cyan-500/40 hover:shadow-cyan-500/60 transition-all duration-300 hover:scale-105 overflow-hidden"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                 <span className="relative flex items-center gap-3">
-                  Launch Terminal
+                  Subscribe Now
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>
               
               <Link 
-                href="/pricing"
+                href="/auth/login"
                 className="px-10 py-5 bg-transparent text-white font-bold text-lg rounded-xl border-2 border-cyan-500/50 hover:border-cyan-400 hover:bg-cyan-500/10 transition-all duration-300"
               >
-                See Pricing
+                Sign In
+              </Link>
+              
+              <Link 
+                href="/auth/register"
+                className="px-10 py-5 bg-transparent text-white font-bold text-lg rounded-xl border-2 border-cyan-500/50 hover:border-cyan-400 hover:bg-cyan-500/10 transition-all duration-300"
+              >
+                Create Account
               </Link>
             </motion.div>
 
