@@ -1,16 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { io, Socket } from "socket.io-client";
 
 // Use Next.js API proxy routes for system endpoints to avoid routing issues
 // The proxy routes forward requests to the backend
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
 
-// Get WebSocket URL from API_BASE (convert https to wss)
-const getWsUrl = () => {
-  const base = API_BASE.replace(/^http/, "ws");
-  return `${base}/ws/system`;
-};
+// Socket.IO URL - same as API_BASE (Socket.IO is mounted at /socket.io)
+const SOCKETIO_URL = process.env.NEXT_PUBLIC_API_URL || API_BASE;
 
 interface SocketHealth {
   connection: "connected" | "disconnected";
@@ -115,8 +113,9 @@ export default function SettingsPageV2() {
 
   const frameCountRef = useRef(0);
   const lastFrameTimeRef = useRef(Date.now());
-  const wsRef = useRef<WebSocket | null>(null);
-  const [wsConnected, setWsConnected] = useState(false);
+  const socketRef = useRef<Socket | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
+  const reconnectAttemptsRef = useRef(0);
 
   const fetchAllData = useCallback(async () => {
     try {
@@ -156,33 +155,51 @@ export default function SettingsPageV2() {
     }
   }, []);
 
-  // WebSocket connection for real-time updates
+  // Socket.IO connection for real-time updates (same as useIntelFeed)
   useEffect(() => {
-    const connectWebSocket = () => {
-      const wsUrl = getWsUrl();
-      console.log("[Settings V2] Connecting to WebSocket:", wsUrl);
+    const connectSocketIO = () => {
+      if (socketRef.current?.connected) {
+        return;
+      }
+
+      console.log("[Settings V2] Connecting to Socket.IO:", SOCKETIO_URL);
       
-      const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
+      const socket = io(SOCKETIO_URL, {
+        path: '/socket.io/',
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 10,
+      });
       
-      ws.onopen = () => {
-        console.log("[Settings V2] WebSocket connected");
-        setWsConnected(true);
+      socketRef.current = socket;
+      
+      socket.on('connect', () => {
+        console.log("[Settings V2] Socket.IO connected");
+        setSocketConnected(true);
+        reconnectAttemptsRef.current = 0;
         setSocketHealth(prev => ({ ...prev, connection: "connected" }));
-      };
+        
+        // Subscribe to the system room for real-time updates
+        socket.emit('subscribe', { room: 'system' });
+      });
       
-      ws.onmessage = (event) => {
+      socket.on('message', (data) => {
         try {
-          const message = JSON.parse(event.data);
+          const message = data;
           
           switch (message.type) {
             case "system_status":
-              setSocketHealth({
-                connection: message.data.connection,
-                reconnectCount: message.data.reconnectCount || 0,
-                latency: message.data.latency || 0,
-                lastAlert: message.data.lastAlert,
-              });
+              // Only update if we're connected via socket - don't let REST overwrite
+              if (socketConnected) {
+                setSocketHealth({
+                  connection: message.data.connection,
+                  reconnectCount: message.data.reconnectCount || 0,
+                  latency: message.data.latency || 0,
+                  lastAlert: message.data.lastAlert,
+                });
+              }
               break;
             case "worker_status":
               setWorkerStatus({
@@ -211,38 +228,46 @@ export default function SettingsPageV2() {
                 entityCacheSize: message.data.entityCacheSize || 0,
               });
               break;
-            case "connection":
-              console.log("[Settings V2] Connection confirmed:", message.message);
-              break;
           }
         } catch (error) {
-          console.error("[Settings V2] Failed to parse WebSocket message:", error);
+          console.error("[Settings V2] Failed to parse Socket.IO message:", error);
         }
-      };
+      });
       
-      ws.onclose = () => {
-        console.log("[Settings V2] WebSocket disconnected");
-        setWsConnected(false);
+      socket.on('subscribed', (data) => {
+        console.log("[Settings V2] Subscribed to room:", data.room);
+      });
+      
+      socket.on('disconnect', () => {
+        console.log("[Settings V2] Socket.IO disconnected");
+        setSocketConnected(false);
         setSocketHealth(prev => ({ ...prev, connection: "disconnected" }));
-        
-        // Reconnect after 3 seconds
-        setTimeout(connectWebSocket, 3000);
-      };
+      });
       
-      ws.onerror = (error) => {
-        console.error("[Settings V2] WebSocket error:", error);
-        setWsConnected(false);
-      };
+      socket.on('connect_error', (error) => {
+        console.error("[Settings V2] Socket.IO connection error:", error);
+        reconnectAttemptsRef.current += 1;
+        setSocketHealth(prev => ({
+          ...prev,
+          reconnectCount: reconnectAttemptsRef.current,
+        }));
+        
+        // After 5 failed attempts, fall back to REST polling only
+        if (reconnectAttemptsRef.current >= 5) {
+          console.log("[Settings V2] Socket.IO failed 5 times, using REST polling only");
+          setSocketConnected(false);
+        }
+      });
     };
     
-    connectWebSocket();
+    connectSocketIO();
     
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
+      if (socketRef.current) {
+        socketRef.current.disconnect();
       }
     };
-  }, []);
+  }, [socketConnected]);
 
   // Initial data fetch (WebSocket will handle real-time updates)
   useEffect(() => {
