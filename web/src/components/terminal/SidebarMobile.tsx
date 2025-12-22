@@ -1,14 +1,27 @@
 'use client'
 
 import { useEffect } from 'react'
-import SidebarItem from './SidebarItem'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 interface SidebarMobileProps {
   isOpen: boolean
   onClose: () => void
 }
 
+interface MenuItem {
+  href: string
+  label: string
+}
+
+interface MenuSection {
+  title: string
+  items: MenuItem[]
+}
+
 export default function SidebarMobile({ isOpen, onClose }: SidebarMobileProps) {
+  const pathname = usePathname()
+  
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
@@ -20,99 +33,81 @@ export default function SidebarMobile({ isOpen, onClose }: SidebarMobileProps) {
     }
   }, [isOpen])
 
-  const menuItems = [
-    {
-      href: '/terminal/home',
-      label: 'Home',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-        </svg>
-      )
-    },
-    {
-      href: '/threat-map',
-      label: 'Threat Map',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-        </svg>
-      )
-    },
-    {
-      href: '/influence-graph',
-      label: 'Influence Graph',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-        </svg>
-      )
-    },
-    {
-      href: '/ai-timeline',
-      label: 'AI Timeline',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      )
-    },
-    {
-      href: '/ring-detector',
-      label: 'Ring Detector',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-      )
-    },
-    {
-      href: '/entity-explorer',
-      label: 'Entity Explorer',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-      )
-    },
-    {
-      href: '/ghostmind',
-      label: 'GhostMind AI',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-        </svg>
-      )
-    },
-    {
-      href: '/whale-intelligence',
-      label: 'Whale Intelligence',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-      )
-    },
-    {
-      href: '/analytics-dashboard',
-      label: 'Analytics Dashboard',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      )
-    },
-        {
-          href: '/settings-v2',
-          label: 'Settings V2',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      )
-    }
-  ]
+  // A. Core Market Intelligence
+  const coreMarketIntelligence: MenuSection = {
+    title: 'Core Market Intelligence',
+    items: [
+      { href: '/assets', label: 'All Assets' },
+      { href: '/momentum', label: 'Momentum' },
+      { href: '/screener', label: 'Screener' },
+      { href: '/alphabrain', label: 'AlphaBrain' },
+      { href: '/ecoscan', label: 'Ecoscan' },
+      { href: '/iqmeter', label: 'IQ Meter' },
+      { href: '/backtests', label: 'Backtests' },
+      { href: '/whale-intelligence', label: 'Whale Intelligence' },
+    ]
+  }
+
+  // B. Autonomous Intelligence Engines
+  const autonomousEngines: MenuSection = {
+    title: 'Autonomous Engines',
+    items: [
+      { href: '/terminal/constellation', label: 'Global Constellation 3D' },
+      { href: '/terminal/hydra', label: 'Hydra Actor Detection' },
+      { href: '/terminal/ultrafusion', label: 'UltraFusion Meta-AI' },
+      { href: '/entity-explorer', label: 'Entity Explorer' },
+      { href: '/terminal/actor', label: 'Threat Actor Profiler' },
+      { href: '/terminal/dna', label: 'Behavioral DNA Engine' },
+      { href: '/threat-map', label: 'Global Radar Heatmap' },
+      { href: '/terminal/sentinel', label: 'Sentinel Command' },
+      { href: '/terminal/genesis', label: 'Genesis Archive' },
+      { href: '/ai-timeline', label: 'AI Timeline V2' },
+      { href: '/ring-detector', label: 'Ring Detector V2' },
+      { href: '/influence-graph', label: 'Influence Graph V2' },
+    ]
+  }
+
+  // C. Institutional-Grade Modules
+  const institutionalModules: MenuSection = {
+    title: 'Institutional Modules',
+    items: [
+      { href: '/ghostmind', label: 'GhostMind AI' },
+      { href: '/terminal/mempool', label: 'Mempool Radar' },
+      { href: '/terminal/microstructure', label: 'Exchange Scanner' },
+      { href: '/terminal/cross-chain', label: 'Cross-Chain Graph' },
+      { href: '/terminal/predict', label: 'Prediction Engine' },
+      { href: '/terminal/entity-scanner', label: 'Entity Scanner' },
+      { href: '/terminal/risk-map', label: 'Risk Map' },
+      { href: '/analytics-dashboard', label: 'Analytics Dashboard V2' },
+    ]
+  }
+
+  // D. User & Workspace
+  const userWorkspace: MenuSection = {
+    title: 'User & Workspace',
+    items: [
+      { href: '/terminal/home', label: 'Dashboard Home' },
+      { href: '/terminal/saved-assets', label: 'Saved Assets' },
+      { href: '/terminal/investigations', label: 'Saved Investigations' },
+    ]
+  }
+
+  // E. Account / System
+  const accountSystem: MenuSection = {
+    title: 'Account / System',
+    items: [
+      { href: '/terminal/billing', label: 'Subscription & Billing' },
+      { href: '/settings', label: 'Account Settings' },
+      { href: '/settings-v2', label: 'System Intelligence' },
+    ]
+  }
+
+  const allSections = [coreMarketIntelligence, autonomousEngines, institutionalModules, userWorkspace, accountSystem]
+
+  const handleLogout = () => {
+    localStorage.removeItem('ghostquant_session')
+    window.location.href = '/'
+  }
 
   return (
     <>
@@ -126,7 +121,7 @@ export default function SidebarMobile({ isOpen, onClose }: SidebarMobileProps) {
 
       {/* Slide-out Sidebar */}
       <aside className={`
-        fixed top-0 left-0 h-full w-64 bg-slate-950 border-r border-cyan-500/20 z-50
+        fixed top-0 left-0 h-full w-72 bg-slate-950 border-r border-cyan-500/20 z-50
         transform transition-transform duration-300 md:hidden
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
@@ -148,16 +143,45 @@ export default function SidebarMobile({ isOpen, onClose }: SidebarMobileProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-2 overflow-y-auto h-[calc(100vh-140px)]">
-          {menuItems.map((item) => (
-            <div key={item.href} onClick={onClose}>
-              <SidebarItem
-                href={item.href}
-                icon={item.icon}
-                label={item.label}
-              />
+        <nav className="p-3 overflow-y-auto h-[calc(100vh-180px)]">
+          {allSections.map((section) => (
+            <div key={section.title} className="mb-4">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3">
+                {section.title}
+              </h3>
+              <div className="space-y-1">
+                {section.items.map((item) => {
+                  const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onClose}
+                      className={`
+                        flex items-center px-3 py-2 rounded-lg transition-all duration-200 text-sm
+                        ${isActive 
+                          ? 'bg-cyan-500/20 text-cyan-400 border-l-2 border-cyan-400' 
+                          : 'text-gray-400 hover:text-cyan-400 hover:bg-slate-800/50'
+                        }
+                      `}
+                    >
+                      {item.label}
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
           ))}
+          
+          {/* Logout Button */}
+          <div className="mt-4 pt-4 border-t border-cyan-500/20">
+            <button
+              onClick={handleLogout}
+              className="flex items-center px-3 py-2 rounded-lg transition-all duration-200 w-full text-red-400 hover:text-red-300 hover:bg-red-500/10 text-sm"
+            >
+              Logout
+            </button>
+          </div>
         </nav>
 
         {/* Footer */}
