@@ -6,9 +6,10 @@ All endpoints return data with source ("real" or "synthetic") and timestamp.
 """
 
 from fastapi import APIRouter, HTTPException
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 from app.gde.gq_core.service import get_gq_core_service
+from app.gde.gq_core.ecosystems import get_ecosystems_service
 
 router = APIRouter(prefix="/gq-core", tags=["GQ-Core"])
 
@@ -146,3 +147,34 @@ async def health_check() -> Dict[str, Any]:
         "service": "gq-core",
         "version": "1.0.0"
     }
+
+
+# Ecosystems endpoints
+@router.get("/ecosystems")
+async def get_ecosystems() -> Dict[str, Any]:
+    """
+    Get overview data for all supported blockchain ecosystems.
+    
+    Returns:
+        All ecosystem summaries with TVL, volume, risk scores
+    """
+    service = get_ecosystems_service()
+    return service.get_all_ecosystems()
+
+
+@router.get("/ecosystems/{chain}")
+async def get_ecosystem(chain: str) -> Dict[str, Any]:
+    """
+    Get detailed data for a specific blockchain ecosystem.
+    
+    Args:
+        chain: Chain identifier (e.g., "ethereum", "solana", "arbitrum")
+    
+    Returns:
+        Detailed ecosystem data including protocols, events, and risk breakdown
+    """
+    service = get_ecosystems_service()
+    result = service.get_ecosystem(chain)
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"Ecosystem '{chain}' not found")
+    return result
