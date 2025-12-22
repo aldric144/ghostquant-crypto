@@ -7,6 +7,7 @@ import SystemMetricsPanel from "./SystemMetricsPanel";
 import ChatMessage from "./ChatMessage";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
+const GQ_CORE_API = "/api/gq-core";
 
 type ContextType = "global" | "entity" | "token" | "chain" | "ring";
 
@@ -74,12 +75,46 @@ export default function GhostMindConsole() {
   }, [context, contextValue]);
 
   const fetchIntelligenceData = useCallback(async (query: string) => {
-    // Use correct existing endpoints for intelligence data
+    // Use GQ-Core unified endpoints first, with fallback to legacy endpoints
+    try {
+      // Try GQ-Core overview endpoint first (combines all intelligence)
+      const gqCoreResponse = await fetch(`${GQ_CORE_API}/overview`);
+      if (gqCoreResponse.ok) {
+        const gqCoreData = await gqCoreResponse.json();
+        if (gqCoreData && gqCoreData.data) {
+          // Also fetch rings data for ring-related queries
+          let ringsData = null;
+          if (query.toLowerCase().includes("ring")) {
+            try {
+              const ringsResponse = await fetch(`${GQ_CORE_API}/rings`);
+              if (ringsResponse.ok) {
+                ringsData = await ringsResponse.json();
+              }
+            } catch {
+              // Ignore rings fetch error
+            }
+          }
+          
+          return {
+            unified_risk: gqCoreData.data.risk || {},
+            manipulation: gqCoreData.data.anomalies || {},
+            whale_intel: gqCoreData.data.whales || {},
+            rings: ringsData?.data || gqCoreData.data.rings || {},
+            source: gqCoreData.source,
+            timestamp: gqCoreData.timestamp,
+          };
+        }
+      }
+    } catch (error) {
+      console.log("[GhostMind] GQ-Core unavailable, falling back to legacy endpoints");
+    }
+
+    // Fallback to legacy endpoints
     const endpoints = [
-      `/unified-risk/all-threats?limit=10`,    // Correct endpoint for unified risk events
-      `/manipulation/alerts?limit=5`,           // Correct endpoint for manipulation events
-      `/whales/movements?limit=5`,              // Correct endpoint for whale events
-      `/darkpool/activity?limit=5`,             // Correct endpoint for darkpool events
+      `/unified-risk/all-threats?limit=10`,
+      `/manipulation/alerts?limit=5`,
+      `/whales/movements?limit=5`,
+      `/darkpool/activity?limit=5`,
     ];
 
     try {

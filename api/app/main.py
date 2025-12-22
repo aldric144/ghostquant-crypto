@@ -252,6 +252,10 @@ app.include_router(system_router)
 app.include_router(simulation_router)
 app.include_router(danger_router)
 
+# GQ-Core - Unified Hybrid Intelligence Engine
+from app.routers.gq_core import router as gq_core_router
+app.include_router(gq_core_router, tags=["GQ-Core"])
+
 
 @app.post("/intel/sim/start")
 async def start_sim():

@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useIntelFeed } from "@/hooks/useIntelFeed";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
+const GQ_CORE_API = "/api/gq-core";
 
 interface RingNode {
   id: string;
@@ -99,93 +100,163 @@ export default function RingVisualization({ severityFilter, timeFilter }: RingVi
       setLoading(true);
       setError(null);
 
-      // Use correct existing endpoints for ring/cluster data
-      const endpoints = [
-        "/manipulation/alerts",           // Manipulation alerts (rings/patterns)
-        "/widb/cluster/history",           // WIDB cluster history
-        "/unified-risk/all-threats",       // Unified risk threats
-        "/darkpool/activity",              // Darkpool activity
-        "/whales/movements",               // Whale movements
-      ];
-
-      const windowParam = timeFilter !== "all" ? `?window=${timeFilter}` : "";
-
-      const responses = await Promise.allSettled(
-        endpoints.map((endpoint) =>
-          fetch(`${API_BASE}${endpoint}${windowParam}`).then((res) =>
-            res.ok ? res.json() : null
-          )
-        )
-      );
+      // Use GQ-Core unified rings endpoint (with fallback to legacy endpoints)
+      let gqCoreData = null;
+      try {
+        const gqCoreResponse = await fetch(`${GQ_CORE_API}/rings`);
+        if (gqCoreResponse.ok) {
+          gqCoreData = await gqCoreResponse.json();
+        }
+      } catch {
+        console.log("[RingVisualization] GQ-Core unavailable, falling back to legacy endpoints");
+      }
 
       const allRings: Ring[] = [];
       let ringIndex = 0;
 
-      responses.forEach((result, idx) => {
-        if (result.status === "fulfilled" && result.value) {
-          const data = result.value;
-          // Handle different response structures from each endpoint
-          let ringList: Record<string, unknown>[] = [];
-          if (Array.isArray(data)) {
-            ringList = data;
-          } else if (data.alerts) {
-            ringList = data.alerts; // manipulation/alerts
-          } else if (data.clusters) {
-            ringList = data.clusters; // widb/cluster/history
-          } else if (data.threats) {
-            ringList = data.threats; // unified-risk/all-threats
-          } else if (data.events) {
-            ringList = data.events; // darkpool/activity
-          } else if (data.rings) {
-            ringList = data.rings;
-          }
-          const source = endpoints[idx].split("/")[1];
+      // If GQ-Core returned data, use it
+      if (gqCoreData && gqCoreData.data && gqCoreData.data.rings) {
+        const ringList = gqCoreData.data.rings as Array<Record<string, unknown>>;
+        
+        ringList.forEach((ring: Record<string, unknown>) => {
+          const score = (ring.score as number) || 0;
+          const severity = (ring.severity as "high" | "medium" | "low") || 
+            (score >= 0.8 ? "high" : score >= 0.4 ? "medium" : "low");
 
-          ringList.forEach((ring: Record<string, unknown>) => {
-            const score = (ring.score as number) || (ring.risk_score as number) || (ring.severity_score as number) || 0;
-            const severity: "high" | "medium" | "low" =
-              score >= 0.8 ? "high" : score >= 0.4 ? "medium" : "low";
+          const ringNodes = (ring.nodes as Array<Record<string, unknown>>) || [];
+          const nodes: RingNode[] = ringNodes.map((node, i) => ({
+            id: (node.id as string) || `node-${ringIndex}-${i}`,
+            entityId: (node.address as string) || `entity-${ringIndex}-${i}`,
+            type: getNodeType((node.type as string) || "smartmoney"),
+            activityCount: (node.activity_count as number) || 1,
+            x: 0,
+            y: 0,
+            angle: 0,
+          }));
 
-            const wallets = (ring.wallets as string[]) || (ring.addresses as string[]) || [];
-            const nodeCount = wallets.length || (ring.node_count as number) || Math.floor(Math.random() * 10) + 3;
-
-            const nodes: RingNode[] = [];
-            for (let i = 0; i < nodeCount; i++) {
+          // If no nodes from API, generate some based on activity count
+          if (nodes.length === 0) {
+            const nodeCount = (ring.activity_count as number) || Math.floor(Math.random() * 10) + 3;
+            for (let i = 0; i < Math.min(nodeCount, 15); i++) {
               nodes.push({
                 id: `node-${ringIndex}-${i}`,
-                entityId: wallets[i] || `entity-${ringIndex}-${i}`,
-                type: getNodeType((ring.pattern_type as string) || source),
+                entityId: `entity-${ringIndex}-${i}`,
+                type: getNodeType((ring.pattern_type as string) || "manipulation"),
                 activityCount: 1,
                 x: 0,
                 y: 0,
                 angle: 0,
               });
             }
+          }
 
-            allRings.push({
-              id: `ring-${ringIndex}`,
-              name: (ring.name as string) || `Ring ${String.fromCharCode(65 + (ringIndex % 26))}`,
-              nodes,
-              severity,
-              score,
-              activityCount: (ring.activity_count as number) || nodeCount,
-              timestamp: ring.timestamp
-                ? new Date(ring.timestamp as string).getTime()
-                : Date.now() - ringIndex * 60000,
-              isNew: false,
-              chains: (ring.chains as string[]) || [(ring.chain as string) || "ethereum"],
-              tokens: (ring.tokens as string[]) || [(ring.token as string) || "unknown"],
-              wallets,
-              exchanges: (ring.exchanges as string[]) || [(ring.exchange as string) || "unknown"],
-              volume: (ring.volume as number) || (ring.total_volume as number) || 0,
-              patternType: (ring.pattern_type as string) || (ring.type as string) || source,
-              confidence: (ring.confidence as number) || score,
-            });
-
-            ringIndex++;
+          allRings.push({
+            id: (ring.id as string) || `ring-${ringIndex}`,
+            name: (ring.name as string) || `Ring ${String.fromCharCode(65 + (ringIndex % 26))}`,
+            nodes,
+            severity,
+            score,
+            activityCount: (ring.activity_count as number) || nodes.length,
+            timestamp: ring.timestamp
+              ? new Date(ring.timestamp as string).getTime()
+              : Date.now() - ringIndex * 60000,
+            isNew: false,
+            chains: (ring.chains as string[]) || ["ethereum"],
+            tokens: (ring.tokens as string[]) || ["unknown"],
+            wallets: [],
+            exchanges: [],
+            volume: (ring.volume as number) || 0,
+            patternType: (ring.pattern_type as string) || "manipulation",
+            confidence: (ring.confidence as number) || score,
           });
-        }
-      });
+
+          ringIndex++;
+        });
+      } else {
+        // Fallback to legacy endpoints
+        const endpoints = [
+          "/manipulation/alerts",
+          "/widb/cluster/history",
+          "/unified-risk/all-threats",
+          "/darkpool/activity",
+          "/whales/movements",
+        ];
+
+        const windowParam = timeFilter !== "all" ? `?window=${timeFilter}` : "";
+
+        const responses = await Promise.allSettled(
+          endpoints.map((endpoint) =>
+            fetch(`${API_BASE}${endpoint}${windowParam}`).then((res) =>
+              res.ok ? res.json() : null
+            )
+          )
+        );
+
+        responses.forEach((result, idx) => {
+          if (result.status === "fulfilled" && result.value) {
+            const data = result.value;
+            let ringList: Record<string, unknown>[] = [];
+            if (Array.isArray(data)) {
+              ringList = data;
+            } else if (data.alerts) {
+              ringList = data.alerts;
+            } else if (data.clusters) {
+              ringList = data.clusters;
+            } else if (data.threats) {
+              ringList = data.threats;
+            } else if (data.events) {
+              ringList = data.events;
+            } else if (data.rings) {
+              ringList = data.rings;
+            }
+            const source = endpoints[idx].split("/")[1];
+
+            ringList.forEach((ring: Record<string, unknown>) => {
+              const score = (ring.score as number) || (ring.risk_score as number) || (ring.severity_score as number) || 0;
+              const severity: "high" | "medium" | "low" =
+                score >= 0.8 ? "high" : score >= 0.4 ? "medium" : "low";
+
+              const wallets = (ring.wallets as string[]) || (ring.addresses as string[]) || [];
+              const nodeCount = wallets.length || (ring.node_count as number) || Math.floor(Math.random() * 10) + 3;
+
+              const nodes: RingNode[] = [];
+              for (let i = 0; i < nodeCount; i++) {
+                nodes.push({
+                  id: `node-${ringIndex}-${i}`,
+                  entityId: wallets[i] || `entity-${ringIndex}-${i}`,
+                  type: getNodeType((ring.pattern_type as string) || source),
+                  activityCount: 1,
+                  x: 0,
+                  y: 0,
+                  angle: 0,
+                });
+              }
+
+              allRings.push({
+                id: `ring-${ringIndex}`,
+                name: (ring.name as string) || `Ring ${String.fromCharCode(65 + (ringIndex % 26))}`,
+                nodes,
+                severity,
+                score,
+                activityCount: (ring.activity_count as number) || nodeCount,
+                timestamp: ring.timestamp
+                  ? new Date(ring.timestamp as string).getTime()
+                  : Date.now() - ringIndex * 60000,
+                isNew: false,
+                chains: (ring.chains as string[]) || [(ring.chain as string) || "ethereum"],
+                tokens: (ring.tokens as string[]) || [(ring.token as string) || "unknown"],
+                wallets,
+                exchanges: (ring.exchanges as string[]) || [(ring.exchange as string) || "unknown"],
+                volume: (ring.volume as number) || (ring.total_volume as number) || 0,
+                patternType: (ring.pattern_type as string) || (ring.type as string) || source,
+                confidence: (ring.confidence as number) || score,
+              });
+
+              ringIndex++;
+            });
+          }
+        });
+      }
 
       allRings.sort((a, b) => b.score - a.score);
       setRings(allRings.slice(0, 20));
