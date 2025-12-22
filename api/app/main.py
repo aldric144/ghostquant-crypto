@@ -76,6 +76,13 @@ async def lifespan(app: FastAPI):
     db_initialized = False
     workers_started = False
     
+    # Initialize Redis cache (Upstash REST API)
+    try:
+        init_redis()
+        logger.info("Redis cache initialized")
+    except Exception as e:
+        logger.warning(f"Redis cache initialization failed: {e}")
+    
     if not serverless_mode:
         try:
             await init_db_pool()
@@ -334,6 +341,136 @@ async def websocket_alerts(websocket: WebSocket):
 async def websocket_intel(websocket: WebSocket):
     """WebSocket endpoint for real-time intelligence alerts (new unified route)."""
     await _handle_intel_websocket(websocket)
+
+@app.websocket("/ws/system")
+async def websocket_system(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time system status updates.
+    Used by Settings V2 page for live monitoring.
+    
+    Streams:
+    - system_status: Overall system health
+    - worker_status: Background worker state
+    - redis_feed: Redis event counts
+    - engine_metrics: Processing metrics
+    
+    Updates are sent every 2 seconds automatically.
+    """
+    import asyncio
+    import time
+    from app.routers.system import system_metrics, update_system_metric, increment_system_metric
+    from app.cache import get_redis
+    
+    await websocket.accept()
+    
+    # Track this connection
+    increment_system_metric("ws_client_count", 1)
+    update_system_metric("last_ws_connect", datetime.utcnow().isoformat())
+    
+    try:
+        # Send initial connection confirmation
+        await websocket.send_json({
+            "type": "connection",
+            "status": "connected",
+            "timestamp": datetime.utcnow().isoformat(),
+            "message": "Connected to GhostQuant System WebSocket"
+        })
+        
+        # Start streaming system status
+        while True:
+            redis = get_redis()
+            redis_connected = redis and redis.enabled
+            
+            # Measure Redis latency
+            latency = 0
+            if redis_connected:
+                try:
+                    start = time.time()
+                    redis._execute("PING")
+                    latency = int((time.time() - start) * 1000)
+                except Exception:
+                    latency = -1
+            
+            # Get actual worker state
+            try:
+                actual_running = background_worker.is_running
+            except Exception:
+                actual_running = system_metrics.get("worker_running", False)
+            
+            # Get Redis event count
+            total_events = system_metrics.get("total_events", 0)
+            if redis_connected:
+                try:
+                    keys = redis.keys("intel:*")
+                    total_events = len(keys) if keys else total_events
+                except Exception:
+                    pass
+            
+            # Send system_status
+            await websocket.send_json({
+                "type": "system_status",
+                "data": {
+                    "connection": "connected" if redis_connected else "disconnected",
+                    "reconnectCount": system_metrics.get("reconnect_count", 0),
+                    "latency": latency,
+                    "lastAlert": system_metrics.get("last_alert"),
+                    "wsClientCount": system_metrics.get("ws_client_count", 0)
+                },
+                "timestamp": datetime.utcnow().isoformat()
+            })
+            
+            # Send worker_status
+            await websocket.send_json({
+                "type": "worker_status",
+                "data": {
+                    "running": actual_running,
+                    "simulationMode": system_metrics.get("simulation_mode", False),
+                    "loopSpeed": 50,
+                    "queueSize": system_metrics.get("queue_size", 0),
+                    "processingErrors": system_metrics.get("processing_errors", 0)
+                },
+                "timestamp": datetime.utcnow().isoformat()
+            })
+            
+            # Send redis_feed
+            await websocket.send_json({
+                "type": "redis_feed",
+                "data": {
+                    "totalEvents": total_events,
+                    "feedVelocity": system_metrics.get("feed_velocity", 0),
+                    "lastMessage": system_metrics.get("last_alert"),
+                    "severity": {
+                        "high": system_metrics.get("high_severity", 0),
+                        "medium": system_metrics.get("medium_severity", 0),
+                        "low": system_metrics.get("low_severity", 0)
+                    }
+                },
+                "timestamp": datetime.utcnow().isoformat()
+            })
+            
+            # Send engine_metrics
+            await websocket.send_json({
+                "type": "engine_metrics",
+                "data": {
+                    "timelineEvents": system_metrics.get("timeline_events", 0),
+                    "graphNodes": system_metrics.get("graph_nodes", 0),
+                    "graphEdges": system_metrics.get("graph_edges", 0),
+                    "ringSystems": system_metrics.get("ring_systems", 0),
+                    "ghostmindInsights": system_metrics.get("ghostmind_insights", 0),
+                    "entityCacheSize": system_metrics.get("entity_cache_size", 0)
+                },
+                "timestamp": datetime.utcnow().isoformat()
+            })
+            
+            # Wait 2 seconds before next update
+            await asyncio.sleep(2)
+            
+    except WebSocketDisconnect:
+        increment_system_metric("ws_client_count", -1)
+        logger.info("System WebSocket client disconnected")
+    except Exception as e:
+        increment_system_metric("ws_client_count", -1)
+        logger.error(f"System WebSocket error: {e}")
 
 @app.websocket("/ws/momentum")
 async def websocket_momentum(websocket: WebSocket):

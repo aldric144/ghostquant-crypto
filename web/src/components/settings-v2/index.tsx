@@ -2,7 +2,15 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 
+// Use Next.js API proxy routes for system endpoints to avoid routing issues
+// The proxy routes forward requests to the backend
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
+
+// Get WebSocket URL from API_BASE (convert https to wss)
+const getWsUrl = () => {
+  const base = API_BASE.replace(/^http/, "ws");
+  return `${base}/ws/system`;
+};
 
 interface SocketHealth {
   connection: "connected" | "disconnected";
@@ -107,16 +115,20 @@ export default function SettingsPageV2() {
 
   const frameCountRef = useRef(0);
   const lastFrameTimeRef = useRef(Date.now());
+  const wsRef = useRef<WebSocket | null>(null);
+  const [wsConnected, setWsConnected] = useState(false);
 
   const fetchAllData = useCallback(async () => {
     try {
+      // Use Next.js API proxy routes to avoid routing issues
+      // These proxy routes forward requests to the backend
       const [socketRes, perfRes, redisRes, workerRes, uptimeRes, diagRes] = await Promise.allSettled([
-        fetch(`${API_BASE}/system/socket-health`),
-        fetch(`${API_BASE}/system/performance`),
-        fetch(`${API_BASE}/system/redis-feed`),
-        fetch(`${API_BASE}/system/workers/status`),
-        fetch(`${API_BASE}/system/uptime`),
-        fetch(`${API_BASE}/system/diagnostics`),
+        fetch(`/api/system/socket-health`),
+        fetch(`/api/system/performance`),
+        fetch(`/api/system/redis-feed`),
+        fetch(`/api/system/workers/status`),
+        fetch(`/api/system/uptime`),
+        fetch(`/api/system/diagnostics`),
       ]);
 
       if (socketRes.status === "fulfilled" && socketRes.value.ok) {
@@ -144,9 +156,99 @@ export default function SettingsPageV2() {
     }
   }, []);
 
+  // WebSocket connection for real-time updates
+  useEffect(() => {
+    const connectWebSocket = () => {
+      const wsUrl = getWsUrl();
+      console.log("[Settings V2] Connecting to WebSocket:", wsUrl);
+      
+      const ws = new WebSocket(wsUrl);
+      wsRef.current = ws;
+      
+      ws.onopen = () => {
+        console.log("[Settings V2] WebSocket connected");
+        setWsConnected(true);
+        setSocketHealth(prev => ({ ...prev, connection: "connected" }));
+      };
+      
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          
+          switch (message.type) {
+            case "system_status":
+              setSocketHealth({
+                connection: message.data.connection,
+                reconnectCount: message.data.reconnectCount || 0,
+                latency: message.data.latency || 0,
+                lastAlert: message.data.lastAlert,
+              });
+              break;
+            case "worker_status":
+              setWorkerStatus({
+                running: message.data.running,
+                simulationMode: message.data.simulationMode || false,
+                loopSpeed: message.data.loopSpeed || 50,
+                queueSize: message.data.queueSize || 0,
+                processingErrors: message.data.processingErrors || 0,
+              });
+              break;
+            case "redis_feed":
+              setRedisFeed({
+                totalEvents: message.data.totalEvents || 0,
+                feedVelocity: message.data.feedVelocity || 0,
+                lastMessage: message.data.lastMessage,
+                severity: message.data.severity || { high: 0, medium: 0, low: 0 },
+              });
+              break;
+            case "engine_metrics":
+              setDiagnostics({
+                timelineEvents: message.data.timelineEvents || 0,
+                graphNodes: message.data.graphNodes || 0,
+                graphEdges: message.data.graphEdges || 0,
+                ringSystems: message.data.ringSystems || 0,
+                ghostmindInsights: message.data.ghostmindInsights || 0,
+                entityCacheSize: message.data.entityCacheSize || 0,
+              });
+              break;
+            case "connection":
+              console.log("[Settings V2] Connection confirmed:", message.message);
+              break;
+          }
+        } catch (error) {
+          console.error("[Settings V2] Failed to parse WebSocket message:", error);
+        }
+      };
+      
+      ws.onclose = () => {
+        console.log("[Settings V2] WebSocket disconnected");
+        setWsConnected(false);
+        setSocketHealth(prev => ({ ...prev, connection: "disconnected" }));
+        
+        // Reconnect after 3 seconds
+        setTimeout(connectWebSocket, 3000);
+      };
+      
+      ws.onerror = (error) => {
+        console.error("[Settings V2] WebSocket error:", error);
+        setWsConnected(false);
+      };
+    };
+    
+    connectWebSocket();
+    
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
+
+  // Initial data fetch (WebSocket will handle real-time updates)
   useEffect(() => {
     fetchAllData();
-    const interval = setInterval(fetchAllData, 3000);
+    // Only poll every 30 seconds as a fallback - WebSocket handles real-time updates
+    const interval = setInterval(fetchAllData, 30000);
     return () => clearInterval(interval);
   }, [fetchAllData]);
 
@@ -218,7 +320,7 @@ export default function SettingsPageV2() {
 
   const handleStartSimulator = async () => {
     try {
-      await fetch(`${API_BASE}/simulation/start`, { method: "POST" });
+      await fetch(`/api/simulation/start`, { method: "POST" });
       fetchAllData();
     } catch (error) {
       console.error("Failed to start simulator:", error);
@@ -227,7 +329,7 @@ export default function SettingsPageV2() {
 
   const handleStopSimulator = async () => {
     try {
-      await fetch(`${API_BASE}/simulation/stop`, { method: "POST" });
+      await fetch(`/api/simulation/stop`, { method: "POST" });
       fetchAllData();
     } catch (error) {
       console.error("Failed to stop simulator:", error);
@@ -237,7 +339,7 @@ export default function SettingsPageV2() {
   const handleSetSimulationRate = async (rate: number) => {
     setSimulationRate(rate);
     try {
-      await fetch(`${API_BASE}/simulation/rate`, {
+      await fetch(`/api/simulation/rate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rate }),
@@ -264,7 +366,7 @@ export default function SettingsPageV2() {
       "This will reset the entity cache on the server. Continue?",
       async () => {
         try {
-          await fetch(`${API_BASE}/system/data/reset-entity-cache`, { method: "POST" });
+          await fetch(`/api/system/data/reset-entity-cache`, { method: "POST" });
           localStorage.removeItem("entityCache");
           alert("Entity cache reset successfully");
           fetchAllData();
@@ -281,7 +383,7 @@ export default function SettingsPageV2() {
       "This will reset GhostMind conversation history on the server. Continue?",
       async () => {
         try {
-          await fetch(`${API_BASE}/system/data/reset-ghostmind`, { method: "POST" });
+          await fetch(`/api/system/data/reset-ghostmind`, { method: "POST" });
           localStorage.removeItem("ghostmindMemory");
           alert("GhostMind memory reset successfully");
           fetchAllData();
@@ -294,7 +396,7 @@ export default function SettingsPageV2() {
 
   const handleDownloadSnapshot = async () => {
     try {
-      const response = await fetch(`${API_BASE}/system/data/download-snapshot`);
+      const response = await fetch(`/api/system/data/download-snapshot`);
       const data = await response.json();
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
@@ -314,7 +416,7 @@ export default function SettingsPageV2() {
       "DANGER: This will flush the Redis intelligence feed. This action cannot be undone. Continue?",
       async () => {
         try {
-          await fetch(`${API_BASE}/system/danger/flush-redis`, { method: "POST" });
+          await fetch(`/api/danger/flush-redis`, { method: "POST" });
           alert("Redis feed flushed successfully");
           fetchAllData();
         } catch (error) {
@@ -331,7 +433,7 @@ export default function SettingsPageV2() {
       "DANGER: This will stop all background intelligence workers. Intelligence processing will halt. Continue?",
       async () => {
         try {
-          await fetch(`${API_BASE}/system/danger/kill-workers`, { method: "POST" });
+          await fetch(`/api/danger/kill-workers`, { method: "POST" });
           alert("Workers killed successfully");
           fetchAllData();
         } catch (error) {
@@ -348,7 +450,7 @@ export default function SettingsPageV2() {
       "This will restart all background intelligence workers. Continue?",
       async () => {
         try {
-          await fetch(`${API_BASE}/system/danger/restart-workers`, { method: "POST" });
+          await fetch(`/api/danger/restart-workers`, { method: "POST" });
           alert("Workers restarted successfully");
           fetchAllData();
         } catch (error) {
@@ -365,7 +467,7 @@ export default function SettingsPageV2() {
       "This will signal all clients to reload their connections. Continue?",
       async () => {
         try {
-          await fetch(`${API_BASE}/system/danger/reload-client`, { method: "POST" });
+          await fetch(`/api/danger/reload-client`, { method: "POST" });
           alert("Reload signal sent successfully");
           fetchAllData();
         } catch (error) {
@@ -378,7 +480,7 @@ export default function SettingsPageV2() {
 
   const handleStartWorkers = async () => {
     try {
-      await fetch(`${API_BASE}/system/workers/start`, { method: "POST" });
+      await fetch(`/api/system/workers/start`, { method: "POST" });
       fetchAllData();
     } catch (error) {
       console.error("Failed to start workers:", error);
@@ -387,7 +489,7 @@ export default function SettingsPageV2() {
 
   const handleStopWorkers = async () => {
     try {
-      await fetch(`${API_BASE}/system/workers/stop`, { method: "POST" });
+      await fetch(`/api/system/workers/stop`, { method: "POST" });
       fetchAllData();
     } catch (error) {
       console.error("Failed to stop workers:", error);
