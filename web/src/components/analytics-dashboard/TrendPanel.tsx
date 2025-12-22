@@ -94,16 +94,16 @@ export default function TrendPanel({ data, isLoading, compact, onViewMore }: Tre
       {!compact && heatmap.length > 0 && (
         <div className="mb-4">
           <h4 className="text-sm font-medium text-gray-400 mb-2">Weekly Heatmap</h4>
-          <div className="grid grid-cols-24 gap-0.5">
+          <div className="grid gap-0.5" style={{ gridTemplateColumns: 'repeat(24, minmax(0, 1fr))' }}>
             {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
               <div key={day} className="contents">
                 {Array.from({ length: 24 }, (_, hour) => {
                   const point = heatmap.find((h) => h.day === day && h.hour === hour);
-                  const intensity = point ? (point.value || 0) / 100 : 0;
+                  const intensity = point ? Math.max(0.1, (point.value || 0) / 100) : 0.05;
                   return (
                     <div
                       key={`${day}-${hour}`}
-                      className="w-full aspect-square rounded-sm transition-all"
+                      className="w-full aspect-square rounded-sm transition-all border border-slate-700/30"
                       style={{
                         backgroundColor: `rgba(34, 211, 238, ${intensity})`,
                       }}
@@ -113,6 +113,16 @@ export default function TrendPanel({ data, isLoading, compact, onViewMore }: Tre
                 })}
               </div>
             ))}
+          </div>
+          {/* Day labels */}
+          <div className="flex justify-between mt-1 text-xs text-gray-500">
+            <span>Mon</span>
+            <span>Tue</span>
+            <span>Wed</span>
+            <span>Thu</span>
+            <span>Fri</span>
+            <span>Sat</span>
+            <span>Sun</span>
           </div>
         </div>
       )}

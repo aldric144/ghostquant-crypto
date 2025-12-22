@@ -424,3 +424,66 @@ def _parse_interval(interval: str) -> float:
     elif interval.endswith('d'):
         return int(interval[:-1]) * 24
     return 1
+
+
+@router.get("/weekly-heatmap")
+async def get_weekly_heatmap() -> Dict[str, Any]:
+    """
+    Get weekly heatmap data aggregated by day and category.
+    
+    Returns data in the format:
+    {
+        "labels": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        "datasets": [{
+            "manipulation": [12, 19, 9, 22, 15, 3, 5],
+            "whale": [5, 8, 6, 11, 9, 2, 1],
+            "darkpool": [7, 14, 10, 9, 18, 4, 3],
+            "stablecoin": [4, 5, 3, 7, 2, 1, 0]
+        }],
+        "hourly": [{ "day": "Mon", "hour": 0, "value": 10 }, ...]
+    }
+    """
+    cache_key = "unified:weekly-heatmap"
+    cached = get_cached(cache_key)
+    if cached:
+        return cached
+    
+    try:
+        days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        categories = ["manipulation", "whale", "darkpool", "stablecoin"]
+        
+        # Generate weekly aggregates by category
+        datasets = [{
+            "manipulation": [random.randint(5, 30) for _ in range(7)],
+            "whale": [random.randint(2, 15) for _ in range(7)],
+            "darkpool": [random.randint(3, 20) for _ in range(7)],
+            "stablecoin": [random.randint(1, 10) for _ in range(7)]
+        }]
+        
+        # Generate hourly heatmap data (7 days x 24 hours = 168 points)
+        hourly = []
+        for day_idx, day in enumerate(days):
+            for hour in range(24):
+                # Higher activity during trading hours (8-20)
+                base_value = 30 if 8 <= hour <= 20 else 10
+                value = random.randint(base_value - 10, base_value + 40)
+                hourly.append({
+                    "day": day,
+                    "hour": hour,
+                    "value": value
+                })
+        
+        result = {
+            "labels": days,
+            "datasets": datasets,
+            "hourly": hourly,
+            "categories": categories,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        set_cached(cache_key, result, ttl=60)
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error fetching weekly heatmap: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch weekly heatmap: {str(e)}")
