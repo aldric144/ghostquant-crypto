@@ -224,8 +224,15 @@ async def flush_redis():
 @router.get("/workers/status", response_model=WorkerStatusResponse)
 async def get_worker_status():
     """Get intelligence worker status."""
+    # Try to get actual worker state from background_worker
+    try:
+        from app.main import background_worker
+        actual_running = background_worker.is_running
+    except Exception:
+        actual_running = system_metrics["worker_running"]
+    
     return WorkerStatusResponse(
-        running=system_metrics["worker_running"],
+        running=actual_running,
         simulationMode=system_metrics["simulation_mode"],
         loopSpeed=50,  # ms
         queueSize=system_metrics["queue_size"],
