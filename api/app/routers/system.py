@@ -294,6 +294,60 @@ async def restart_workers():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============== WORKER STATUS (User-requested format) ==============
+
+@router.get("/worker-status")
+async def get_worker_status_v2():
+    """
+    Get intelligence worker status in the exact format requested by user.
+    Returns: { "running": true, "pid": <id>, "uptime": <seconds> }
+    """
+    # Get actual worker state
+    try:
+        from app.main import background_worker
+        actual_running = background_worker.is_running
+    except Exception:
+        actual_running = system_metrics.get("worker_running", False)
+    
+    # Calculate uptime
+    now = datetime.now(timezone.utc)
+    uptime_seconds = int((now - SYSTEM_START_TIME).total_seconds())
+    
+    return {
+        "running": actual_running,
+        "pid": os.getpid(),
+        "uptime": uptime_seconds
+    }
+
+
+# ============== REDIS STATUS (User-requested format) ==============
+
+@router.get("/redis-status")
+async def get_redis_status():
+    """
+    Get Redis connection status using Upstash REST API.
+    Returns: { "connected": true, "latest_events": <count> }
+    """
+    from app.cache import get_redis
+    
+    redis = get_redis()
+    redis_connected = redis and redis.enabled
+    
+    # Get event count
+    latest_events = system_metrics.get("total_events", 0)
+    if redis_connected:
+        try:
+            keys = redis.keys("intel:*")
+            latest_events = len(keys) if keys else latest_events
+        except Exception:
+            pass
+    
+    return {
+        "connected": redis_connected,
+        "latest_events": latest_events
+    }
+
+
 # ============== UPTIME ==============
 
 @router.get("/uptime", response_model=UptimeResponse)

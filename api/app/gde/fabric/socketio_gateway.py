@@ -1,5 +1,7 @@
 import asyncio
 import json
+import time
+import os
 from typing import Dict, Any, Set
 from datetime import datetime
 import socketio
@@ -36,8 +38,12 @@ class SocketIOGateway:
             "signals", 
             "intelligence",
             "manipulation",
-            "events"
+            "events",
+            "system"  # System status room for Settings V2
         ]
+        
+        # Track worker start time for uptime calculation
+        self._started_at = datetime.utcnow()
         
         self.client_rooms: Dict[str, Set[str]] = {}
         
@@ -142,7 +148,8 @@ class SocketIOGateway:
             asyncio.create_task(self._poll_channel("intel.signals", "signals")),
             asyncio.create_task(self._poll_channel("intel.intelligence", "intelligence")),
             asyncio.create_task(self._poll_channel("intel.manipulation", "manipulation")),
-            asyncio.create_task(self._poll_channel("intel.events", "events"))
+            asyncio.create_task(self._poll_channel("intel.events", "events")),
+            asyncio.create_task(self._broadcast_system_status())  # System status for Settings V2
         ]
     
     async def stop_polling(self):
@@ -182,6 +189,114 @@ class SocketIOGateway:
                 print(f"[SocketIO] Error polling {redis_channel}: {str(e)}")
                 await asyncio.sleep(5.0)
     
+    async def _broadcast_system_status(self):
+        """Broadcast system status to the 'system' room every 2 seconds."""
+        while self.running:
+            try:
+                # Import here to avoid circular imports
+                from app.cache import get_redis
+                from app.routers.system import system_metrics
+                
+                # Get Redis connection status
+                redis = get_redis()
+                redis_connected = redis and redis.enabled
+                
+                # Measure Redis latency
+                latency = 0
+                if redis_connected:
+                    try:
+                        start = time.time()
+                        redis._execute("PING")
+                        latency = int((time.time() - start) * 1000)
+                    except Exception:
+                        latency = -1
+                
+                # Get worker status
+                try:
+                    from app.main import background_worker
+                    worker_running = background_worker.is_running
+                except Exception:
+                    worker_running = system_metrics.get("worker_running", False)
+                
+                # Calculate uptime
+                uptime_seconds = int((datetime.utcnow() - self._started_at).total_seconds())
+                
+                # Get Redis event count
+                total_events = system_metrics.get("total_events", 0)
+                if redis_connected:
+                    try:
+                        keys = redis.keys("intel:*")
+                        total_events = len(keys) if keys else total_events
+                    except Exception:
+                        pass
+                
+                # Broadcast system_status
+                await self.broadcast_to_room("system", {
+                    "type": "system_status",
+                    "data": {
+                        "connection": "connected" if redis_connected else "disconnected",
+                        "reconnectCount": system_metrics.get("reconnect_count", 0),
+                        "latency": latency,
+                        "lastAlert": system_metrics.get("last_alert"),
+                        "wsClientCount": len(self.client_rooms)
+                    },
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+                
+                # Broadcast worker_status
+                await self.broadcast_to_room("system", {
+                    "type": "worker_status",
+                    "data": {
+                        "running": worker_running,
+                        "pid": os.getpid(),
+                        "uptime": uptime_seconds,
+                        "simulationMode": system_metrics.get("simulation_mode", False),
+                        "loopSpeed": 50,
+                        "queueSize": system_metrics.get("queue_size", 0),
+                        "processingErrors": system_metrics.get("processing_errors", 0)
+                    },
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+                
+                # Broadcast redis_feed
+                await self.broadcast_to_room("system", {
+                    "type": "redis_feed",
+                    "data": {
+                        "connected": redis_connected,
+                        "totalEvents": total_events,
+                        "feedVelocity": system_metrics.get("feed_velocity", 0),
+                        "lastMessage": system_metrics.get("last_alert"),
+                        "severity": {
+                            "high": system_metrics.get("high_severity", 0),
+                            "medium": system_metrics.get("medium_severity", 0),
+                            "low": system_metrics.get("low_severity", 0)
+                        }
+                    },
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+                
+                # Broadcast engine_metrics
+                await self.broadcast_to_room("system", {
+                    "type": "engine_metrics",
+                    "data": {
+                        "timelineEvents": system_metrics.get("timeline_events", 0),
+                        "graphNodes": system_metrics.get("graph_nodes", 0),
+                        "graphEdges": system_metrics.get("graph_edges", 0),
+                        "ringSystems": system_metrics.get("ring_systems", 0),
+                        "ghostmindInsights": system_metrics.get("ghostmind_insights", 0),
+                        "entityCacheSize": system_metrics.get("entity_cache_size", 0)
+                    },
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+                
+                await asyncio.sleep(2.0)
+                
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                print(f"[SocketIO] Error broadcasting system status: {str(e)}")
+                await asyncio.sleep(5.0)
+
     async def broadcast_to_room(self, room: str, message: Dict[str, Any]):
         """Broadcast a message to all clients in a room."""
         try:
