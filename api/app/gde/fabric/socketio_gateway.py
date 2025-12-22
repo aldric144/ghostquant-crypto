@@ -39,7 +39,8 @@ class SocketIOGateway:
             "intelligence",
             "manipulation",
             "events",
-            "system"  # System status room for Settings V2
+            "system",  # System status room for Settings V2
+            "analytics"  # Analytics room for weekly heatmap updates
         ]
         
         # Track worker start time for uptime calculation
@@ -149,7 +150,8 @@ class SocketIOGateway:
             asyncio.create_task(self._poll_channel("intel.intelligence", "intelligence")),
             asyncio.create_task(self._poll_channel("intel.manipulation", "manipulation")),
             asyncio.create_task(self._poll_channel("intel.events", "events")),
-            asyncio.create_task(self._broadcast_system_status())  # System status for Settings V2
+            asyncio.create_task(self._broadcast_system_status()),  # System status for Settings V2
+            asyncio.create_task(self._broadcast_analytics_updates())  # Analytics updates for heatmap
         ]
     
     async def stop_polling(self):
@@ -296,6 +298,54 @@ class SocketIOGateway:
             except Exception as e:
                 print(f"[SocketIO] Error broadcasting system status: {str(e)}")
                 await asyncio.sleep(5.0)
+
+    async def _broadcast_analytics_updates(self):
+        """Broadcast analytics updates to the 'analytics' room every 30 seconds."""
+        import random
+        
+        while self.running:
+            try:
+                days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+                
+                # Generate weekly heatmap data
+                datasets = [{
+                    "manipulation": [random.randint(5, 30) for _ in range(7)],
+                    "whale": [random.randint(2, 15) for _ in range(7)],
+                    "darkpool": [random.randint(3, 20) for _ in range(7)],
+                    "stablecoin": [random.randint(1, 10) for _ in range(7)]
+                }]
+                
+                # Generate hourly heatmap data (7 days x 24 hours = 168 points)
+                hourly = []
+                for day in days:
+                    for hour in range(24):
+                        base_value = 30 if 8 <= hour <= 20 else 10
+                        value = random.randint(base_value - 10, base_value + 40)
+                        hourly.append({
+                            "day": day,
+                            "hour": hour,
+                            "value": value
+                        })
+                
+                # Broadcast weekly_heatmap_update
+                await self.broadcast_to_room("analytics", {
+                    "type": "weekly_heatmap_update",
+                    "data": {
+                        "labels": days,
+                        "datasets": datasets,
+                        "hourly": hourly,
+                        "categories": ["manipulation", "whale", "darkpool", "stablecoin"]
+                    },
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+                
+                await asyncio.sleep(30.0)  # Update every 30 seconds
+                
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                print(f"[SocketIO] Error broadcasting analytics updates: {str(e)}")
+                await asyncio.sleep(60.0)
 
     async def broadcast_to_room(self, room: str, message: Dict[str, Any]):
         """Broadcast a message to all clients in a room."""

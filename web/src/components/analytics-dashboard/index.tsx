@@ -163,7 +163,7 @@ function normalizeEntityData(apiData: unknown): EntityData | null {
   }
 }
 
-function normalizeTrendData(apiData: unknown): TrendData | null {
+function normalizeTrendData(apiData: unknown, heatmapData?: unknown): TrendData | null {
   try {
     const data = apiData as Record<string, unknown>;
     if (!data || typeof data !== 'object') return null;
@@ -178,9 +178,22 @@ function normalizeTrendData(apiData: unknown): TrendData | null {
       type: ['manipulation', 'whale', 'darkpool', 'stablecoin'][i % 4],
     }));
     
+    // Use heatmap data from weekly-heatmap endpoint if available
+    let heatmap = generateMockTrendData().heatmap;
+    if (heatmapData && typeof heatmapData === 'object') {
+      const heatmapObj = heatmapData as Record<string, unknown>;
+      if (Array.isArray(heatmapObj.hourly)) {
+        heatmap = heatmapObj.hourly.map((h: Record<string, unknown>) => ({
+          day: String(h.day || 'Mon'),
+          hour: typeof h.hour === 'number' ? h.hour : 0,
+          value: typeof h.value === 'number' ? h.value : 0,
+        }));
+      }
+    }
+    
     return {
       hourlyActivity: hourlyActivity.length > 0 ? hourlyActivity : generateMockTrendData().hourlyActivity,
-      heatmap: generateMockTrendData().heatmap,
+      heatmap,
       events: generateMockTrendData().events,
     };
   } catch {
@@ -311,7 +324,7 @@ export default function AnalyticsDashboard() {
     setIsLoading(true);
     try {
       // Use correct existing endpoints
-      const [riskRes, whaleRes, entityRes, trendRes, mapRes, anomalyRes, narrativeRes] = await Promise.allSettled([
+      const [riskRes, whaleRes, entityRes, trendRes, mapRes, anomalyRes, narrativeRes, weeklyHeatmapRes] = await Promise.allSettled([
         fetch(`${API_BASE}/unified-risk/dashboard`),     // Correct endpoint for risk dashboard
         fetch(`${API_BASE}/whales/top?limit=20`),        // Correct endpoint for top whales
         fetch(`${API_BASE}/widb/wallets?limit=20`),      // Use WIDB for entity data
@@ -319,6 +332,7 @@ export default function AnalyticsDashboard() {
         fetch(`${API_BASE}/unified-risk/heatmap`),       // Use heatmap for map data
         fetch(`${API_BASE}/unified-risk/all-threats?severity=critical&limit=20`), // Use threats for anomalies
         fetch(`${API_BASE}/unified-risk/dashboard`),     // Reuse dashboard for narrative summary
+        fetch(`${API_BASE}/unified-risk/weekly-heatmap`), // Weekly heatmap for trend panel
       ]);
 
       const newData: AnalyticsData = {
@@ -367,11 +381,20 @@ export default function AnalyticsDashboard() {
         newData.entities = generateMockEntityData();
       }
 
-      // Process trend data with normalization
+      // Process trend data with normalization (including weekly heatmap)
+      let weeklyHeatmapJson = null;
+      if (weeklyHeatmapRes.status === "fulfilled" && weeklyHeatmapRes.value.ok) {
+        try {
+          weeklyHeatmapJson = await weeklyHeatmapRes.value.json();
+        } catch {
+          weeklyHeatmapJson = null;
+        }
+      }
+      
       if (trendRes.status === "fulfilled" && trendRes.value.ok) {
         try {
           const trendJson = await trendRes.value.json();
-          newData.trends = normalizeTrendData(trendJson) || generateMockTrendData();
+          newData.trends = normalizeTrendData(trendJson, weeklyHeatmapJson) || generateMockTrendData();
         } catch {
           newData.trends = generateMockTrendData();
         }
