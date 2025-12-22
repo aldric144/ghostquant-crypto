@@ -371,6 +371,178 @@ class SyntheticDataGenerator:
             "mode": "real-time" if is_real_mode else "fallback"
         }
     
+    def generate_ecosystems(self) -> List[Dict[str, Any]]:
+        """Generate synthetic ecosystem data for all chains."""
+        rng = self._seeded_random("ecosystems")
+        
+        # Base data for each chain (realistic values)
+        chain_base_data = {
+            "ethereum": {"tvl": 45e9, "emi_base": 85, "stage": "mature_or_declining"},
+            "solana": {"tvl": 8.5e9, "emi_base": 78, "stage": "rapid_growth"},
+            "arbitrum": {"tvl": 3.2e9, "emi_base": 72, "stage": "explosive_growth"},
+            "base": {"tvl": 2.1e9, "emi_base": 68, "stage": "explosive_growth"},
+            "optimism": {"tvl": 1.8e9, "emi_base": 65, "stage": "steady_growth"},
+            "polygon": {"tvl": 1.5e9, "emi_base": 62, "stage": "steady_growth"},
+            "avalanche": {"tvl": 1.2e9, "emi_base": 58, "stage": "steady_growth"},
+            "bsc": {"tvl": 5.5e9, "emi_base": 55, "stage": "mature_or_declining"},
+            "sui": {"tvl": 0.8e9, "emi_base": 52, "stage": "emerging"},
+            "aptos": {"tvl": 0.65e9, "emi_base": 48, "stage": "emerging"},
+            "fantom": {"tvl": 0.3e9, "emi_base": 42, "stage": "mature_or_declining"},
+            "celo": {"tvl": 0.2e9, "emi_base": 38, "stage": "emerging"},
+            "gnosis": {"tvl": 0.4e9, "emi_base": 45, "stage": "steady_growth"},
+            "zksync": {"tvl": 0.5e9, "emi_base": 55, "stage": "emerging"},
+            "linea": {"tvl": 0.35e9, "emi_base": 50, "stage": "emerging"},
+        }
+        
+        ecosystems = []
+        
+        for chain, base in chain_base_data.items():
+            # Add some randomness
+            emi_score = base["emi_base"] + rng.uniform(-5, 5)
+            tvl = base["tvl"] * rng.uniform(0.95, 1.05)
+            delta_24h = rng.uniform(-5, 10)
+            whale_activity_score = rng.uniform(30, 90)
+            bridge_flow_score = rng.uniform(20, 80)
+            stability_score = rng.uniform(40, 85)
+            
+            # Determine risk level
+            if emi_score >= 70:
+                risk_level = "low"
+            elif emi_score >= 50:
+                risk_level = "medium"
+            elif emi_score >= 35:
+                risk_level = "high"
+            else:
+                risk_level = "critical"
+            
+            ecosystems.append({
+                "chain": chain,
+                "emi_score": round(emi_score, 1),
+                "ecosystem_stage": base["stage"],
+                "tvl": tvl,
+                "delta_24h": round(delta_24h, 2),
+                "whale_activity_score": round(whale_activity_score, 1),
+                "bridge_flow_score": round(bridge_flow_score, 1),
+                "risk_level": risk_level,
+                "growth_phase": base["stage"],
+                "stability_score": round(stability_score, 1),
+                "synthetic": True
+            })
+        
+        # Sort by EMI score
+        ecosystems.sort(key=lambda x: x["emi_score"], reverse=True)
+        
+        return ecosystems
+    
+    def generate_ecosystem(self, chain: str) -> Dict[str, Any]:
+        """Generate synthetic data for a single ecosystem with analysis."""
+        rng = self._seeded_random(f"ecosystem-{chain}")
+        
+        ecosystems = self.generate_ecosystems()
+        
+        # Find the ecosystem or create a default
+        ecosystem = None
+        for eco in ecosystems:
+            if eco["chain"].lower() == chain.lower():
+                ecosystem = eco
+                break
+        
+        if not ecosystem:
+            # Generate default ecosystem for unknown chain
+            ecosystem = {
+                "chain": chain,
+                "emi_score": round(rng.uniform(30, 70), 1),
+                "ecosystem_stage": rng.choice(["explosive_growth", "rapid_growth", "steady_growth", "emerging", "mature_or_declining"]),
+                "tvl": rng.uniform(0.1e9, 1e9),
+                "delta_24h": round(rng.uniform(-5, 10), 2),
+                "whale_activity_score": round(rng.uniform(30, 70), 1),
+                "bridge_flow_score": round(rng.uniform(20, 60), 1),
+                "risk_level": rng.choice(["low", "medium", "high", "critical"]),
+                "growth_phase": rng.choice(["explosive_growth", "rapid_growth", "steady_growth", "emerging", "mature_or_declining"]),
+                "stability_score": round(rng.uniform(40, 70), 1),
+                "synthetic": True
+            }
+        
+        emi_score = ecosystem.get("emi_score", 50)
+        
+        # Generate analysis data
+        analysis = {
+            "emi_score": emi_score,
+            "emi_raw": emi_score + rng.uniform(-2, 2),
+            "deltas": {
+                "tvl_24h_pct": ecosystem.get("delta_24h", 0) + rng.uniform(-2, 2),
+                "wallets_24h_pct": rng.uniform(-5, 15),
+                "volume_24h_pct": rng.uniform(-10, 20),
+                "bridge_net_24h_usd": rng.uniform(-50e6, 100e6)
+            },
+            "contributions": [
+                {
+                    "metric": "TVL Growth",
+                    "value": rng.uniform(0.5, 2.0),
+                    "weight": 0.30,
+                    "contribution": rng.uniform(10, 30),
+                    "note": "Total value locked momentum"
+                },
+                {
+                    "metric": "Wallet Activity",
+                    "value": rng.uniform(0.8, 1.5),
+                    "weight": 0.25,
+                    "contribution": rng.uniform(8, 25),
+                    "note": "Active wallet growth"
+                },
+                {
+                    "metric": "Volume",
+                    "value": rng.uniform(0.6, 1.8),
+                    "weight": 0.25,
+                    "contribution": rng.uniform(8, 25),
+                    "note": "Transaction volume trend"
+                },
+                {
+                    "metric": "Bridge Flows",
+                    "value": rng.uniform(0.4, 1.2),
+                    "weight": 0.20,
+                    "contribution": rng.uniform(5, 20),
+                    "note": "Cross-chain capital flow"
+                }
+            ],
+            "top_drivers": [
+                {"metric": "TVL Growth", "contribution_pct": rng.uniform(25, 40)},
+                {"metric": "Wallet Activity", "contribution_pct": rng.uniform(20, 35)},
+                {"metric": "Volume", "contribution_pct": rng.uniform(15, 30)},
+                {"metric": "Bridge Flows", "contribution_pct": rng.uniform(10, 25)}
+            ],
+            "rationale": self._generate_ecosystem_rationale(ecosystem),
+            "stage": ecosystem.get("ecosystem_stage", "emerging")
+        }
+        
+        # Sort top_drivers by contribution
+        analysis["top_drivers"].sort(key=lambda x: x["contribution_pct"], reverse=True)
+        
+        return {
+            "ecosystem": ecosystem,
+            "analysis": analysis
+        }
+    
+    def _generate_ecosystem_rationale(self, ecosystem: Dict[str, Any]) -> str:
+        """Generate a rationale string for the ecosystem."""
+        chain = ecosystem.get("chain", "Unknown").capitalize()
+        stage = ecosystem.get("ecosystem_stage", "emerging").replace("_", " ")
+        emi = ecosystem.get("emi_score", 50)
+        whale_score = ecosystem.get("whale_activity_score", 50)
+        bridge_score = ecosystem.get("bridge_flow_score", 50)
+        
+        if emi >= 70:
+            momentum = "strong momentum"
+        elif emi >= 50:
+            momentum = "moderate momentum"
+        else:
+            momentum = "developing momentum"
+        
+        whale_activity = "high whale activity" if whale_score >= 60 else "moderate whale activity" if whale_score >= 40 else "low whale activity"
+        bridge_activity = "significant bridge flows" if bridge_score >= 60 else "moderate bridge flows" if bridge_score >= 40 else "limited bridge flows"
+        
+        return f"{chain} is in {stage} phase with {momentum}. The ecosystem shows {whale_activity} and {bridge_activity}, indicating {'strong' if emi >= 60 else 'growing'} institutional interest."
+
     def generate_overview(self) -> Dict[str, Any]:
         """Generate synthetic overview data combining all modules."""
         return {

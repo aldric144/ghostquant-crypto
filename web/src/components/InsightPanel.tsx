@@ -39,8 +39,33 @@ export default function InsightPanel({ isOpen, onClose }: InsightPanelProps) {
       const alphaBrainRes = await fetch('/api/alphabrain/summary')
       const alphaBrainJson = await alphaBrainRes.json()
       
-      const ecoscanRes = await fetch('/api/ecoscan/summary')
-      const ecoscanJson = await ecoscanRes.json()
+      // Try GQ-Core ecosystems endpoint first
+      let ecoscanJson: any = null
+      try {
+        const gqCoreRes = await fetch('/api/gq-core/ecosystems')
+        if (gqCoreRes.ok) {
+          const gqData = await gqCoreRes.json()
+          const ecosystems = gqData.data?.ecosystems || []
+          const topEco = ecosystems[0]
+          if (topEco) {
+            ecoscanJson = {
+              top_ecosystems: ecosystems.map((e: any) => ({ chain: e.chain, emi_score: e.emi_score })),
+              whale_summary: {
+                net_flow: topEco.delta_24h > 0 ? 1 : -1,
+                wcf: topEco.whale_activity_score
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.log('GQ-Core ecosystems not available, falling back to legacy')
+      }
+      
+      // Fallback to legacy endpoint
+      if (!ecoscanJson) {
+        const ecoscanRes = await fetch('/api/ecoscan/summary')
+        ecoscanJson = await ecoscanRes.json()
+      }
 
       const alphaBrain: AlphaBrainSummary = {
         regime: alphaBrainJson.regime?.current_regime || 'Unknown',

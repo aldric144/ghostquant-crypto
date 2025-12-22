@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException
 from typing import Dict, Any
 
 from app.gde.gq_core.service import get_gq_core_service
+from app.gde.gq_core.ecosystems_service import get_ecosystems_service
 
 router = APIRouter(prefix="/gq-core", tags=["GQ-Core"])
 
@@ -131,6 +132,33 @@ async def get_system_status() -> Dict[str, Any]:
     """
     service = get_gq_core_service()
     return await service.get_system_status()
+
+
+@router.get("/ecosystems")
+async def get_ecosystems() -> Dict[str, Any]:
+    """
+    Get all ecosystem intelligence data.
+    
+    Returns:
+        Ecosystem data with EMI scores, TVL, whale activity, bridge flows, and risk levels
+    """
+    service = get_ecosystems_service()
+    return await service.get_ecosystems()
+
+
+@router.get("/ecosystems/{chain}")
+async def get_ecosystem(chain: str) -> Dict[str, Any]:
+    """
+    Get single ecosystem data with detailed analysis.
+    
+    Args:
+        chain: The blockchain chain name (e.g., "ethereum", "solana")
+    
+    Returns:
+        Ecosystem data with analysis including deltas, contributions, and rationale
+    """
+    service = get_ecosystems_service()
+    return await service.get_ecosystem(chain)
 
 
 @router.get("/health")
