@@ -10,6 +10,7 @@ import AnomalyPanel from "./AnomalyPanel";
 import NarrativePanel from "./NarrativePanel";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
+const GQ_CORE_API = "/api/gq-core";
 
 export interface AnalyticsData {
   risk: RiskData | null;
@@ -323,16 +324,228 @@ export default function AnalyticsDashboard() {
     
     setIsLoading(true);
     try {
-      // Use correct existing endpoints
+      // Try GQ-Core unified endpoints first
+      let gqCoreData = null;
+      try {
+        const gqCoreRes = await fetch(`${GQ_CORE_API}/overview`);
+        if (gqCoreRes.ok) {
+          gqCoreData = await gqCoreRes.json();
+        }
+      } catch {
+        console.log("[AnalyticsDashboard] GQ-Core unavailable, falling back to legacy endpoints");
+      }
+
+      // If GQ-Core returned data, use it directly
+      if (gqCoreData && gqCoreData.data) {
+        const gqData = gqCoreData.data;
+        
+        // Fetch additional GQ-Core endpoints for complete data
+        const [trendsRes, mapRes, anomaliesRes, narrativesRes, entitiesRes] = await Promise.allSettled([
+          fetch(`${GQ_CORE_API}/trends`),
+          fetch(`${GQ_CORE_API}/map`),
+          fetch(`${GQ_CORE_API}/anomalies`),
+          fetch(`${GQ_CORE_API}/narratives`),
+          fetch(`${GQ_CORE_API}/entities`),
+        ]);
+
+        const newData: AnalyticsData = {
+          risk: null,
+          whales: null,
+          entities: null,
+          trends: null,
+          map: null,
+          anomalies: null,
+          narratives: null,
+        };
+
+        // Use GQ-Core risk data
+        if (gqData.risk) {
+          newData.risk = {
+            globalScore: gqData.risk.overall_score || 50,
+            distribution: gqData.risk.distribution ? Object.entries(gqData.risk.distribution).map(([level, count]) => ({
+              level: level.charAt(0).toUpperCase() + level.slice(1),
+              count: count as number,
+              percentage: Math.round(((count as number) / Object.values(gqData.risk.distribution).reduce((a: number, b) => a + (b as number), 0)) * 100),
+            })) : generateMockRiskData().distribution,
+            topRisks: gqData.risk.top_risks?.map((r: Record<string, unknown>) => ({
+              entity: String(r.symbol || 'Unknown'),
+              score: (r.score as number) || 50,
+              type: String(r.type || 'Unknown'),
+              chain: String(r.chain || 'Unknown'),
+            })) || generateMockRiskData().topRisks,
+          };
+        } else {
+          newData.risk = generateMockRiskData();
+        }
+
+        // Use GQ-Core whale data
+        if (gqData.whales) {
+          newData.whales = {
+            topWhales: gqData.whales.top_whales?.map((w: Record<string, unknown>) => ({
+              address: String(w.address || '0x...'),
+              volume: (w.balance_usd as number) || 0,
+              movements: (w.activity_score as number) || 0,
+              influence: (w.pnl_24h as number) || 0,
+            })) || generateMockWhaleData().topWhales,
+            heatmapData: generateMockWhaleData().heatmapData,
+            activityTrend: generateMockWhaleData().activityTrend,
+          };
+        } else {
+          newData.whales = generateMockWhaleData();
+        }
+
+        // Process trends from GQ-Core
+        if (trendsRes.status === "fulfilled" && trendsRes.value.ok) {
+          try {
+            const trendsJson = await trendsRes.value.json();
+            if (trendsJson.data) {
+              newData.trends = {
+                hourlyActivity: trendsJson.data.hourly_activity?.map((h: Record<string, unknown>) => ({
+                  hour: String(h.hour || '0:00'),
+                  value: (h.value as number) || 0,
+                  type: String(h.type || 'unknown'),
+                })) || generateMockTrendData().hourlyActivity,
+                heatmap: trendsJson.data.heatmap?.map((h: Record<string, unknown>) => ({
+                  day: String(h.day || 'Mon'),
+                  hour: (h.hour as number) || 0,
+                  value: (h.value as number) || 0,
+                })) || generateMockTrendData().heatmap,
+                events: generateMockTrendData().events,
+              };
+            } else {
+              newData.trends = generateMockTrendData();
+            }
+          } catch {
+            newData.trends = generateMockTrendData();
+          }
+        } else {
+          newData.trends = generateMockTrendData();
+        }
+
+        // Process map from GQ-Core
+        if (mapRes.status === "fulfilled" && mapRes.value.ok) {
+          try {
+            const mapJson = await mapRes.value.json();
+            if (mapJson.data) {
+              newData.map = {
+                hotZones: mapJson.data.hot_zones?.map((z: Record<string, unknown>) => ({
+                  lat: (z.lat as number) || 0,
+                  lng: (z.lng as number) || 0,
+                  intensity: (z.intensity as number) || 0,
+                  label: String(z.label || 'Unknown'),
+                })) || generateMockMapData().hotZones,
+                clusters: generateMockMapData().clusters,
+                events: generateMockMapData().events,
+              };
+            } else {
+              newData.map = generateMockMapData();
+            }
+          } catch {
+            newData.map = generateMockMapData();
+          }
+        } else {
+          newData.map = generateMockMapData();
+        }
+
+        // Process anomalies from GQ-Core
+        if (anomaliesRes.status === "fulfilled" && anomaliesRes.value.ok) {
+          try {
+            const anomaliesJson = await anomaliesRes.value.json();
+            if (anomaliesJson.data) {
+              newData.anomalies = {
+                outliers: anomaliesJson.data.outliers?.map((o: Record<string, unknown>) => ({
+                  id: String(o.id || `anomaly-${Math.random().toString(16).slice(2, 8)}`),
+                  entity: String(o.entity || 'Unknown'),
+                  deviation: (o.deviation as number) || 0,
+                  type: String(o.type || 'Unknown'),
+                  timestamp: new Date(String(o.timestamp) || Date.now()),
+                })) || generateMockAnomalyData().outliers,
+                summary: {
+                  total: anomaliesJson.data.total_anomalies || 0,
+                  high: anomaliesJson.data.critical_count || 0,
+                  medium: Math.floor((anomaliesJson.data.total_anomalies || 0) * 0.4),
+                  low: Math.floor((anomaliesJson.data.total_anomalies || 0) * 0.4),
+                },
+                timeline: generateMockAnomalyData().timeline,
+              };
+            } else {
+              newData.anomalies = generateMockAnomalyData();
+            }
+          } catch {
+            newData.anomalies = generateMockAnomalyData();
+          }
+        } else {
+          newData.anomalies = generateMockAnomalyData();
+        }
+
+        // Process narratives from GQ-Core
+        if (narrativesRes.status === "fulfilled" && narrativesRes.value.ok) {
+          try {
+            const narrativesJson = await narrativesRes.value.json();
+            if (narrativesJson.data) {
+              newData.narratives = {
+                summary: String(narrativesJson.data.summary || generateMockNarrativeData().summary),
+                topics: narrativesJson.data.topics?.map((t: Record<string, unknown>) => ({
+                  topic: String(t.topic || 'Unknown'),
+                  relevance: (t.relevance as number) || 0,
+                  sentiment: String(t.sentiment || 'neutral'),
+                })) || generateMockNarrativeData().topics,
+                trends: generateMockNarrativeData().trends,
+                insights: narrativesJson.data.insights || generateMockNarrativeData().insights,
+              };
+            } else {
+              newData.narratives = generateMockNarrativeData();
+            }
+          } catch {
+            newData.narratives = generateMockNarrativeData();
+          }
+        } else {
+          newData.narratives = generateMockNarrativeData();
+        }
+
+        // Process entities from GQ-Core
+        if (entitiesRes.status === "fulfilled" && entitiesRes.value.ok) {
+          try {
+            const entitiesJson = await entitiesRes.value.json();
+            if (entitiesJson.data) {
+              newData.entities = {
+                activeEntities: entitiesJson.data.total_entities || 0,
+                categories: entitiesJson.data.categories?.map((c: Record<string, unknown>) => ({
+                  name: String(c.name || 'Unknown'),
+                  count: (c.count as number) || 0,
+                  percentage: (c.percentage as number) || 0,
+                })) || generateMockEntityData().categories,
+                movementPatterns: generateMockEntityData().movementPatterns,
+                distribution: generateMockEntityData().distribution,
+              };
+            } else {
+              newData.entities = generateMockEntityData();
+            }
+          } catch {
+            newData.entities = generateMockEntityData();
+          }
+        } else {
+          newData.entities = generateMockEntityData();
+        }
+
+        setData(newData);
+        setIsConnected(true);
+        setLastRefresh(new Date());
+        setIsLoading(false);
+        setRefreshCountdown(12);
+        return;
+      }
+
+      // Fallback to legacy endpoints
       const [riskRes, whaleRes, entityRes, trendRes, mapRes, anomalyRes, narrativeRes, weeklyHeatmapRes] = await Promise.allSettled([
-        fetch(`${API_BASE}/unified-risk/dashboard`),     // Correct endpoint for risk dashboard
-        fetch(`${API_BASE}/whales/top?limit=20`),        // Correct endpoint for top whales
-        fetch(`${API_BASE}/widb/wallets?limit=20`),      // Use WIDB for entity data
-        fetch(`${API_BASE}/unified-risk/timeline`),      // This endpoint exists
-        fetch(`${API_BASE}/unified-risk/heatmap`),       // Use heatmap for map data
-        fetch(`${API_BASE}/unified-risk/all-threats?severity=critical&limit=20`), // Use threats for anomalies
-        fetch(`${API_BASE}/unified-risk/dashboard`),     // Reuse dashboard for narrative summary
-        fetch(`${API_BASE}/unified-risk/weekly-heatmap`), // Weekly heatmap for trend panel
+        fetch(`${API_BASE}/unified-risk/dashboard`),
+        fetch(`${API_BASE}/whales/top?limit=20`),
+        fetch(`${API_BASE}/widb/wallets?limit=20`),
+        fetch(`${API_BASE}/unified-risk/timeline`),
+        fetch(`${API_BASE}/unified-risk/heatmap`),
+        fetch(`${API_BASE}/unified-risk/all-threats?severity=critical&limit=20`),
+        fetch(`${API_BASE}/unified-risk/dashboard`),
+        fetch(`${API_BASE}/unified-risk/weekly-heatmap`),
       ]);
 
       const newData: AnalyticsData = {

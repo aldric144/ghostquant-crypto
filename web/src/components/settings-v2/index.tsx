@@ -6,6 +6,7 @@ import { io, Socket } from "socket.io-client";
 // Use Next.js API proxy routes for system endpoints to avoid routing issues
 // The proxy routes forward requests to the backend
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
+const GQ_CORE_API = "/api/gq-core";
 
 // Socket.IO URL - same as API_BASE (Socket.IO is mounted at /socket.io)
 const SOCKETIO_URL = process.env.NEXT_PUBLIC_API_URL || API_BASE;
@@ -119,8 +120,76 @@ export default function SettingsPageV2() {
 
   const fetchAllData = useCallback(async () => {
     try {
-      // Use Next.js API proxy routes to avoid routing issues
-      // These proxy routes forward requests to the backend
+      // Try GQ-Core system-status endpoint first (unified status with fallback)
+      let gqCoreData = null;
+      try {
+        const gqCoreRes = await fetch(`${GQ_CORE_API}/system-status`);
+        if (gqCoreRes.ok) {
+          gqCoreData = await gqCoreRes.json();
+        }
+      } catch {
+        console.log("[Settings V2] GQ-Core unavailable, falling back to legacy endpoints");
+      }
+
+      // If GQ-Core returned data, use it
+      if (gqCoreData && gqCoreData.data) {
+        const status = gqCoreData.data;
+        
+        // Update socket health from GQ-Core
+        if (status.websocket) {
+          setSocketHealth({
+            connection: status.websocket.status === "connected" ? "connected" : "disconnected",
+            reconnectCount: 0,
+            latency: status.websocket.latency_ms || 0,
+            lastAlert: null,
+          });
+        }
+        
+        // Update worker status from GQ-Core
+        if (status.worker) {
+          setWorkerStatus({
+            running: status.worker.status === "running",
+            simulationMode: status.mode === "synthetic",
+            loopSpeed: 50,
+            queueSize: 0,
+            processingErrors: status.worker.errors || 0,
+          });
+        }
+        
+        // Update Redis feed from GQ-Core
+        if (status.redis) {
+          setRedisFeed({
+            totalEvents: status.redis.total_events || 0,
+            feedVelocity: 0,
+            lastMessage: null,
+            severity: { high: 0, medium: 0, low: 0 },
+          });
+        }
+        
+        // Update uptime from GQ-Core
+        setUptime({
+          sessionUptime: status.uptime_seconds || 0,
+          lastReload: new Date().toISOString(),
+        });
+        
+        // Update diagnostics from GQ-Core engines
+        if (status.engines) {
+          const engineCount = Object.keys(status.engines).length;
+          setDiagnostics({
+            timelineEvents: status.worker?.events_processed || 0,
+            graphNodes: engineCount * 10,
+            graphEdges: engineCount * 15,
+            ringSystems: 0,
+            ghostmindInsights: 0,
+            entityCacheSize: 0,
+          });
+        }
+        
+        setIsLoading(false);
+        return;
+      }
+
+      // Fallback to legacy endpoints
       const [socketRes, perfRes, redisRes, workerRes, uptimeRes, diagRes] = await Promise.allSettled([
         fetch(`/api/system/socket-health`),
         fetch(`/api/system/performance`),
