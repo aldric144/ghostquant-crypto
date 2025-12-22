@@ -2,13 +2,14 @@ import type { Metadata } from 'next'
 import Script from 'next/script'
 import './globals.css'
 import NavBar from '@/components/NavBar'
+import Footer from '@/components/Footer'
 import BottomNavBar from '@/components/mobile/BottomNavBar'
 import DebugConsole from '@/components/DebugConsole'
 import { CopilotUIRoot } from '@/components/CopilotUI'
 
 export const metadata: Metadata = {
   title: 'GhostQuant',
-  description: 'Private crypto-native research & signal platform',
+  description: 'Autonomous Intelligence for the Global Financial System',
 }
 
 export default function RootLayout({
@@ -24,11 +25,12 @@ export default function RootLayout({
           strategy="beforeInteractive"
         />
       </head>
-      <body className="bg-slate-900 text-gray-100">
+      <body className="bg-[#0a0e1a] text-gray-100">
         <NavBar />
-        <main className="max-w-7xl mx-auto px-6 py-8">
+        <main>
           {children}
         </main>
+        <Footer />
         <BottomNavBar />
         <DebugConsole />
         <CopilotUIRoot />
