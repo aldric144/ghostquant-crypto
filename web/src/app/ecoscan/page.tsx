@@ -11,11 +11,23 @@ import { Search, Filter, ArrowUpDown, Info } from "lucide-react";
 interface Ecosystem {
   chain: string;
   emi_score: number;
-  stage: string;
-  tvl_usd: number;
-  wallets_24h: number;
-  volume_24h: number;
+  ecosystem_stage: string;
+  stage?: string; // Legacy compatibility
+  tvl: number;
+  tvl_usd?: number; // Legacy compatibility
+  delta_24h: number;
+  whale_activity_score: number;
+  bridge_flow_score: number;
+  risk_level: string;
+  growth_phase: string;
+  stability_score: number;
+  synthetic: boolean;
+  wallets_24h?: number;
+  volume_24h?: number;
 }
+
+// GQ-Core API base path
+const GQ_CORE_API = "/api/gq-core";
 
 interface WhaleFlow {
   asset: string;
@@ -82,16 +94,66 @@ export default function EcoscanPage() {
       setLoading(true);
       setError(null);
 
-      const summaryRes = await fetch('/api/ecoscan/summary');
-      if (!summaryRes.ok) throw new Error("Failed to fetch Ecoscan summary");
-      const summary = await summaryRes.json();
+      // Try GQ-Core ecosystems endpoint first
+      let ecosystemData: Ecosystem[] = [];
+      try {
+        const gqCoreRes = await fetch(`${GQ_CORE_API}/ecosystems`);
+        if (gqCoreRes.ok) {
+          const gqCoreData = await gqCoreRes.json();
+          // GQ-Core returns { source, timestamp, data: [...ecosystems] }
+          const rawEcosystems = gqCoreData.data || gqCoreData;
+          ecosystemData = Array.isArray(rawEcosystems) ? rawEcosystems : [];
+          
+          // Map GQ-Core fields to component expected fields
+          ecosystemData = ecosystemData.map(eco => ({
+            ...eco,
+            stage: eco.ecosystem_stage || eco.stage,
+            tvl_usd: eco.tvl || eco.tvl_usd,
+          }));
+        }
+      } catch (gqErr) {
+        console.warn("GQ-Core ecosystems fetch failed, falling back to legacy:", gqErr);
+      }
 
-      setEcosystems(summary.ecosystems?.top_10 || []);
-      setWhaleFlows(summary.whale_activity?.heatmap || []);
-      setOpportunities(summary.opportunities?.top_10 || []);
-      setClusterSummary(summary.smart_money || null);
-      setBridgeFlows(summary.bridge_flows?.summary || null);
+      // Fallback to legacy endpoint if GQ-Core failed
+      if (ecosystemData.length === 0) {
+        const summaryRes = await fetch('/api/ecoscan/summary');
+        if (summaryRes.ok) {
+          const summary = await summaryRes.json();
+          ecosystemData = (summary.ecosystems?.top_10 || []).map((eco: any) => ({
+            ...eco,
+            ecosystem_stage: eco.stage,
+            tvl: eco.tvl_usd,
+            delta_24h: 0,
+            whale_activity_score: 50,
+            bridge_flow_score: 50,
+            risk_level: "medium",
+            growth_phase: eco.stage,
+            stability_score: 50,
+            synthetic: true,
+          }));
+          setWhaleFlows(summary.whale_activity?.heatmap || []);
+          setOpportunities(summary.opportunities?.top_10 || []);
+          setClusterSummary(summary.smart_money || null);
+          setBridgeFlows(summary.bridge_flows?.summary || null);
+        }
+      } else {
+        // Fetch additional data from legacy endpoint for whale flows, opportunities, etc.
+        try {
+          const summaryRes = await fetch('/api/ecoscan/summary');
+          if (summaryRes.ok) {
+            const summary = await summaryRes.json();
+            setWhaleFlows(summary.whale_activity?.heatmap || []);
+            setOpportunities(summary.opportunities?.top_10 || []);
+            setClusterSummary(summary.smart_money || null);
+            setBridgeFlows(summary.bridge_flows?.summary || null);
+          }
+        } catch (legacyErr) {
+          console.warn("Legacy summary fetch failed:", legacyErr);
+        }
+      }
 
+      setEcosystems(ecosystemData);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching Ecoscan data:", err);

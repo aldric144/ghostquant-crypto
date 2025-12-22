@@ -6,11 +6,23 @@ import { ChevronRight, TrendingUp, TrendingDown, Activity, DollarSign } from "lu
 interface Ecosystem {
   chain: string;
   emi_score: number;
-  stage: string;
-  tvl_usd: number;
+  ecosystem_stage: string;
+  stage?: string; // Legacy compatibility
+  tvl: number;
+  tvl_usd?: number; // Legacy compatibility
+  delta_24h: number;
+  whale_activity_score: number;
+  bridge_flow_score: number;
+  risk_level: string;
+  growth_phase: string;
+  stability_score: number;
+  synthetic: boolean;
   wallets_24h?: number;
   volume_24h?: number;
 }
+
+// GQ-Core API base path
+const GQ_CORE_API = "/api/gq-core";
 
 interface Analysis {
   emi_score: number;
@@ -54,11 +66,14 @@ export default function EcosystemFlipCard({ ecosystem, getEMIColor }: EcosystemF
     setError(null);
     
     try {
-      const response = await fetch(`/ecoscan/ecosystem/${ecosystem.chain}/analysis`);
+      // Use GQ-Core endpoint for ecosystem analysis
+      const response = await fetch(`${GQ_CORE_API}/ecosystems/${ecosystem.chain}`);
       if (!response.ok) throw new Error("Failed to fetch analysis");
       
       const data = await response.json();
-      setAnalysis(data.analysis);
+      // GQ-Core returns { source, timestamp, data: { ecosystem, analysis } }
+      const analysisData = data.data?.analysis || data.analysis;
+      setAnalysis(analysisData);
     } catch (err) {
       console.error("Error fetching analysis:", err);
       setError("Failed to load analysis");
@@ -129,10 +144,13 @@ export default function EcosystemFlipCard({ ecosystem, getEMIColor }: EcosystemF
           >
             {ecosystem.emi_score.toFixed(1)}
           </div>
-          <div className="text-xs text-gray-400 uppercase mb-2">{ecosystem.stage.replace(/_/g, " ")}</div>
+          <div className="text-xs text-gray-400 uppercase mb-2">{(ecosystem.ecosystem_stage || ecosystem.stage || "").replace(/_/g, " ")}</div>
           <div className="text-xs text-gray-500">
-            TVL: ${(ecosystem.tvl_usd / 1e9).toFixed(2)}B
+            TVL: ${((ecosystem.tvl || ecosystem.tvl_usd || 0) / 1e9).toFixed(2)}B
           </div>
+          {ecosystem.synthetic && (
+            <div className="text-xs text-yellow-500 mt-1">Synthetic Data</div>
+          )}
           <div className="text-xs text-gray-600 mt-2 italic">
             Click to see analysis →
           </div>
