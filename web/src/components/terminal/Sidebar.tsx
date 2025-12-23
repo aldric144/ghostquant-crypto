@@ -310,6 +310,67 @@ const DerivativesIcon = () => (
   </svg>
 )
 
+// Wave B Icons - Risk, AI & Detection Engines
+const SmartMoneyIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+)
+
+const TimeSeriesIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+  </svg>
+)
+
+const NetworkAnomalyIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+  </svg>
+)
+
+const ManipulationIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+  </svg>
+)
+
+const SignalIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+)
+
+const ThreatTimelineIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+)
+
+const EventFusionIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+  </svg>
+)
+
+const PatternIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+  </svg>
+)
+
+const PredictiveRiskIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+)
+
+const AIForecastIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+  </svg>
+)
+
 // Wave C Icons - Governance, Strategy & System Control
 const StrategyIcon = () => (
   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -346,7 +407,6 @@ const GovernanceIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
   </svg>
 )
-
 
 
 export default function Sidebar() {
@@ -405,6 +465,23 @@ export default function Sidebar() {
       { href: '/terminal/exposure', label: 'Exposure Analyzer', icon: <ExposureIcon /> },
       { href: '/terminal/order-book', label: 'Order Book Depth', icon: <OrderBookIcon /> },
       { href: '/terminal/derivatives', label: 'Derivatives Watch', icon: <DerivativesIcon /> },
+    ]
+  }
+
+  // F. Risk & AI Engines (Wave B)
+  const riskAIEngines: MenuSection = {
+    title: 'Risk & AI Engines',
+    items: [
+      { href: '/terminal/smart-money', label: 'Smart Money Tracker', icon: <SmartMoneyIcon /> },
+      { href: '/terminal/time-series-risk', label: 'Time-Series Risk', icon: <TimeSeriesIcon /> },
+      { href: '/terminal/network-anomaly', label: 'Network Anomaly Engine', icon: <NetworkAnomalyIcon /> },
+      { href: '/terminal/manipulation-detector', label: 'Price Manipulation Detector', icon: <ManipulationIcon /> },
+      { href: '/terminal/signal-confidence', label: 'Signal Confidence Engine', icon: <SignalIcon /> },
+      { href: '/terminal/threat-timeline', label: 'Threat Timeline', icon: <ThreatTimelineIcon /> },
+      { href: '/terminal/event-fusion', label: 'Event Fusion Engine', icon: <EventFusionIcon /> },
+      { href: '/terminal/pattern-recognition', label: 'Pattern Recognition Core', icon: <PatternIcon /> },
+      { href: '/terminal/predictive-risk', label: 'Predictive Risk Engine', icon: <PredictiveRiskIcon /> },
+      { href: '/terminal/ai-forecast', label: 'AI Forecast Engine', icon: <AIForecastIcon /> },
     ]
   }
 
@@ -478,6 +555,7 @@ export default function Sidebar() {
         <SidebarSection title={coreMarketIntelligence.title} items={coreMarketIntelligence.items} isCollapsed={isCollapsed} />
         <SidebarSection title={autonomousEngines.title} items={autonomousEngines.items} isCollapsed={isCollapsed} />
         <SidebarSection title={institutionalModules.title} items={institutionalModules.items} isCollapsed={isCollapsed} />
+        <SidebarSection title={riskAIEngines.title} items={riskAIEngines.items} isCollapsed={isCollapsed} />
         <SidebarSection title={userWorkspace.title} items={userWorkspace.items} isCollapsed={isCollapsed} />
         <SidebarSection title={accountSystem.title} items={accountSystem.items} isCollapsed={isCollapsed} />
         <SidebarSection title={governanceSystemControl.title} items={governanceSystemControl.items} isCollapsed={isCollapsed} />
