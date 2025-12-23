@@ -267,6 +267,50 @@ const LogoutIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
   </svg>
 )
+// Wave A Module Icons
+const LiquidityIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+  </svg>
+)
+
+const SentimentIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+)
+
+const VolatilityIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+  </svg>
+)
+
+const CorrelationIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+  </svg>
+)
+
+const ExposureIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+  </svg>
+)
+
+const OrderBookIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+  </svg>
+)
+
+const DerivativesIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+  </svg>
+)
+
+
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -283,6 +327,9 @@ export default function Sidebar() {
       { href: '/iqmeter', label: 'IQ Meter', icon: <MeterIcon /> },
       { href: '/backtests', label: 'Backtests', icon: <ClockIcon /> },
       { href: '/whale-intelligence', label: 'Whale Intelligence', icon: <WhaleIcon /> },
+      { href: '/terminal/liquidity', label: 'Liquidity Flow', icon: <LiquidityIcon /> },
+      { href: '/terminal/sentiment', label: 'Market Sentiment', icon: <SentimentIcon /> },
+      { href: '/terminal/volatility', label: 'Volatility Monitor', icon: <VolatilityIcon /> },
     ]
   }
 
@@ -317,6 +364,10 @@ export default function Sidebar() {
       { href: '/terminal/entity-scanner', label: 'Entity Scanner', icon: <ScanIcon /> },
       { href: '/terminal/risk-map', label: 'Risk Map', icon: <RiskIcon /> },
       { href: '/analytics-dashboard', label: 'Analytics Dashboard V2', icon: <DashboardIcon /> },
+      { href: '/terminal/correlation', label: 'Correlation Engine', icon: <CorrelationIcon /> },
+      { href: '/terminal/exposure', label: 'Exposure Analyzer', icon: <ExposureIcon /> },
+      { href: '/terminal/order-book', label: 'Order Book Depth', icon: <OrderBookIcon /> },
+      { href: '/terminal/derivatives', label: 'Derivatives Watch', icon: <DerivativesIcon /> },
     ]
   }
 
