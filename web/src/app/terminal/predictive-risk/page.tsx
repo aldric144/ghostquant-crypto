@@ -1,6 +1,7 @@
 'use client'
 
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+import InfoTooltip from '../../../components/ui/InfoTooltip'
 import { useState, useEffect } from 'react'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
@@ -39,7 +40,11 @@ export default function PredictiveRiskEnginePage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8"><TerminalBackButton className="mb-4" />
-          <h1 className="text-3xl font-bold text-cyan-400 mb-2">Predictive Risk Engine</h1><p className="text-gray-400">AI-powered risk forecasting with probability bands</p></div>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-3xl font-bold text-cyan-400">Predictive Risk Engine</h1>
+            <InfoTooltip content="Shows probability-based forecasts, not guaranteed outcomes. Predictions update as new data becomes available and market conditions change." />
+          </div>
+          <p className="text-gray-400">AI-powered risk forecasting with probability bands</p></div>
         <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
           <div className="bg-slate-800/50 border border-cyan-500/20 rounded-lg p-4"><div className="text-xs text-gray-400 mb-1">Avg Risk</div><div className={`text-2xl font-bold ${getRiskColor(metrics.avgRisk)}`}>{metrics.avgRisk.toFixed(0)}</div></div>
           <div className="bg-slate-800/50 border border-red-500/20 rounded-lg p-4"><div className="text-xs text-gray-400 mb-1">High Risk</div><div className="text-2xl font-bold text-red-400">{metrics.highRiskAssets}</div></div>

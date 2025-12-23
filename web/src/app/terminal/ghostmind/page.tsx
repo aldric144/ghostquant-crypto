@@ -1,6 +1,9 @@
 'use client'
 
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+import InfoTooltip from '../../../components/ui/InfoTooltip'
+import ConfidenceLegend from '../../../components/ui/ConfidenceLegend'
+import InterpretationNotice from '../../../components/ui/InterpretationNotice'
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { useIntelFeed } from '@/hooks/useIntelFeed'
 import { ghostmind } from '@/lib/ghostmindClient'
@@ -198,22 +201,31 @@ export default function GhostMindPage() {
       <div className="flex items-center justify-between mb-4">
         <TerminalBackButton className="mb-4" />
           <div>
-          <h1 className="text-3xl font-bold text-cyan-400">GhostMind AI Console</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-cyan-400">GhostMind AI Console</h1>
+            <InfoTooltip content="Provides a synthesized assessment across multiple engines and time windows. Results aggregate signals from various detection modules." />
+          </div>
           <p className="text-sm text-gray-400">Real-time conversational intelligence analyst</p>
         </div>
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
-          connectionStatus === 'connected' 
-            ? 'bg-green-500/20 text-green-400' 
-            : 'bg-red-500/20 text-red-400'
-        }`}>
-          <div className={`w-2 h-2 rounded-full ${
-            connectionStatus === 'connected' ? 'bg-green-400 animate-pulse' : 'bg-red-400'
-          }`} />
-          <span className="text-xs font-medium">
-            {connectionStatus === 'connected' ? 'Live' : 'Disconnected'}
-          </span>
+        <div className="flex items-center gap-3">
+          <ConfidenceLegend />
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
+            connectionStatus === 'connected' 
+              ? 'bg-green-500/20 text-green-400' 
+              : 'bg-red-500/20 text-red-400'
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${
+              connectionStatus === 'connected' ? 'bg-green-400 animate-pulse' : 'bg-red-400'
+            }`} />
+            <span className="text-xs font-medium">
+              {connectionStatus === 'connected' ? 'Live' : 'Disconnected'}
+            </span>
+          </div>
         </div>
       </div>
+
+      {/* Interpretation Notice */}
+      <InterpretationNotice className="mb-4" />
 
       {/* Suggested Queries */}
       <div className="mb-4">
