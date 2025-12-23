@@ -36,6 +36,43 @@ interface LiquidityMetrics {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
+function isValidPool(pool: unknown): pool is LiquidityPool {
+  if (!pool || typeof pool !== 'object') return false
+  const p = pool as Record<string, unknown>
+  return typeof p.id === 'string' && typeof p.name === 'string' && typeof p.tvl === 'number'
+}
+
+function isValidFlow(flow: unknown): flow is LiquidityFlow {
+  if (!flow || typeof flow !== 'object') return false
+  const f = flow as Record<string, unknown>
+  return typeof f.id === 'string' && typeof f.amount === 'number' && ['inflow', 'outflow', 'rebalance'].includes(f.type as string)
+}
+
+function isValidMetrics(metrics: unknown): metrics is LiquidityMetrics {
+  if (!metrics || typeof metrics !== 'object') return false
+  const m = metrics as Record<string, unknown>
+  return typeof m.totalTvl === 'number' && typeof m.totalVolume24h === 'number'
+}
+
+function normalizeResponse(data: unknown): { pools: LiquidityPool[]; flows: LiquidityFlow[]; metrics: LiquidityMetrics | null } | null {
+  if (!data || typeof data !== 'object') return null
+  const d = data as Record<string, unknown>
+  
+  const rawPools = Array.isArray(d.pools) ? d.pools : (d.data && typeof d.data === 'object' && Array.isArray((d.data as Record<string, unknown>).pools) ? (d.data as Record<string, unknown>).pools : null)
+  const rawFlows = Array.isArray(d.flows) ? d.flows : (d.data && typeof d.data === 'object' && Array.isArray((d.data as Record<string, unknown>).flows) ? (d.data as Record<string, unknown>).flows : [])
+  const rawMetrics = d.metrics || (d.data && typeof d.data === 'object' ? (d.data as Record<string, unknown>).metrics : null)
+  
+  if (!Array.isArray(rawPools) || rawPools.length === 0) return null
+  
+  const validPools = rawPools.filter(isValidPool)
+  if (validPools.length === 0) return null
+  
+  const validFlows = Array.isArray(rawFlows) ? rawFlows.filter(isValidFlow) : []
+  const validMetrics = isValidMetrics(rawMetrics) ? rawMetrics : null
+  
+  return { pools: validPools, flows: validFlows, metrics: validMetrics }
+}
+
 export default function LiquidityFlowPage() {
   const [pools, setPools] = useState<LiquidityPool[]>([])
   const [flows, setFlows] = useState<LiquidityFlow[]>([])
@@ -53,18 +90,34 @@ export default function LiquidityFlowPage() {
   async function fetchData() {
     try {
       const response = await fetch(`${API_BASE}/gq-core/liquidity/pools?chain=${selectedChain}&timeframe=${timeframe}`)
-      if (response.ok) {
-        const data = await response.json()
-        if (data.pools) {
-          setPools(data.pools)
-          setMetrics(data.metrics)
-          setFlows(data.flows || [])
-        } else {
-          generateMockData()
-        }
-      } else {
+      if (!response.ok) {
         generateMockData()
+        return
       }
+      
+      const text = await response.text()
+      if (!text || text.trim() === '') {
+        generateMockData()
+        return
+      }
+      
+      let data: unknown
+      try {
+        data = JSON.parse(text)
+      } catch {
+        generateMockData()
+        return
+      }
+      
+      const normalized = normalizeResponse(data)
+      if (!normalized) {
+        generateMockData()
+        return
+      }
+      
+      setPools(normalized.pools)
+      setFlows(normalized.flows)
+      setMetrics(normalized.metrics)
     } catch (error) {
       console.error('Error fetching liquidity data:', error)
       generateMockData()
@@ -238,22 +291,22 @@ export default function LiquidityFlowPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {pools.slice(0, 10).map((pool) => (
-                    <tr key={pool.id} className="border-t border-slate-700/50 hover:bg-slate-700/30 transition-colors">
+                  {(Array.isArray(pools) ? pools : []).slice(0, 10).map((pool) => (
+                    <tr key={pool?.id ?? Math.random()} className="border-t border-slate-700/50 hover:bg-slate-700/30 transition-colors">
                       <td className="p-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-cyan-400 font-medium">{pool.name}</span>
-                          <span className="text-xs text-gray-500">{pool.protocol}</span>
+                          <span className="text-cyan-400 font-medium">{pool?.name ?? 'Unknown'}</span>
+                          <span className="text-xs text-gray-500">{pool?.protocol ?? ''}</span>
                         </div>
                       </td>
                       <td className="p-3">
-                        <span className="px-2 py-1 bg-slate-700 rounded text-xs text-gray-300">{pool.chain}</span>
+                        <span className="px-2 py-1 bg-slate-700 rounded text-xs text-gray-300">{pool?.chain ?? ''}</span>
                       </td>
-                      <td className="p-3 text-right text-white">{formatCurrency(pool.tvl)}</td>
-                      <td className="p-3 text-right text-gray-300">{formatCurrency(pool.volume24h)}</td>
-                      <td className="p-3 text-right text-green-400">{pool.apy.toFixed(2)}%</td>
-                      <td className={`p-3 text-right ${pool.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {pool.change24h >= 0 ? '+' : ''}{pool.change24h.toFixed(2)}%
+                      <td className="p-3 text-right text-white">{formatCurrency(pool?.tvl ?? 0)}</td>
+                      <td className="p-3 text-right text-gray-300">{formatCurrency(pool?.volume24h ?? 0)}</td>
+                      <td className="p-3 text-right text-green-400">{(pool?.apy ?? 0).toFixed(2)}%</td>
+                      <td className={`p-3 text-right ${(pool?.change24h ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {(pool?.change24h ?? 0) >= 0 ? '+' : ''}{(pool?.change24h ?? 0).toFixed(2)}%
                       </td>
                     </tr>
                   ))}
@@ -268,19 +321,19 @@ export default function LiquidityFlowPage() {
               <h2 className="text-lg font-semibold text-white">Live Liquidity Flows</h2>
             </div>
             <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-              {flows.map((flow) => (
-                <div key={flow.id} className="bg-slate-900/50 rounded-lg p-3">
+              {(Array.isArray(flows) ? flows : []).map((flow) => (
+                <div key={flow?.id ?? Math.random()} className="bg-slate-900/50 rounded-lg p-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${getFlowColor(flow.type)}`}>
-                      {flow.type.toUpperCase()}
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${getFlowColor(flow?.type ?? 'inflow')}`}>
+                      {(flow?.type ?? 'inflow').toUpperCase()}
                     </span>
                     <span className="text-xs text-gray-500">
-                      {new Date(flow.timestamp).toLocaleTimeString()}
+                      {flow?.timestamp ? new Date(flow.timestamp).toLocaleTimeString() : '--:--'}
                     </span>
                   </div>
-                  <div className="text-sm text-white font-medium">{formatCurrency(flow.amount)} {flow.token}</div>
+                  <div className="text-sm text-white font-medium">{formatCurrency(flow?.amount ?? 0)} {flow?.token ?? ''}</div>
                   <div className="text-xs text-gray-400 mt-1">
-                    {flow.from} → {flow.to}
+                    {flow?.from ?? 'Unknown'} → {flow?.to ?? 'Unknown'}
                   </div>
                 </div>
               ))}
@@ -293,9 +346,11 @@ export default function LiquidityFlowPage() {
           <h2 className="text-lg font-semibold text-white mb-4">TVL Distribution by Chain</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {chains.filter(c => c !== 'all').map((chain, i) => {
-              const chainPools = pools.filter(p => p.chain === chain)
-              const chainTvl = chainPools.reduce((sum, p) => sum + p.tvl, 0)
-              const percentage = metrics ? (chainTvl / metrics.totalTvl * 100) : 0
+              const safePools = Array.isArray(pools) ? pools : []
+              const chainPools = safePools.filter(p => p?.chain === chain)
+              const chainTvl = chainPools.reduce((sum, p) => sum + (p?.tvl ?? 0), 0)
+              const totalTvl = metrics?.totalTvl ?? 1
+              const percentage = totalTvl > 0 ? (chainTvl / totalTvl * 100) : 0
               const colors = ['bg-blue-500', 'bg-yellow-500', 'bg-purple-500', 'bg-cyan-500', 'bg-red-500', 'bg-green-500']
               
               return (
