@@ -1,3 +1,6 @@
+'use client'
+
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 /**
  * Whale Intelligence Database Page
  * 
@@ -7,7 +10,9 @@
  * This is a NEW isolated page - does NOT modify any existing code.
  */
 
-'use client';
+
+
+;
 
 import { useState, useEffect, useCallback } from 'react';
 import WalletSearchBar from '../../../components/widb/WalletSearchBar';
@@ -200,6 +205,7 @@ export default function WhaleIntelPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-white mb-2">
             Whale Intelligence Database
           </h1>

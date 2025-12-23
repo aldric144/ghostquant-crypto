@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
 interface CorrelationPair {
@@ -174,6 +175,7 @@ export default function CorrelationEnginePage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-cyan-400 mb-2">Correlation Engine</h1>
           <p className="text-gray-400">Real-time asset correlation analysis and cluster detection</p>
         </div>

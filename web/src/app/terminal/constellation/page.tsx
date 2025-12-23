@@ -1,5 +1,6 @@
-'use client';
+'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import React, { useState, useEffect, useRef } from 'react';
 import { globalConstellation } from '@/lib/globalConstellationClient';
 import { ConstellationEngine } from '@/lib/ConstellationEngine';
@@ -236,7 +237,8 @@ export default function ConstellationPage() {
     <div className="flex h-screen bg-black text-white overflow-hidden">
       {/* Left Panel - Overview */}
       <div className="w-80 bg-gray-900 border-r border-gray-700 p-4 overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-4 text-blue-400">Global Threat Constellation™</h2>
+        <TerminalBackButton className="mb-4" />
+        <h2 className="text-2xl font-bold mb-4 text-blue-400">Global Threat Constellation</h2>
 
         {/* Global Risk Gauge */}
         {map && (

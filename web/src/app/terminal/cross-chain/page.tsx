@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState } from 'react'
 
 interface MapNode {
@@ -88,6 +89,7 @@ export default function CrossChainGraphPage() {
             <div className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />
             <span className="text-cyan-400 text-sm font-medium">Live Feed</span>
           </div>
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-white mb-2">Cross-Chain Entity Graph</h1>
           <p className="text-gray-400">Multi-chain entity relationships and fund flow visualization</p>
         </div>

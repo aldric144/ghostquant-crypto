@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
 interface SentimentData {
@@ -205,6 +206,7 @@ export default function MarketSentimentPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-cyan-400 mb-2">Market Sentiment Engine</h1>
           <p className="text-gray-400">Real-time sentiment analysis from social media, news, and on-chain data</p>
         </div>

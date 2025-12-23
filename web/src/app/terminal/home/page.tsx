@@ -1,8 +1,11 @@
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+
 export default function TerminalHomePage() {
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-cyan-900/20 to-cyan-800/20 border border-cyan-500/30 rounded-lg p-6">
-        <h1 className="text-3xl font-bold text-cyan-400 mb-2">Intelligence Terminal</h1>
+        <TerminalBackButton className="mb-4" />
+          <h1 className="text-3xl font-bold text-cyan-400 mb-2">Intelligence Terminal</h1>
         <p className="text-gray-400">Welcome to the GhostQuant Intelligence Terminal</p>
       </div>
 

@@ -1,4 +1,6 @@
 'use client'
+
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 export default function GovernanceConsolePage() {
@@ -37,7 +39,8 @@ export default function GovernanceConsolePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8"><h1 className="text-3xl font-bold text-cyan-400 mb-2">Governance Console</h1><p className="text-gray-400">Executive decision tracking and audit trail management</p></div>
+        <div className="mb-8"><TerminalBackButton className="mb-4" />
+          <h1 className="text-3xl font-bold text-cyan-400 mb-2">Governance Console</h1><p className="text-gray-400">Executive decision tracking and audit trail management</p></div>
         <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
           <div className="bg-slate-800/50 border border-cyan-500/20 rounded-lg p-4"><div className="text-xs text-gray-400 mb-1">System Integrity</div><div className={`text-2xl font-bold ${getIntegrityColor(metrics.systemIntegrity)}`}>{metrics.systemIntegrity}%</div></div>
           <div className="bg-slate-800/50 border border-yellow-500/20 rounded-lg p-4"><div className="text-xs text-gray-400 mb-1">Pending</div><div className="text-2xl font-bold text-yellow-400">{metrics.pendingDecisions}</div></div>

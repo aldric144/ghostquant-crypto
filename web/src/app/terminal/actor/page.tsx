@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts'
 
@@ -85,6 +86,7 @@ export default function ThreatActorProfilerPage() {
             <div className="w-3 h-3 bg-red-400 rounded-full animate-pulse" />
             <span className="text-red-400 text-sm font-medium">Threat Detection Active</span>
           </div>
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-white mb-2">Threat Actor Profiler</h1>
           <p className="text-gray-400">Identify and profile malicious actors across blockchain networks</p>
         </div>

@@ -1,4 +1,7 @@
-'use client';
+'use client'
+
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+;
 
 import { useState, useEffect } from 'react';
 import { BarChart3, RefreshCw, Clock } from 'lucide-react';
@@ -45,7 +48,8 @@ export default function AnalyticsDashboardPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-gradient-to-r from-cyan-900/20 to-cyan-800/20 border border-cyan-500/30 rounded-lg p-6">
-        <div className="flex items-center justify-between">
+        <TerminalBackButton className="mb-4" />
+          <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-cyan-500/20 rounded-lg">
               <BarChart3 className="w-8 h-8 text-cyan-400" />

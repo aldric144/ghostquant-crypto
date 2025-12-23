@@ -1,5 +1,6 @@
-"use client";
+'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState } from 'react';
 import { getHeatmap, getSummary, getSpikes, type RadarHeatmap, type RadarSummary, type RadarSpikes } from '@/lib/radarClient';
 import { RadarEngine } from './RadarEngine';
@@ -55,6 +56,7 @@ export default function RadarPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold mb-2">Global Manipulation Radar</h1>
           <p className="text-gray-400">Real-time manipulation risk visualization across chains, entities, tokens, and networks</p>
         </div>

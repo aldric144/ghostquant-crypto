@@ -1,4 +1,7 @@
-'use client';
+'use client'
+
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+;
 
 /**
  * GhostQuant™ — Secure Key Management & Secrets Governance
@@ -153,7 +156,8 @@ export default function SecretsManagementPage() {
     <div className="min-h-screen bg-black text-white p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-cyan-400 mb-2">
+        <TerminalBackButton className="mb-4" />
+          <h1 className="text-4xl font-bold text-cyan-400 mb-2">
           🔐 Secrets Management & Governance
         </h1>
         <p className="text-gray-400">

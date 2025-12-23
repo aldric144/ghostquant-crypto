@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
 interface SavedInvestigation {
@@ -69,6 +70,7 @@ export default function SavedInvestigationsPage() {
             <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse" />
             <span className="text-purple-400 text-sm font-medium">Investigation Hub</span>
           </div>
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-white mb-2">Saved Investigations</h1>
           <p className="text-gray-400">Track complex entity relationships and ongoing investigations</p>
         </div>

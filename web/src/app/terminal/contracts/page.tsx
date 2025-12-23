@@ -1,5 +1,6 @@
-"use client";
+'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 /**
  * GhostQuant Contracts Page
  * Global Distributor Edition (GDE) v3.0
@@ -67,7 +68,8 @@ export default function ContractsPage() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">
+              <TerminalBackButton className="mb-4" />
+          <h1 className="text-xl font-bold text-gray-900">
                 Contract Management
               </h1>
             </div>

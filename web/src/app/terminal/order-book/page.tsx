@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
 interface OrderBookLevel {
@@ -201,6 +202,7 @@ export default function OrderBookDepthPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-cyan-400 mb-2">Order Book Depth</h1>
           <p className="text-gray-400">Real-time order book analysis, liquidity walls, and market depth visualization</p>
         </div>

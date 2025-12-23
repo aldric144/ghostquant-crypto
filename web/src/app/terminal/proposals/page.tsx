@@ -1,4 +1,7 @@
-'use client';
+'use client'
+
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+;
 
 import React, { useState, useEffect } from 'react';
 import { proposalClient } from './ProposalClient';
@@ -120,7 +123,8 @@ export default function ProposalsPage() {
         <div className="max-w-[1920px] mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-emerald-400">Proposal Auto-Writer™</h1>
+              <TerminalBackButton className="mb-4" />
+          <h1 className="text-2xl font-bold text-emerald-400">Proposal Auto-Writer™</h1>
               <p className="text-sm text-slate-400 mt-1">Government & Fortune-100 Proposal Generation Engine</p>
             </div>
             <div className="flex items-center gap-4">
