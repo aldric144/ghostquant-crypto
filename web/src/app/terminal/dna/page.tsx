@@ -1,6 +1,7 @@
 'use client'
 
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+import InfoTooltip from '../../../components/ui/InfoTooltip'
 import { useEffect, useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts'
 
@@ -82,7 +83,10 @@ export default function BehavioralDNAEnginePage() {
             <span className="text-purple-400 text-sm font-medium">DNA Analysis Active</span>
           </div>
           <TerminalBackButton className="mb-4" />
-          <h1 className="text-3xl font-bold text-white mb-2">Behavioral DNA Engine</h1>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-3xl font-bold text-white">Behavioral DNA Engine</h1>
+            <InfoTooltip content="Analyzes behavioral clustering that may evolve as data updates. Entity classifications are derived from pattern analysis and may change over time." />
+          </div>
           <p className="text-gray-400">On-chain behavioral fingerprinting and pattern analysis</p>
         </div>
 

@@ -1,6 +1,7 @@
 'use client'
 
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+import InfoTooltip from '../../../components/ui/InfoTooltip'
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { useIntelFeed } from '@/hooks/useIntelFeed'
 
@@ -375,7 +376,10 @@ export default function RingDetectorPage() {
       <div className="flex items-center justify-between mb-4">
         <TerminalBackButton className="mb-4" />
           <div>
-          <h1 className="text-3xl font-bold text-cyan-400">Ring Detector</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-cyan-400">Ring Detector</h1>
+            <InfoTooltip content="Displays confirmed coordination structures that meet strict detection thresholds. Rings shown here have passed multiple validation criteria." />
+          </div>
           <p className="text-sm text-gray-400">Manipulation ring and coordinated wallet clusters</p>
         </div>
         <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${

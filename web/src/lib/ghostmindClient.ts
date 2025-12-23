@@ -22,7 +22,61 @@ interface Ring {
   activityCount: number
 }
 
+type ConfidenceTier = 'early_signal' | 'emerging_pattern' | 'confirmed_structure' | 'synthesized_risk'
+
+interface ConfidenceContext {
+  tier: ConfidenceTier
+  provenance: string
+  caveats?: string[]
+}
+
 export class GhostMindClient {
+
+  private getConfidencePrefix(context: ConfidenceContext): string {
+    const tierLabels: Record<ConfidenceTier, string> = {
+      'early_signal': 'Early Signal',
+      'emerging_pattern': 'Emerging Pattern',
+      'confirmed_structure': 'Confirmed Structure',
+      'synthesized_risk': 'Synthesized Risk'
+    }
+    
+    return `**[${tierLabels[context.tier]}]** ${context.provenance}\n\n`
+  }
+
+  private getConfidenceSuffix(context: ConfidenceContext): string {
+    let suffix = '\n\n---\n'
+    
+    if (context.caveats && context.caveats.length > 0) {
+      suffix += `*Note: ${context.caveats.join(' ')}*\n`
+    }
+    
+    if (context.tier === 'synthesized_risk') {
+      suffix += '*This assessment aggregates signals across multiple engines. For confirmed counts, refer to specialized modules (Ring Detector, Manipulation Detector).*'
+    } else if (context.tier === 'early_signal') {
+      suffix += '*This represents an initial indicator. Additional confirmation may be required.*'
+    } else if (context.tier === 'emerging_pattern') {
+      suffix += '*Multiple signals are aligning. Pattern is forming but not yet confirmed by strict thresholds.*'
+    }
+    
+    return suffix
+  }
+
+  private determineConfidenceTier(alerts: Alert[]): ConfidenceTier {
+    if (!alerts || alerts.length === 0) return 'early_signal'
+    
+    const highRiskCount = alerts.filter(a => a.score >= 0.7).length
+    const mediumRiskCount = alerts.filter(a => a.score >= 0.4 && a.score < 0.7).length
+    const hasMultipleTypes = new Set(alerts.map(a => a.type)).size > 2
+    
+    if (highRiskCount >= 3 && hasMultipleTypes) {
+      return 'synthesized_risk'
+    } else if (highRiskCount >= 1 || mediumRiskCount >= 3) {
+      return 'confirmed_structure'
+    } else if (mediumRiskCount >= 1 || alerts.length >= 3) {
+      return 'emerging_pattern'
+    }
+    return 'early_signal'
+  }
   
   summarizeAlerts(alerts: Alert[], timeWindow: string = '10 minutes'): string {
     if (!alerts || alerts.length === 0) {
@@ -243,29 +297,55 @@ export class GhostMindClient {
 
   answerQuestion(question: string, alerts: Alert[]): string {
     const q = question.toLowerCase()
+    const tier = this.determineConfidenceTier(alerts)
 
     if (q.includes('summarize') || q.includes('summary')) {
-      return this.summarizeAlerts(alerts, '10 minutes')
+      const context: ConfidenceContext = {
+        tier: 'synthesized_risk',
+        provenance: 'Based on aggregated signals across multiple intelligence engines.',
+        caveats: ['Some activity may be emerging and not yet confirmed.']
+      }
+      return this.getConfidencePrefix(context) + this.summarizeAlerts(alerts, '10 minutes') + this.getConfidenceSuffix(context)
     }
 
     if (q.includes('risk') && (q.includes('current') || q.includes('now'))) {
-      return this.predictRisk(alerts)
+      const context: ConfidenceContext = {
+        tier: tier,
+        provenance: 'Risk assessment derived from recent event patterns.',
+        caveats: ['Predictions are probability-based and update as new data arrives.']
+      }
+      return this.getConfidencePrefix(context) + this.predictRisk(alerts) + this.getConfidenceSuffix(context)
     }
 
     if (q.includes('manipulation')) {
       const manipAlerts = alerts.filter(a => (a.type || '').toLowerCase().includes('manipulation'))
       if (manipAlerts.length === 0) {
-        return 'No active manipulation threats detected at this time.'
+        return 'Based on current intelligence, no manipulation indicators have been detected. This assessment may change as new data becomes available.'
       }
-      return `⚠️ **Manipulation Status:**\n\n${manipAlerts.length} manipulation-related events detected. ${manipAlerts.filter(a => a.score >= 0.7).length} are high severity.\n\nRecommendation: Monitor closely for coordinated behavior patterns.`
+      const highSeverity = manipAlerts.filter(a => a.score >= 0.7).length
+      const manipTier: ConfidenceTier = highSeverity >= 2 ? 'confirmed_structure' : manipAlerts.length >= 3 ? 'emerging_pattern' : 'early_signal'
+      const context: ConfidenceContext = {
+        tier: manipTier,
+        provenance: 'Manipulation assessment based on coordination pattern detection.',
+        caveats: ['For confirmed ring structures, refer to the Ring Detector module.']
+      }
+      const body = `**Manipulation Indicators:**\n\n${manipAlerts.length} manipulation-related signals detected. ${highSeverity} appear to be high severity based on current thresholds.\n\n**Recommendation:** Monitor for coordinated behavior patterns. Confirmed structures will appear in the Ring Detector.`
+      return this.getConfidencePrefix(context) + body + this.getConfidenceSuffix(context)
     }
 
     if (q.includes('whale')) {
       const whaleAlerts = alerts.filter(a => (a.type || '').toLowerCase().includes('whale'))
       if (whaleAlerts.length === 0) {
-        return 'No significant whale activity detected at this time.'
+        return 'Based on current intelligence, no significant whale activity has been detected. This assessment may change as new data becomes available.'
       }
-      return `🐋 **Whale Activity:**\n\n${whaleAlerts.length} whale movements detected. Large holders are actively repositioning.\n\nImpact: Potential market volatility expected.`
+      const whaleTier: ConfidenceTier = whaleAlerts.length >= 5 ? 'confirmed_structure' : whaleAlerts.length >= 2 ? 'emerging_pattern' : 'early_signal'
+      const context: ConfidenceContext = {
+        tier: whaleTier,
+        provenance: 'Whale activity assessment based on large holder movement detection.',
+        caveats: ['Market impact is probabilistic and depends on execution timing.']
+      }
+      const body = `**Whale Activity Indicators:**\n\n${whaleAlerts.length} whale movement signals detected. Large holders appear to be repositioning.\n\n**Potential Impact:** Market volatility may increase, though timing and magnitude are uncertain.`
+      return this.getConfidencePrefix(context) + body + this.getConfidenceSuffix(context)
     }
 
     if (q.includes('chain') && q.includes('highest risk')) {
@@ -278,17 +358,28 @@ export class GhostMindClient {
       })
 
       if (chains.size === 0) {
-        return 'Insufficient chain data for risk analysis.'
+        return 'Insufficient chain data for risk analysis at this time.'
       }
 
       const sortedChains = Array.from(chains.entries()).sort((a, b) => b[1] - a[1])
       const topChain = sortedChains[0]
-
-      return `🌐 **Highest Risk Chain:** ${topChain[0].toUpperCase()}\n\nCumulative risk score: ${topChain[1].toFixed(2)}\n\nThis chain is experiencing the most significant threat activity currently.`
+      const context: ConfidenceContext = {
+        tier: 'synthesized_risk',
+        provenance: 'Chain risk ranking based on cumulative signal scores.',
+        caveats: ['Risk scores aggregate multiple signal types and may differ from individual module counts.']
+      }
+      const body = `**Highest Risk Chain:** ${topChain[0].toUpperCase()}\n\nCumulative risk score: ${topChain[1].toFixed(2)}\n\nThis chain appears to be experiencing elevated threat activity based on aggregated signals.`
+      return this.getConfidencePrefix(context) + body + this.getConfidenceSuffix(context)
     }
 
     if (q.includes('active') && q.includes('entities')) {
-      return `Based on recent intelligence, multiple entities are showing elevated activity. Use the Entity Explorer to view detailed profiles and behavioral analysis.`
+      const context: ConfidenceContext = {
+        tier: 'emerging_pattern',
+        provenance: 'Entity activity assessment based on behavioral clustering.',
+        caveats: ['Entity classifications may evolve as behavioral patterns update.']
+      }
+      const body = `Based on recent intelligence, multiple entities are showing elevated activity. Use the Entity Explorer to view detailed profiles and behavioral analysis.\n\nNote: Entity risk scores are derived from behavioral DNA analysis and may differ from event-based counts.`
+      return this.getConfidencePrefix(context) + body + this.getConfidenceSuffix(context)
     }
 
     if (q.includes('cross-chain') || q.includes('crosschain')) {
@@ -297,11 +388,16 @@ export class GhostMindClient {
         return chain && chain !== 'unknown'
       })
       const uniqueChains = new Set(crossChainAlerts.map(a => a.intelligence?.event?.chain))
-      
-      return `🌐 **Cross-Chain Activity:**\n\n${uniqueChains.size} chains showing activity\n${crossChainAlerts.length} cross-chain events detected\n\nMulti-chain operations suggest sophisticated actors or arbitrage strategies.`
+      const context: ConfidenceContext = {
+        tier: crossChainAlerts.length >= 5 ? 'confirmed_structure' : 'emerging_pattern',
+        provenance: 'Cross-chain activity assessment based on multi-network signal correlation.',
+        caveats: ['Cross-chain patterns may indicate sophisticated operations or arbitrage strategies.']
+      }
+      const body = `**Cross-Chain Activity:**\n\n${uniqueChains.size} chains showing activity\n${crossChainAlerts.length} cross-chain events detected\n\nMulti-chain operations suggest sophisticated actors. Further analysis may be needed to confirm intent.`
+      return this.getConfidencePrefix(context) + body + this.getConfidenceSuffix(context)
     }
 
-    return `I can help analyze:\n\n• Recent intelligence summaries\n• Entity behavior patterns\n• Manipulation ring analysis\n• Chain-specific threats\n• Risk predictions\n\nTry asking: "Summarize the last 10 minutes" or "Show current manipulation risks"`
+    return `I can help analyze:\n\n• Recent intelligence summaries\n• Entity behavior patterns\n• Manipulation ring analysis\n• Chain-specific threats\n• Risk predictions\n\nTry asking: "Summarize the last 10 minutes" or "Show current manipulation risks"\n\n*Note: GhostMind provides synthesized assessments across multiple engines. For confirmed structures, refer to specialized modules.*`
   }
 }
 
