@@ -39,6 +39,43 @@ interface VolatilityMetrics {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
+function isValidVolatilityData(item: unknown): item is VolatilityData {
+  if (!item || typeof item !== 'object') return false
+  const d = item as Record<string, unknown>
+  return typeof d.symbol === 'string' && typeof d.currentVol === 'number' && ['high', 'medium', 'low', 'extreme'].includes(d.regime as string)
+}
+
+function isValidVolatilityAlert(item: unknown): item is VolatilityAlert {
+  if (!item || typeof item !== 'object') return false
+  const a = item as Record<string, unknown>
+  return typeof a.id === 'string' && typeof a.message === 'string' && ['spike', 'crush', 'regime_change', 'divergence'].includes(a.type as string)
+}
+
+function isValidVolatilityMetrics(metrics: unknown): metrics is VolatilityMetrics {
+  if (!metrics || typeof metrics !== 'object') return false
+  const m = metrics as Record<string, unknown>
+  return typeof m.avgMarketVol === 'number' && typeof m.highVolAssets === 'number'
+}
+
+function normalizeResponse(data: unknown): { assets: VolatilityData[]; alerts: VolatilityAlert[]; metrics: VolatilityMetrics | null } | null {
+  if (!data || typeof data !== 'object') return null
+  const d = data as Record<string, unknown>
+  
+  const rawAssets = Array.isArray(d.assets) ? d.assets : (d.data && typeof d.data === 'object' && Array.isArray((d.data as Record<string, unknown>).assets) ? (d.data as Record<string, unknown>).assets : null)
+  const rawAlerts = Array.isArray(d.alerts) ? d.alerts : (d.data && typeof d.data === 'object' && Array.isArray((d.data as Record<string, unknown>).alerts) ? (d.data as Record<string, unknown>).alerts : [])
+  const rawMetrics = d.metrics || (d.data && typeof d.data === 'object' ? (d.data as Record<string, unknown>).metrics : null)
+  
+  if (!Array.isArray(rawAssets) || rawAssets.length === 0) return null
+  
+  const validAssets = rawAssets.filter(isValidVolatilityData)
+  if (validAssets.length === 0) return null
+  
+  const validAlerts = Array.isArray(rawAlerts) ? rawAlerts.filter(isValidVolatilityAlert) : []
+  const validMetrics = isValidVolatilityMetrics(rawMetrics) ? rawMetrics : null
+  
+  return { assets: validAssets, alerts: validAlerts, metrics: validMetrics }
+}
+
 export default function VolatilityMonitorPage() {
   const [volatilityData, setVolatilityData] = useState<VolatilityData[]>([])
   const [alerts, setAlerts] = useState<VolatilityAlert[]>([])
@@ -56,18 +93,34 @@ export default function VolatilityMonitorPage() {
   async function fetchData() {
     try {
       const response = await fetch(`${API_BASE}/gq-core/volatility/monitor?regime=${selectedRegime}&timeframe=${timeframe}`)
-      if (response.ok) {
-        const data = await response.json()
-        if (data.assets) {
-          setVolatilityData(data.assets)
-          setMetrics(data.metrics)
-          setAlerts(data.alerts || [])
-        } else {
-          generateMockData()
-        }
-      } else {
+      if (!response.ok) {
         generateMockData()
+        return
       }
+      
+      const text = await response.text()
+      if (!text || text.trim() === '') {
+        generateMockData()
+        return
+      }
+      
+      let data: unknown
+      try {
+        data = JSON.parse(text)
+      } catch {
+        generateMockData()
+        return
+      }
+      
+      const normalized = normalizeResponse(data)
+      if (!normalized) {
+        generateMockData()
+        return
+      }
+      
+      setVolatilityData(normalized.assets)
+      setAlerts(normalized.alerts)
+      setMetrics(normalized.metrics)
     } catch (error) {
       console.error('Error fetching volatility data:', error)
       generateMockData()
@@ -319,33 +372,33 @@ export default function VolatilityMonitorPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {volatilityData
-                    .filter(d => selectedRegime === 'all' || d.regime === selectedRegime)
+                  {(Array.isArray(volatilityData) ? volatilityData : [])
+                    .filter(d => selectedRegime === 'all' || d?.regime === selectedRegime)
                     .map((asset) => (
-                    <tr key={asset.symbol} className="border-t border-slate-700/50 hover:bg-slate-700/30 transition-colors">
+                    <tr key={asset?.symbol ?? Math.random()} className="border-t border-slate-700/50 hover:bg-slate-700/30 transition-colors">
                       <td className="p-3">
-                        <span className="text-cyan-400 font-medium">{asset.symbol}</span>
+                        <span className="text-cyan-400 font-medium">{asset?.symbol ?? 'Unknown'}</span>
                       </td>
-                      <td className="p-3 text-right text-white font-medium">{asset.currentVol.toFixed(1)}%</td>
-                      <td className="p-3 text-right text-gray-300">{asset.impliedVol.toFixed(1)}%</td>
-                      <td className="p-3 text-right text-gray-300">{asset.realizedVol.toFixed(1)}%</td>
+                      <td className="p-3 text-right text-white font-medium">{(asset?.currentVol ?? 0).toFixed(1)}%</td>
+                      <td className="p-3 text-right text-gray-300">{(asset?.impliedVol ?? 0).toFixed(1)}%</td>
+                      <td className="p-3 text-right text-gray-300">{(asset?.realizedVol ?? 0).toFixed(1)}%</td>
                       <td className="p-3 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <div className="w-16 h-2 bg-slate-700 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-cyan-500"
-                              style={{ width: `${asset.volRank}%` }}
+                              style={{ width: `${asset?.volRank ?? 0}%` }}
                             />
                           </div>
-                          <span className="text-gray-300 text-sm">{asset.volRank.toFixed(0)}%</span>
+                          <span className="text-gray-300 text-sm">{(asset?.volRank ?? 0).toFixed(0)}%</span>
                         </div>
                       </td>
-                      <td className={`p-3 text-right ${asset.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {asset.change24h >= 0 ? '+' : ''}{asset.change24h.toFixed(1)}%
+                      <td className={`p-3 text-right ${(asset?.change24h ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {(asset?.change24h ?? 0) >= 0 ? '+' : ''}{(asset?.change24h ?? 0).toFixed(1)}%
                       </td>
                       <td className="p-3 text-center">
-                        <span className={`px-2 py-1 rounded text-xs font-medium border ${getRegimeColor(asset.regime)}`}>
-                          {asset.regime.toUpperCase()}
+                        <span className={`px-2 py-1 rounded text-xs font-medium border ${getRegimeColor(asset?.regime ?? 'low')}`}>
+                          {(asset?.regime ?? 'low').toUpperCase()}
                         </span>
                       </td>
                     </tr>
@@ -361,22 +414,22 @@ export default function VolatilityMonitorPage() {
               <h2 className="text-lg font-semibold text-white">Volatility Alerts</h2>
             </div>
             <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-              {alerts.map((alert) => (
-                <div key={alert.id} className={`rounded-lg p-3 border ${getSeverityColor(alert.severity)}`}>
+              {(Array.isArray(alerts) ? alerts : []).map((alert) => (
+                <div key={alert?.id ?? Math.random()} className={`rounded-lg p-3 border ${getSeverityColor(alert?.severity ?? 'low')}`}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">{getAlertTypeIcon(alert.type)}</span>
-                      <span className="font-medium text-cyan-400">{alert.asset}</span>
+                      <span className="text-lg">{getAlertTypeIcon(alert?.type ?? 'spike')}</span>
+                      <span className="font-medium text-cyan-400">{alert?.asset ?? 'Unknown'}</span>
                     </div>
                     <span className="text-xs text-gray-500">
-                      {new Date(alert.timestamp).toLocaleTimeString()}
+                      {alert?.timestamp ? new Date(alert.timestamp).toLocaleTimeString() : '--:--'}
                     </span>
                   </div>
-                  <div className="text-sm text-white mb-2">{alert.message}</div>
+                  <div className="text-sm text-white mb-2">{alert?.message ?? ''}</div>
                   <div className="flex items-center justify-between text-xs text-gray-400">
-                    <span>Vol: {alert.previousVol.toFixed(1)}% → {alert.currentVol.toFixed(1)}%</span>
-                    <span className={`px-2 py-0.5 rounded ${getSeverityColor(alert.severity)}`}>
-                      {alert.severity}
+                    <span>Vol: {(alert?.previousVol ?? 0).toFixed(1)}% → {(alert?.currentVol ?? 0).toFixed(1)}%</span>
+                    <span className={`px-2 py-0.5 rounded ${getSeverityColor(alert?.severity ?? 'low')}`}>
+                      {alert?.severity ?? 'low'}
                     </span>
                   </div>
                 </div>
@@ -389,15 +442,15 @@ export default function VolatilityMonitorPage() {
         <div className="mt-6 bg-slate-800/50 border border-cyan-500/20 rounded-lg p-6">
           <h2 className="text-lg font-semibold text-white mb-4">Volatility Regime Heatmap</h2>
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-            {volatilityData.map((asset) => (
+            {(Array.isArray(volatilityData) ? volatilityData : []).map((asset) => (
               <div 
-                key={asset.symbol}
-                className={`p-4 rounded-lg border transition-all hover:scale-105 cursor-pointer ${getRegimeColor(asset.regime)}`}
+                key={asset?.symbol ?? Math.random()}
+                className={`p-4 rounded-lg border transition-all hover:scale-105 cursor-pointer ${getRegimeColor(asset?.regime ?? 'low')}`}
               >
                 <div className="text-center">
-                  <div className="font-bold text-white mb-1">{asset.symbol}</div>
-                  <div className="text-2xl font-bold">{asset.currentVol.toFixed(0)}%</div>
-                  <div className="text-xs mt-1 opacity-75">{asset.regime}</div>
+                  <div className="font-bold text-white mb-1">{asset?.symbol ?? 'Unknown'}</div>
+                  <div className="text-2xl font-bold">{(asset?.currentVol ?? 0).toFixed(0)}%</div>
+                  <div className="text-xs mt-1 opacity-75">{asset?.regime ?? 'low'}</div>
                 </div>
               </div>
             ))}

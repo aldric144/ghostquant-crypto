@@ -38,6 +38,43 @@ interface SentimentEvent {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
+function isValidSentimentData(item: unknown): item is SentimentData {
+  if (!item || typeof item !== 'object') return false
+  const d = item as Record<string, unknown>
+  return typeof d.symbol === 'string' && typeof d.sentiment === 'number' && ['bullish', 'bearish', 'neutral'].includes(d.trend as string)
+}
+
+function isValidSentimentEvent(item: unknown): item is SentimentEvent {
+  if (!item || typeof item !== 'object') return false
+  const e = item as Record<string, unknown>
+  return typeof e.id === 'string' && typeof e.message === 'string' && ['positive', 'negative', 'neutral'].includes(e.sentiment as string)
+}
+
+function isValidSentimentMetrics(metrics: unknown): metrics is SentimentMetrics {
+  if (!metrics || typeof metrics !== 'object') return false
+  const m = metrics as Record<string, unknown>
+  return typeof m.overallSentiment === 'number' && typeof m.marketFearGreed === 'number'
+}
+
+function normalizeResponse(data: unknown): { assets: SentimentData[]; events: SentimentEvent[]; metrics: SentimentMetrics | null } | null {
+  if (!data || typeof data !== 'object') return null
+  const d = data as Record<string, unknown>
+  
+  const rawAssets = Array.isArray(d.assets) ? d.assets : (d.data && typeof d.data === 'object' && Array.isArray((d.data as Record<string, unknown>).assets) ? (d.data as Record<string, unknown>).assets : null)
+  const rawEvents = Array.isArray(d.events) ? d.events : (d.data && typeof d.data === 'object' && Array.isArray((d.data as Record<string, unknown>).events) ? (d.data as Record<string, unknown>).events : [])
+  const rawMetrics = d.metrics || (d.data && typeof d.data === 'object' ? (d.data as Record<string, unknown>).metrics : null)
+  
+  if (!Array.isArray(rawAssets) || rawAssets.length === 0) return null
+  
+  const validAssets = rawAssets.filter(isValidSentimentData)
+  if (validAssets.length === 0) return null
+  
+  const validEvents = Array.isArray(rawEvents) ? rawEvents.filter(isValidSentimentEvent) : []
+  const validMetrics = isValidSentimentMetrics(rawMetrics) ? rawMetrics : null
+  
+  return { assets: validAssets, events: validEvents, metrics: validMetrics }
+}
+
 export default function MarketSentimentPage() {
   const [sentimentData, setSentimentData] = useState<SentimentData[]>([])
   const [events, setEvents] = useState<SentimentEvent[]>([])
@@ -55,18 +92,34 @@ export default function MarketSentimentPage() {
   async function fetchData() {
     try {
       const response = await fetch(`${API_BASE}/gq-core/sentiment/market?source=${selectedSource}&timeframe=${timeframe}`)
-      if (response.ok) {
-        const data = await response.json()
-        if (data.assets) {
-          setSentimentData(data.assets)
-          setMetrics(data.metrics)
-          setEvents(data.events || [])
-        } else {
-          generateMockData()
-        }
-      } else {
+      if (!response.ok) {
         generateMockData()
+        return
       }
+      
+      const text = await response.text()
+      if (!text || text.trim() === '') {
+        generateMockData()
+        return
+      }
+      
+      let data: unknown
+      try {
+        data = JSON.parse(text)
+      } catch {
+        generateMockData()
+        return
+      }
+      
+      const normalized = normalizeResponse(data)
+      if (!normalized) {
+        generateMockData()
+        return
+      }
+      
+      setSentimentData(normalized.assets)
+      setEvents(normalized.events)
+      setMetrics(normalized.metrics)
     } catch (error) {
       console.error('Error fetching sentiment data:', error)
       generateMockData()
@@ -310,32 +363,32 @@ export default function MarketSentimentPage() {
             </div>
             <div className="p-4">
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                {sentimentData.map((asset) => (
+                {(Array.isArray(sentimentData) ? sentimentData : []).map((asset) => (
                   <div 
-                    key={asset.symbol}
+                    key={asset?.symbol ?? Math.random()}
                     className={`p-4 rounded-lg border transition-all hover:scale-105 cursor-pointer ${
-                      asset.trend === 'bullish' ? 'border-green-500/30 bg-green-500/10' :
-                      asset.trend === 'bearish' ? 'border-red-500/30 bg-red-500/10' :
+                      asset?.trend === 'bullish' ? 'border-green-500/30 bg-green-500/10' :
+                      asset?.trend === 'bearish' ? 'border-red-500/30 bg-red-500/10' :
                       'border-gray-500/30 bg-gray-500/10'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold text-white">{asset.symbol}</span>
-                      <span className={`text-lg ${getTrendColor(asset.trend)}`}>
-                        {getTrendIcon(asset.trend)}
+                      <span className="font-bold text-white">{asset?.symbol ?? 'Unknown'}</span>
+                      <span className={`text-lg ${getTrendColor(asset?.trend ?? 'neutral')}`}>
+                        {getTrendIcon(asset?.trend ?? 'neutral')}
                       </span>
                     </div>
-                    <div className={`text-2xl font-bold ${getSentimentColor(asset.sentiment)}`}>
-                      {asset.sentiment.toFixed(0)}
+                    <div className={`text-2xl font-bold ${getSentimentColor(asset?.sentiment ?? 50)}`}>
+                      {(asset?.sentiment ?? 50).toFixed(0)}
                     </div>
                     <div className="mt-2 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                       <div 
-                        className={`h-full ${getSentimentBg(asset.sentiment)} transition-all`}
-                        style={{ width: `${asset.sentiment}%` }}
+                        className={`h-full ${getSentimentBg(asset?.sentiment ?? 50)} transition-all`}
+                        style={{ width: `${asset?.sentiment ?? 50}%` }}
                       />
                     </div>
-                    <div className={`text-xs mt-2 ${asset.change24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {asset.change24h >= 0 ? '+' : ''}{asset.change24h.toFixed(1)}%
+                    <div className={`text-xs mt-2 ${(asset?.change24h ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {(asset?.change24h ?? 0) >= 0 ? '+' : ''}{(asset?.change24h ?? 0).toFixed(1)}%
                     </div>
                   </div>
                 ))}
@@ -349,21 +402,21 @@ export default function MarketSentimentPage() {
               <h2 className="text-lg font-semibold text-white">Live Sentiment Feed</h2>
             </div>
             <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-              {events.map((event) => (
-                <div key={event.id} className={`rounded-lg p-3 border ${getEventColor(event.sentiment)}`}>
+              {(Array.isArray(events) ? events : []).map((event) => (
+                <div key={event?.id ?? Math.random()} className={`rounded-lg p-3 border ${getEventColor(event?.sentiment ?? 'neutral')}`}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">{event.source}</span>
-                      <span className={`px-2 py-0.5 rounded text-xs ${getImpactBadge(event.impact)}`}>
-                        {event.impact}
+                      <span className="text-xs text-gray-400">{event?.source ?? 'Unknown'}</span>
+                      <span className={`px-2 py-0.5 rounded text-xs ${getImpactBadge(event?.impact ?? 'low')}`}>
+                        {event?.impact ?? 'low'}
                       </span>
                     </div>
                     <span className="text-xs text-gray-500">
-                      {new Date(event.timestamp).toLocaleTimeString()}
+                      {event?.timestamp ? new Date(event.timestamp).toLocaleTimeString() : '--:--'}
                     </span>
                   </div>
-                  <div className="text-sm text-white">{event.message}</div>
-                  <div className="text-xs text-cyan-400 mt-1">${event.asset}</div>
+                  <div className="text-sm text-white">{event?.message ?? ''}</div>
+                  <div className="text-xs text-cyan-400 mt-1">${event?.asset ?? ''}</div>
                 </div>
               ))}
             </div>
@@ -374,21 +427,23 @@ export default function MarketSentimentPage() {
         <div className="mt-6 bg-slate-800/50 border border-cyan-500/20 rounded-lg p-6">
           <h2 className="text-lg font-semibold text-white mb-4">Social Volume by Asset</h2>
           <div className="space-y-3">
-            {sentimentData.slice(0, 8).map((asset) => {
-              const maxVolume = Math.max(...sentimentData.map(d => d.socialVolume))
-              const percentage = (asset.socialVolume / maxVolume) * 100
+            {(Array.isArray(sentimentData) ? sentimentData : []).slice(0, 8).map((asset) => {
+              const safeData = Array.isArray(sentimentData) ? sentimentData : []
+              const volumes = safeData.map(d => d?.socialVolume ?? 0)
+              const maxVolume = volumes.length > 0 ? Math.max(...volumes) : 1
+              const percentage = maxVolume > 0 ? ((asset?.socialVolume ?? 0) / maxVolume) * 100 : 0
               
               return (
-                <div key={asset.symbol} className="flex items-center gap-4">
-                  <div className="w-16 text-sm font-medium text-cyan-400">{asset.symbol}</div>
+                <div key={asset?.symbol ?? Math.random()} className="flex items-center gap-4">
+                  <div className="w-16 text-sm font-medium text-cyan-400">{asset?.symbol ?? 'Unknown'}</div>
                   <div className="flex-1 h-6 bg-slate-900/50 rounded-full overflow-hidden">
                     <div 
-                      className={`h-full ${getSentimentBg(asset.sentiment)} transition-all duration-500`}
+                      className={`h-full ${getSentimentBg(asset?.sentiment ?? 50)} transition-all duration-500`}
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
                   <div className="w-24 text-right text-sm text-gray-400">
-                    {asset.socialVolume.toLocaleString()}
+                    {(asset?.socialVolume ?? 0).toLocaleString()}
                   </div>
                 </div>
               )
