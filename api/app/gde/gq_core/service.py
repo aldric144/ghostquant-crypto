@@ -487,6 +487,205 @@ class GQCoreService:
             "timestamp": datetime.utcnow().isoformat(),
             "data": self.synthetic.generate_system_status(is_real_mode=is_redis_connected)
         }
+    
+    # Extended GQ-Core methods for all terminal modules
+    
+    async def get_liquidity_pools(self, chain: str = "ethereum", timeframe: str = "24h") -> Dict[str, Any]:
+        """Get liquidity pool data."""
+        return await self.get_with_fallback(
+            kind=f"liquidity-{chain}-{timeframe}",
+            real_fn=lambda: None,  # No real data source yet
+            synthetic_fn=lambda: self.synthetic.generate_liquidity_pools(chain, timeframe)
+        )
+    
+    async def get_smart_money_tracker(self) -> Dict[str, Any]:
+        """Get smart money tracking data."""
+        return await self.get_with_fallback(
+            kind="smart-money",
+            real_fn=lambda: None,
+            synthetic_fn=self.synthetic.generate_smart_money_tracker
+        )
+    
+    async def get_volatility_monitor(self, regime: str = "all", timeframe: str = "24h") -> Dict[str, Any]:
+        """Get volatility monitoring data."""
+        return await self.get_with_fallback(
+            kind=f"volatility-{regime}-{timeframe}",
+            real_fn=lambda: None,
+            synthetic_fn=lambda: self.synthetic.generate_volatility_monitor(regime, timeframe)
+        )
+    
+    async def get_sentiment_market(self) -> Dict[str, Any]:
+        """Get market sentiment data."""
+        return await self.get_with_fallback(
+            kind="sentiment",
+            real_fn=lambda: None,
+            synthetic_fn=self.synthetic.generate_sentiment_market
+        )
+    
+    async def get_correlation_matrix(self) -> Dict[str, Any]:
+        """Get correlation matrix data."""
+        return await self.get_with_fallback(
+            kind="correlation",
+            real_fn=lambda: None,
+            synthetic_fn=self.synthetic.generate_correlation_matrix
+        )
+    
+    async def get_exposure_analysis(self, chain: str = "ethereum") -> Dict[str, Any]:
+        """Get exposure analysis data."""
+        return await self.get_with_fallback(
+            kind=f"exposure-{chain}",
+            real_fn=lambda: None,
+            synthetic_fn=lambda: self.synthetic.generate_exposure_analysis(chain)
+        )
+    
+    async def get_orderbook_depth(self, symbol: str = "BTC", exchange: str = "binance", levels: int = 20) -> Dict[str, Any]:
+        """Get order book depth data."""
+        return await self.get_with_fallback(
+            kind=f"orderbook-{symbol}-{exchange}",
+            real_fn=lambda: None,
+            synthetic_fn=lambda: self.synthetic.generate_orderbook_depth(symbol, exchange, levels)
+        )
+    
+    async def get_derivatives_watch(self, derivative_type: str = "futures", exchange: str = "binance") -> Dict[str, Any]:
+        """Get derivatives watch data."""
+        return await self.get_with_fallback(
+            kind=f"derivatives-{derivative_type}-{exchange}",
+            real_fn=lambda: None,
+            synthetic_fn=lambda: self.synthetic.generate_derivatives_watch(derivative_type, exchange)
+        )
+    
+    async def get_manipulation_detect(self) -> Dict[str, Any]:
+        """Get manipulation detection data."""
+        return await self.get_with_fallback(
+            kind="manipulation",
+            real_fn=self._fetch_real_manipulation,
+            synthetic_fn=self.synthetic.generate_manipulation_detect
+        )
+    
+    async def _fetch_real_manipulation(self) -> Optional[Dict[str, Any]]:
+        """Fetch real manipulation data."""
+        manipulation = await self._get_redis_data("intel.manipulation", count=50)
+        if not manipulation:
+            return None
+        return {"detections": manipulation, "total_detections": len(manipulation)}
+    
+    async def get_threats_timeline(self) -> Dict[str, Any]:
+        """Get threat timeline data."""
+        return await self.get_with_fallback(
+            kind="threats-timeline",
+            real_fn=self._fetch_real_threats_timeline,
+            synthetic_fn=self.synthetic.generate_threats_timeline
+        )
+    
+    async def _fetch_real_threats_timeline(self) -> Optional[Dict[str, Any]]:
+        """Fetch real threat timeline data."""
+        alerts = await self._get_redis_data("intel.alerts", count=50)
+        if not alerts:
+            return None
+        return {"events": alerts, "total_events": len(alerts)}
+    
+    async def get_signals_confidence(self) -> Dict[str, Any]:
+        """Get signal confidence data."""
+        return await self.get_with_fallback(
+            kind="signals",
+            real_fn=self._fetch_real_signals,
+            synthetic_fn=self.synthetic.generate_signals_confidence
+        )
+    
+    async def _fetch_real_signals(self) -> Optional[Dict[str, Any]]:
+        """Fetch real signal data."""
+        signals = await self._get_redis_data("intel.signals", count=50)
+        if not signals:
+            return None
+        return {"signals": signals, "total_signals": len(signals)}
+    
+    async def get_events_fusion(self) -> Dict[str, Any]:
+        """Get event fusion data."""
+        return await self.get_with_fallback(
+            kind="events-fusion",
+            real_fn=lambda: None,
+            synthetic_fn=self.synthetic.generate_events_fusion
+        )
+    
+    async def get_network_anomalies(self) -> Dict[str, Any]:
+        """Get network anomaly data."""
+        return await self.get_with_fallback(
+            kind="network-anomalies",
+            real_fn=lambda: None,
+            synthetic_fn=self.synthetic.generate_network_anomalies
+        )
+    
+    async def get_patterns_recognition(self) -> Dict[str, Any]:
+        """Get pattern recognition data."""
+        return await self.get_with_fallback(
+            kind="patterns",
+            real_fn=lambda: None,
+            synthetic_fn=self.synthetic.generate_patterns_recognition
+        )
+    
+    async def get_risk_time_series(self) -> Dict[str, Any]:
+        """Get time-series risk data."""
+        return await self.get_with_fallback(
+            kind="risk-time-series",
+            real_fn=lambda: None,
+            synthetic_fn=self.synthetic.generate_risk_time_series
+        )
+    
+    async def get_risk_predictive(self) -> Dict[str, Any]:
+        """Get predictive risk data."""
+        return await self.get_with_fallback(
+            kind="risk-predictive",
+            real_fn=lambda: None,
+            synthetic_fn=self.synthetic.generate_risk_predictive
+        )
+    
+    async def get_ai_forecast(self) -> Dict[str, Any]:
+        """Get AI forecast data."""
+        return await self.get_with_fallback(
+            kind="ai-forecast",
+            real_fn=lambda: None,
+            synthetic_fn=self.synthetic.generate_ai_forecast
+        )
+    
+    async def get_alerts_rules(self) -> Dict[str, Any]:
+        """Get alert rules data."""
+        return await self.get_with_fallback(
+            kind="alerts-rules",
+            real_fn=lambda: None,
+            synthetic_fn=self.synthetic.generate_alerts_rules
+        )
+    
+    async def get_governance_decisions(self) -> Dict[str, Any]:
+        """Get governance decisions data."""
+        return await self.get_with_fallback(
+            kind="governance",
+            real_fn=lambda: None,
+            synthetic_fn=self.synthetic.generate_governance_decisions
+        )
+    
+    async def get_scenarios_list(self) -> Dict[str, Any]:
+        """Get scenario simulation data."""
+        return await self.get_with_fallback(
+            kind="scenarios",
+            real_fn=lambda: None,
+            synthetic_fn=self.synthetic.generate_scenarios_list
+        )
+    
+    async def get_strategy_backtests(self) -> Dict[str, Any]:
+        """Get strategy backtest data."""
+        return await self.get_with_fallback(
+            kind="backtests",
+            real_fn=lambda: None,
+            synthetic_fn=self.synthetic.generate_strategy_backtests
+        )
+    
+    async def get_telemetry_status(self) -> Dict[str, Any]:
+        """Get system telemetry data."""
+        return await self.get_with_fallback(
+            kind="telemetry",
+            real_fn=lambda: None,
+            synthetic_fn=self.synthetic.generate_telemetry_status
+        )
 
 
 # Global service instance
