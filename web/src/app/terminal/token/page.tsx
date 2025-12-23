@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState, useMemo } from 'react'
 import { useIntelFeed } from '@/hooks/useIntelFeed'
 import { predictClient, PredictionResponse } from '@/lib/predictClient'
@@ -306,7 +307,8 @@ export default function TokenExplorerPage() {
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div>
+        <TerminalBackButton className="mb-4" />
+          <div>
           <h1 className="text-3xl font-bold text-cyan-400">Token Explorer</h1>
           <p className="text-sm text-gray-400">Token intelligence and price predictions</p>
         </div>

@@ -1,4 +1,7 @@
-'use client';
+'use client'
+
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+;
 
 /**
  * GhostQuant™ — Regulatory Audit Binder Generator
@@ -179,7 +182,8 @@ export default function BinderPage() {
     <div className="min-h-screen bg-black text-cyan-400 p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">
+        <TerminalBackButton className="mb-4" />
+          <h1 className="text-3xl font-bold mb-2">
           <span className="text-cyan-400">AUDIT BINDER</span>{' '}
           <span className="text-gray-500">GENERATOR</span>
         </h1>

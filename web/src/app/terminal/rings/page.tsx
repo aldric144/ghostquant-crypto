@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { useIntelFeed } from '@/hooks/useIntelFeed'
 
@@ -372,7 +373,8 @@ export default function RingDetectorPage() {
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div>
+        <TerminalBackButton className="mb-4" />
+          <div>
           <h1 className="text-3xl font-bold text-cyan-400">Ring Detector</h1>
           <p className="text-sm text-gray-400">Manipulation ring and coordinated wallet clusters</p>
         </div>

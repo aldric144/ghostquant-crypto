@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
@@ -205,7 +206,8 @@ export default function WhaleProfilePage() {
             ← Back
           </button>
         </Link>
-        <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#00ccff', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <TerminalBackButton className="mb-4" />
+          <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#00ccff', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ fontSize: '28px' }}>🐋</span>
           Whale Profile
         </h1>

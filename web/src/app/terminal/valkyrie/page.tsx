@@ -1,4 +1,7 @@
-'use client';
+'use client'
+
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+;
 
 /**
  * Valkyrie Threat Warning System™ - Live Alert Wall
@@ -109,7 +112,8 @@ export default function ValkyriePage() {
     <div className="min-h-screen bg-black text-cyan-400 p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2 text-cyan-300">
+        <TerminalBackButton className="mb-4" />
+          <h1 className="text-4xl font-bold mb-2 text-cyan-300">
           ⚡ Valkyrie Threat Warning System™
         </h1>
         <p className="text-cyan-500">

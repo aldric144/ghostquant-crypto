@@ -1,5 +1,6 @@
-'use client';
+'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import React, { useState, useEffect } from 'react';
 import { sentinel } from '@/lib/sentinelClient';
 import type { SentinelDashboard, SentinelPanelStatus, SentinelAlert } from '@/lib/sentinelClient';
@@ -86,7 +87,8 @@ export default function SentinelPage() {
     <div className="flex h-screen bg-black text-white overflow-hidden">
       {/* LEFT PANEL - Global Overview */}
       <div className="w-80 bg-gray-900 border-r border-gray-700 p-4 overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-4 text-cyan-400">Sentinel Command Console™</h2>
+        <TerminalBackButton className="mb-4" />
+        <h2 className="text-2xl font-bold mb-4 text-cyan-400">Sentinel Command Console</h2>
 
         {/* Global Threat Gauge */}
         {dashboard && dashboard.global_status && (

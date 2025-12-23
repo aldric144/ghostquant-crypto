@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { useIntelFeed } from '@/hooks/useIntelFeed'
 import { ghostmind } from '@/lib/ghostmindClient'
@@ -195,7 +196,8 @@ export default function GhostMindPage() {
     <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div>
+        <TerminalBackButton className="mb-4" />
+          <div>
           <h1 className="text-3xl font-bold text-cyan-400">GhostMind AI Console</h1>
           <p className="text-sm text-gray-400">Real-time conversational intelligence analyst</p>
         </div>

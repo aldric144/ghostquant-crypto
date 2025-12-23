@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts'
 
@@ -80,6 +81,7 @@ export default function BehavioralDNAEnginePage() {
             <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse" />
             <span className="text-purple-400 text-sm font-medium">DNA Analysis Active</span>
           </div>
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-white mb-2">Behavioral DNA Engine</h1>
           <p className="text-gray-400">On-chain behavioral fingerprinting and pattern analysis</p>
         </div>

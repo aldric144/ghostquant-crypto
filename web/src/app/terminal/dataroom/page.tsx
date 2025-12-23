@@ -1,4 +1,7 @@
-'use client';
+'use client'
+
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+;
 
 /**
  * GhostQuant Investor Data Room
@@ -139,7 +142,8 @@ export default function DataRoomPage() {
     <div className="min-h-screen bg-black text-gray-100">
       {/* Header */}
       <div className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="px-6 py-4">
+        <TerminalBackButton className="mb-4" />
+          <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-emerald-400">GhostQuant Investor Data Room</h1>

@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 import { DollarSign, TrendingUp, Users, Building2, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import { pricingClient } from '@/lib/pricingClient'
@@ -185,7 +186,8 @@ export default function PricingConsolePage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white p-6">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
+        <TerminalBackButton className="mb-4" />
+          <div className="flex items-center gap-3 mb-2">
           <div className="p-3 bg-cyan-500/10 rounded-lg">
             <DollarSign className="w-8 h-8 text-cyan-400" />
           </div>

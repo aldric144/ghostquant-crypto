@@ -1,4 +1,6 @@
 'use client'
+
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 export default function AlertRulesEnginePage() {
@@ -33,7 +35,8 @@ export default function AlertRulesEnginePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8"><h1 className="text-3xl font-bold text-cyan-400 mb-2">Alert Rules Engine</h1><p className="text-gray-400">Automated monitoring and notification rule management</p></div>
+        <div className="mb-8"><TerminalBackButton className="mb-4" />
+          <h1 className="text-3xl font-bold text-cyan-400 mb-2">Alert Rules Engine</h1><p className="text-gray-400">Automated monitoring and notification rule management</p></div>
         <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
           <div className="bg-slate-800/50 border border-cyan-500/20 rounded-lg p-4"><div className="text-xs text-gray-400 mb-1">Total Rules</div><div className="text-2xl font-bold text-cyan-400">{metrics.totalRules}</div></div>
           <div className="bg-slate-800/50 border border-green-500/20 rounded-lg p-4"><div className="text-xs text-gray-400 mb-1">Active</div><div className="text-2xl font-bold text-green-400">{metrics.activeRules}</div></div>

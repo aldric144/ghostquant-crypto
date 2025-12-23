@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts'
 
@@ -74,6 +75,7 @@ export default function ExchangeMicrostructureScannerPage() {
             <div className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />
             <span className="text-cyan-400 text-sm font-medium">Live Feed</span>
           </div>
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-white mb-2">Exchange Microstructure Scanner</h1>
           <p className="text-gray-400">Real-time order flow analysis and market microstructure patterns</p>
         </div>

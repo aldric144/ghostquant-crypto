@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
 interface LiquidityPool {
@@ -149,6 +150,7 @@ export default function LiquidityFlowPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-cyan-400 mb-2">Liquidity Flow Monitor</h1>
           <p className="text-gray-400">Real-time liquidity pool tracking and flow analysis across DeFi protocols</p>
         </div>

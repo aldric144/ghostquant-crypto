@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 
@@ -100,6 +101,7 @@ export default function MempoolRadarPage() {
             <div className="w-3 h-3 bg-orange-400 rounded-full animate-pulse" />
             <span className="text-orange-400 text-sm font-medium">Real-Time Monitoring</span>
           </div>
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-white mb-2">Mempool Manipulation Radar</h1>
           <p className="text-gray-400">Detect sandwich attacks, front-running, and MEV extraction</p>
         </div>

@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState } from 'react'
 import { ultraFusion, AnalyzeResponse } from '@/lib/ultraFusionClient'
 
@@ -55,6 +56,7 @@ export default function UltraFusionConsolePage() {
     <div className="min-h-screen bg-slate-900 text-gray-100 p-6">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-cyan-400 flex items-center gap-3">
             <span className="text-4xl">⚡</span>
             UltraFusion Console

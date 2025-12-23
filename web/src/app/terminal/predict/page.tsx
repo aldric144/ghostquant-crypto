@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 import { predictClient, PredictionResponse, BatchPredictionResponse, ChampionResponse } from '@/lib/predictClient'
 
@@ -393,7 +394,8 @@ export default function PredictionConsolePage() {
 
       {/* Header */}
       <div className="mb-4">
-        <h1 className="text-3xl font-bold text-cyan-400">Prediction Console</h1>
+        <TerminalBackButton className="mb-4" />
+          <h1 className="text-3xl font-bold text-cyan-400">Prediction Console</h1>
         <p className="text-sm text-gray-400">AI-powered risk predictions and analysis</p>
       </div>
 

@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
 interface DerivativeContract {
@@ -213,6 +214,7 @@ export default function DerivativesWatchPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-cyan-400 mb-2">Derivatives Watch</h1>
           <p className="text-gray-400">Real-time derivatives market monitoring, funding rates, and liquidation tracking</p>
         </div>

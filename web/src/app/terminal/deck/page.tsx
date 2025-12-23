@@ -1,4 +1,7 @@
-'use client';
+'use client'
+
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+;
 
 import React, { useState, useEffect } from 'react';
 import { deckClient, Deck, Theme, SlideTemplate, DeckSlide } from './DeckClient';
@@ -199,6 +202,7 @@ export default function DeckBuilderPage() {
           borderBottom: '2px solid #00d1ff',
           paddingBottom: '1rem',
         }}>
+          <TerminalBackButton className="mb-4" />
           <h1 style={{
             fontSize: '2.5rem',
             fontWeight: 900,

@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState } from 'react'
 
 interface Narrative {
@@ -90,6 +91,7 @@ export default function GenesisArchivePage() {
             <div className="w-3 h-3 bg-amber-400 rounded-full animate-pulse" />
             <span className="text-amber-400 text-sm font-medium">Archive Active</span>
           </div>
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-white mb-2">Genesis Archive</h1>
           <p className="text-gray-400">Historical intelligence archive of market events and incidents</p>
         </div>

@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../../components/terminal/TerminalBackButton'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
@@ -112,6 +113,7 @@ export default function WhaleMovementsPage() {
               ← Back
             </button>
           </Link>
+          <TerminalBackButton className="mb-4" />
           <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ff6666', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ fontSize: '28px' }}>🌊</span>
             Global Whale Movement Stream

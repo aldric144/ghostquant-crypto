@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
@@ -148,7 +149,8 @@ export default function WhaleIntelligenceDashboard() {
   return (
     <div style={{ padding: '24px', color: '#e0e0e0', minHeight: '100vh', background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)' }}>
       <div style={{ marginBottom: '32px' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#00ccff', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <TerminalBackButton className="mb-4" />
+          <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#00ccff', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span style={{ fontSize: '32px' }}>🐋</span>
           Whale Intelligence Database
         </h1>

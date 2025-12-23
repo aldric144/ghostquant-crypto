@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
@@ -91,6 +92,7 @@ export default function EntityScannerPage() {
             <div className="w-3 h-3 bg-cyan-400 rounded-full animate-pulse" />
             <span className="text-cyan-400 text-sm font-medium">Live Feed</span>
           </div>
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-white mb-2">Predictive Entity Scanner</h1>
           <p className="text-gray-400">ML-powered entity classification and risk prediction</p>
         </div>

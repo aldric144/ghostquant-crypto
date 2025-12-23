@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 import { Key, Shield, CheckCircle, AlertCircle, Loader2, TrendingUp, Users, Activity } from 'lucide-react'
 import { licenseClient } from '@/lib/licenseClient'
@@ -170,7 +171,8 @@ export default function LicenseManagementPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white p-6">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
+        <TerminalBackButton className="mb-4" />
+          <div className="flex items-center gap-3 mb-2">
           <div className="p-3 bg-cyan-500/10 rounded-lg">
             <Key className="w-8 h-8 text-cyan-400" />
           </div>

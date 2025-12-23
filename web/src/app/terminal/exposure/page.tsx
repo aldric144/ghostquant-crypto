@@ -1,5 +1,6 @@
 'use client'
 
+import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
 interface ExposureData {
@@ -232,6 +233,7 @@ export default function ExposureAnalyzerPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
+          <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-cyan-400 mb-2">Exposure Analyzer</h1>
           <p className="text-gray-400">Portfolio exposure analysis, risk monitoring, and position management</p>
         </div>
