@@ -254,40 +254,61 @@ class SyntheticDataGenerator:
         }
     
     def generate_narratives(self) -> Dict[str, Any]:
-        """Generate synthetic narrative data."""
+        """Generate synthetic narrative data for Genesis Archive.
+        
+        Returns narratives array with schema matching frontend expectations:
+        {id, title, summary, category, severity, timestamp, tags, impact_score}
+        """
         rng = self._seeded_random("narratives")
         
-        narratives = [
-            "Market showing increased manipulation activity in DeFi sector",
-            "Whale accumulation detected across major L2 chains",
-            "Unusual stablecoin flows between centralized exchanges",
-            "Smart money rotating from ETH to SOL ecosystem",
-            "Darkpool activity suggests institutional positioning"
+        # Categories for historical events
+        categories = ["exploit", "manipulation", "regulation", "market", "protocol", "hack"]
+        
+        # Generate narrative events matching frontend schema
+        narrative_templates = [
+            ("Flash Loan Attack on DeFi Protocol", "A sophisticated flash loan attack drained $2.3M from a lending protocol through price oracle manipulation.", "exploit"),
+            ("Whale Accumulation Pattern Detected", "Multiple whale wallets coordinated accumulation of ETH across L2 chains, signaling potential market movement.", "market"),
+            ("Coordinated Wash Trading Ring Exposed", "Analysis revealed a network of 47 wallets engaged in systematic wash trading to inflate token volumes.", "manipulation"),
+            ("Smart Contract Vulnerability Patched", "Critical reentrancy vulnerability discovered and patched in popular DEX aggregator before exploitation.", "protocol"),
+            ("Regulatory Enforcement Action", "SEC issued cease and desist order against unregistered token offering, affecting market sentiment.", "regulation"),
+            ("Cross-Chain Bridge Exploit", "Attacker exploited signature verification flaw in bridge contract, extracting $15M in wrapped assets.", "hack"),
+            ("Market Manipulation via Social Media", "Coordinated pump-and-dump scheme identified through unusual social media activity patterns.", "manipulation"),
+            ("Protocol Governance Attack Thwarted", "Attempted hostile governance takeover blocked by community vote after whale intervention.", "protocol"),
+            ("Stablecoin Depeg Event Analysis", "Algorithmic stablecoin experienced 12% depeg due to cascading liquidations in DeFi protocols.", "market"),
+            ("MEV Bot Network Disruption", "Major MEV bot operator ceased operations after losing $4M to sandwich attack counter-strategies.", "exploit"),
         ]
         
-        top_threats = []
-        for i in range(3):
-            top_threats.append({
-                "id": f"threat-{i+1}",
-                "title": rng.choice(["Wash Trading Alert", "Spoofing Detected", "Pump & Dump Warning", "Front-Running Activity"]),
-                "severity": rng.choice(["critical", "high"]),
-                "affected_symbols": rng.sample(self.SYMBOLS, rng.randint(1, 3)),
-                "timestamp": (datetime.utcnow() - timedelta(minutes=rng.randint(5, 60))).isoformat()
-            })
-        
-        topics = []
-        for topic in ["DeFi Security", "Whale Movements", "Market Manipulation", "Cross-Chain Activity"]:
-            topics.append({
-                "name": topic,
-                "mentions": rng.randint(10, 100),
-                "sentiment": rng.choice(["positive", "neutral", "negative"])
+        narratives = []
+        for i in range(min(10, len(narrative_templates))):
+            title, summary, category = narrative_templates[i]
+            severity = rng.choice(["critical", "high", "medium", "low"])
+            
+            # Generate relevant tags based on category
+            tag_pool = {
+                "exploit": ["flash-loan", "oracle", "reentrancy", "defi"],
+                "manipulation": ["wash-trading", "pump-dump", "coordinated", "volume"],
+                "regulation": ["sec", "enforcement", "compliance", "legal"],
+                "market": ["whale", "accumulation", "sentiment", "volatility"],
+                "protocol": ["governance", "vulnerability", "upgrade", "security"],
+                "hack": ["bridge", "exploit", "theft", "recovery"]
+            }
+            tags = rng.sample(tag_pool.get(category, ["crypto", "blockchain"]), min(3, len(tag_pool.get(category, []))))
+            
+            narratives.append({
+                "id": f"narrative-{i+1}",
+                "title": title,
+                "summary": summary,
+                "category": category,
+                "severity": severity,
+                "timestamp": (datetime.utcnow() - timedelta(hours=rng.randint(1, 720))).isoformat(),
+                "tags": tags,
+                "impact_score": round(rng.uniform(0.3, 1.0), 2)
             })
         
         return {
-            "summary": rng.choice(narratives),
-            "top_threats": top_threats,
-            "topics": topics,
-            "sentiment": rng.choice(["bullish", "bearish", "neutral"])
+            "narratives": narratives,
+            "total_narratives": len(narratives),
+            "categories": list(set(n["category"] for n in narratives))
         }
     
     def generate_rings(self) -> Dict[str, Any]:

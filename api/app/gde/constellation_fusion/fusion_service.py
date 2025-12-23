@@ -233,23 +233,109 @@ class ConstellationFusionService:
         """
         Serialize the entire constellation to a dictionary for API response.
         Returns nodes, edges, clusters, and global metrics.
+        
+        If no real data exists, returns a minimum viable synthetic constellation
+        to ensure the frontend can render properly.
         """
         self.recompute_global_risk()
         
+        nodes = [node.to_dict() for node in self._nodes.values()]
+        edges = [edge.to_dict() for edge in self._edges.values()]
+        
+        # If no real data, generate minimum viable synthetic constellation
+        if not nodes:
+            nodes = self._generate_synthetic_nodes()
+            edges = self._generate_synthetic_edges(nodes)
+            source = "synthetic"
+        else:
+            source = "real"
+        
         return {
             "success": True,
+            "source": source,
             "map": {
-                "nodes": [node.to_dict() for node in self._nodes.values()],
-                "edges": [edge.to_dict() for edge in self._edges.values()],
-                "global_risk_score": self._metrics.global_risk_score,
+                "nodes": nodes,
+                "edges": edges,
+                "global_risk_score": self._metrics.global_risk_score if self._nodes else 0.45,
                 "timestamp": datetime.utcnow().isoformat(),
                 "metadata": {
-                    "total_clusters": len(self._clusters),
-                    "clusters": [c.to_dict() for c in self._clusters.values()],
+                    "total_clusters": len(self._clusters) if self._clusters else 3,
+                    "clusters": [c.to_dict() for c in self._clusters.values()] if self._clusters else [],
                 },
             },
             "timestamp": datetime.utcnow().isoformat(),
         }
+    
+    def _generate_synthetic_nodes(self) -> list:
+        """Generate minimum viable synthetic nodes for 3D visualization."""
+        import hashlib
+        
+        # Seed for deterministic generation
+        seed_str = datetime.utcnow().strftime("%Y-%m-%d-%H")
+        seed = int(hashlib.md5(seed_str.encode()).hexdigest()[:8], 16)
+        rng = random.Random(seed)
+        
+        node_types = [
+            ("whale", "Whale Wallet Alpha", 0.75, "#ef4444"),
+            ("hydra_head", "Coordinated Network Hub", 0.85, "#f97316"),
+            ("exchange", "CEX Hot Wallet", 0.35, "#22c55e"),
+            ("contract", "DeFi Protocol", 0.55, "#3b82f6"),
+            ("wallet", "Smart Money Tracker", 0.65, "#a855f7"),
+        ]
+        
+        nodes = []
+        for i, (node_type, label, risk, color) in enumerate(node_types):
+            angle = (i * 72) * (math.pi / 180)  # Spread evenly in circle
+            radius = 50 + rng.uniform(-10, 10)
+            
+            nodes.append({
+                "id": f"synthetic-{node_type}-{i}",
+                "label": label,
+                "type": node_type,
+                "x": round(radius * math.cos(angle), 2),
+                "y": round(radius * math.sin(angle), 2),
+                "z": round(rng.uniform(-15, 15), 2),
+                "risk_level": risk,
+                "color": color,
+                "size": 8 + int(risk * 12),
+                "metadata": {
+                    "synthetic": True,
+                    "category": node_type,
+                    "tags": ["demo", node_type],
+                }
+            })
+        
+        return nodes
+    
+    def _generate_synthetic_edges(self, nodes: list) -> list:
+        """Generate synthetic edges between nodes."""
+        if len(nodes) < 2:
+            return []
+        
+        edges = []
+        # Create a connected network
+        for i in range(len(nodes) - 1):
+            edges.append({
+                "source_id": nodes[i]["id"],
+                "target_id": nodes[i + 1]["id"],
+                "strength": 0.6,
+                "correlation": 0.5,
+                "color": "#6b7280",
+                "metadata": {"synthetic": True}
+            })
+        
+        # Add a few cross-connections
+        if len(nodes) >= 4:
+            edges.append({
+                "source_id": nodes[0]["id"],
+                "target_id": nodes[3]["id"],
+                "strength": 0.4,
+                "correlation": 0.3,
+                "color": "#6b7280",
+                "metadata": {"synthetic": True}
+            })
+        
+        return edges
     
     def get_metrics(self) -> Dict:
         """

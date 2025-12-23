@@ -55,20 +55,29 @@ class GQCoreService:
             validate_fn: Optional function to validate real data (returns True if valid)
         
         Returns:
-            Dict with source, timestamp, data, and optional fallback_reason
+            Dict with source, timestamp, and data fields flattened at top level
+            (e.g., {source, timestamp, entities: [...]} instead of {source, timestamp, data: {entities: [...]}})
         """
         timestamp = datetime.utcnow().isoformat()
+        fallback_reason = None
         
         # Check cache first
         if kind in self._cache:
             cached_data, cached_time = self._cache[kind]
             if (datetime.utcnow() - cached_time).total_seconds() < self._cache_ttl:
-                return {
+                # Return cached data with flattened structure
+                cached_result = {
                     "source": cached_data.get("source", "synthetic"),
                     "timestamp": timestamp,
-                    "data": cached_data.get("data", cached_data),
                     "cached": True
                 }
+                # Flatten the data fields to top level
+                data_content = cached_data.get("_data_content", cached_data)
+                if isinstance(data_content, dict):
+                    for key, value in data_content.items():
+                        if key not in ("source", "timestamp", "cached", "_data_content"):
+                            cached_result[key] = value
+                return cached_result
         
         # Try to get real data
         try:
@@ -89,14 +98,22 @@ class GQCoreService:
                 is_valid = False
             
             if is_valid:
+                # Build result with flattened data at top level
                 result = {
                     "source": "real",
                     "timestamp": timestamp,
-                    "data": real_data
+                    "_data_content": real_data  # Store for cache
                 }
+                # Flatten the data fields to top level
+                if isinstance(real_data, dict):
+                    for key, value in real_data.items():
+                        if key not in ("source", "timestamp", "_data_content"):
+                            result[key] = value
                 self._cache[kind] = (result, datetime.utcnow())
                 logger.info(f"[GQ-Core] {kind}: returned real data")
-                return result
+                # Remove internal cache key before returning
+                return_result = {k: v for k, v in result.items() if k != "_data_content"}
+                return return_result
             else:
                 fallback_reason = "Real data validation failed (empty or invalid)"
                 logger.warning(f"[GQ-Core] {kind}: {fallback_reason}")
@@ -111,15 +128,28 @@ class GQCoreService:
         
         # Fall back to synthetic data
         synthetic_data = synthetic_fn()
+        
+        # Build result with flattened data at top level
         result = {
             "source": "synthetic",
             "timestamp": timestamp,
-            "data": synthetic_data,
-            "fallback_reason": fallback_reason
+            "_data_content": synthetic_data  # Store for cache
         }
+        if fallback_reason:
+            result["fallback_reason"] = fallback_reason
+        
+        # Flatten the synthetic data fields to top level
+        if isinstance(synthetic_data, dict):
+            for key, value in synthetic_data.items():
+                if key not in ("source", "timestamp", "_data_content", "fallback_reason"):
+                    result[key] = value
+        
         self._cache[kind] = (result, datetime.utcnow())
         logger.info(f"[GQ-Core] {kind}: returned synthetic data")
-        return result
+        
+        # Remove internal cache key before returning
+        return_result = {k: v for k, v in result.items() if k != "_data_content"}
+        return return_result
     
     async def _get_redis_data(self, channel: str, count: int = 10) -> list:
         """Get latest data from a Redis channel."""
