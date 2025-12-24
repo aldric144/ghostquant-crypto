@@ -31,10 +31,29 @@ interface GlobalHeatMapDemoProps {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://ghostquant-mewzi.ondigitalocean.app';
 
+function generateSyntheticHeatMapData(): MarketData {
+  const regions: RegionRisk[] = [
+    { region: 'North America', risk_level: 42, entities: 3200, anomalies_24h: 8 },
+    { region: 'Europe', risk_level: 38, entities: 2800, anomalies_24h: 5 },
+    { region: 'Asia Pacific', risk_level: 55, entities: 4100, anomalies_24h: 12 },
+    { region: 'Middle East', risk_level: 48, entities: 890, anomalies_24h: 4 },
+    { region: 'South America', risk_level: 35, entities: 650, anomalies_24h: 2 }
+  ];
+  const heatmap_points: HeatMapPoint[] = [
+    { id: 'p1', lat: 40.7, lon: -74.0, intensity: 0.7, region: 'North America', label: 'New York Hub' },
+    { id: 'p2', lat: 51.5, lon: -0.1, intensity: 0.5, region: 'Europe', label: 'London Exchange' },
+    { id: 'p3', lat: 35.7, lon: 139.7, intensity: 0.8, region: 'Asia Pacific', label: 'Tokyo Market' },
+    { id: 'p4', lat: 22.3, lon: 114.2, intensity: 0.65, region: 'Asia Pacific', label: 'Hong Kong' },
+    { id: 'p5', lat: 1.3, lon: 103.8, intensity: 0.55, region: 'Asia Pacific', label: 'Singapore' },
+    { id: 'p6', lat: 25.2, lon: 55.3, intensity: 0.45, region: 'Middle East', label: 'Dubai' }
+  ];
+  return { regions, heatmap_points, demo_mode: true };
+}
+
 export default function GlobalHeatMapDemo({ refreshToken }: GlobalHeatMapDemoProps) {
   const [data, setData] = useState<MarketData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isSynthetic, setIsSynthetic] = useState(false);
   const [hoveredPoint, setHoveredPoint] = useState<HeatMapPoint | null>(null);
 
   useEffect(() => {
@@ -45,12 +64,20 @@ export default function GlobalHeatMapDemo({ refreshToken }: GlobalHeatMapDemoPro
       .then(res => res.json())
       .then(result => {
         if (!cancelled) {
-          setData(result);
-          setError(null);
+          if (result && result.regions && result.regions.length > 0) {
+            setData(result);
+            setIsSynthetic(false);
+          } else {
+            setData(generateSyntheticHeatMapData());
+            setIsSynthetic(true);
+          }
         }
       })
-      .catch(err => {
-        if (!cancelled) setError(err.message);
+      .catch(() => {
+        if (!cancelled) {
+          setData(generateSyntheticHeatMapData());
+          setIsSynthetic(true);
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -82,14 +109,6 @@ export default function GlobalHeatMapDemo({ refreshToken }: GlobalHeatMapDemoPro
       <div className="p-6 bg-slate-900/50 border border-cyan-500/20 rounded-xl animate-pulse">
         <div className="h-4 bg-slate-700 rounded w-1/3 mb-4"></div>
         <div className="h-64 bg-slate-700 rounded"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 bg-slate-900/50 border border-red-500/30 rounded-xl">
-        <p className="text-red-400 text-sm">Failed to load map data</p>
       </div>
     );
   }
