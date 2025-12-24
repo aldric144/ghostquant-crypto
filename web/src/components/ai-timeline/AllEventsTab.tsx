@@ -19,6 +19,194 @@ interface TimelineEvent {
   source?: string;
   intelligence?: Record<string, unknown>;
   isNew: boolean;
+  synthetic?: boolean;
+}
+
+function generateSyntheticTimelineEvents(): TimelineEvent[] {
+  const now = Date.now();
+  return [
+    {
+      id: 'syn-whale-1',
+      timestamp: now - 60000,
+      type: 'whale_movement',
+      severity: 'high',
+      score: 0.87,
+      message: 'Large BTC transfer detected: 2,500 BTC moved from dormant wallet to Binance hot wallet',
+      token: 'BTC',
+      wallet: '0x1a2b3c4d5e6f7890abcdef1234567890abcdef12',
+      chain: 'bitcoin',
+      riskType: 'whale',
+      source: 'synthetic',
+      intelligence: { amount: 2500, destination: 'binance' },
+      isNew: false,
+      synthetic: true
+    },
+    {
+      id: 'syn-manipulation-1',
+      timestamp: now - 180000,
+      type: 'manipulation_alert',
+      severity: 'high',
+      score: 0.82,
+      message: 'Potential wash trading detected on PEPE/USDT pair with coordinated volume spikes',
+      token: 'PEPE',
+      chain: 'ethereum',
+      riskType: 'manipulation',
+      source: 'synthetic',
+      intelligence: { pattern: 'wash_trading', confidence: 0.82 },
+      isNew: false,
+      synthetic: true
+    },
+    {
+      id: 'syn-risk-1',
+      timestamp: now - 300000,
+      type: 'risk_score_change',
+      severity: 'medium',
+      score: 0.65,
+      message: 'SOL risk score elevated from 42 to 67 due to increased volatility and leverage positions',
+      token: 'SOL',
+      chain: 'solana',
+      riskType: 'risk',
+      source: 'synthetic',
+      intelligence: { previous_score: 42, new_score: 67 },
+      isNew: false,
+      synthetic: true
+    },
+    {
+      id: 'syn-crosschain-1',
+      timestamp: now - 480000,
+      type: 'cross_chain_activity',
+      severity: 'medium',
+      score: 0.58,
+      message: 'Large cross-chain bridge activity: $15M USDC bridged from Ethereum to Arbitrum',
+      token: 'USDC',
+      chain: 'ethereum',
+      riskType: 'bridge',
+      source: 'synthetic',
+      intelligence: { amount_usd: 15000000, destination_chain: 'arbitrum' },
+      isNew: false,
+      synthetic: true
+    },
+    {
+      id: 'syn-entity-1',
+      timestamp: now - 720000,
+      type: 'entity_behavior_shift',
+      severity: 'medium',
+      score: 0.61,
+      message: 'Known accumulator wallet changed behavior: shifted from DeFi to CEX deposits',
+      wallet: '0xdeadbeef1234567890abcdef1234567890abcdef',
+      chain: 'ethereum',
+      riskType: 'entity',
+      source: 'synthetic',
+      intelligence: { behavior_change: 'defi_to_cex' },
+      isNew: false,
+      synthetic: true
+    },
+    {
+      id: 'syn-predictive-1',
+      timestamp: now - 1200000,
+      type: 'predictive_signal',
+      severity: 'low',
+      score: 0.45,
+      message: 'GhostMind AI predicts 73% probability of ETH breakout above $2,400 within 24h',
+      token: 'ETH',
+      chain: 'ethereum',
+      riskType: 'ai',
+      source: 'synthetic',
+      intelligence: { prediction: 'bullish_breakout', probability: 0.73, target: 2400 },
+      isNew: false,
+      synthetic: true
+    },
+    {
+      id: 'syn-anomaly-1',
+      timestamp: now - 1800000,
+      type: 'network_anomaly',
+      severity: 'medium',
+      score: 0.55,
+      message: 'Unusual mempool congestion detected on Ethereum with 45% increase in pending transactions',
+      chain: 'ethereum',
+      riskType: 'network',
+      source: 'synthetic',
+      intelligence: { congestion_increase: 0.45 },
+      isNew: false,
+      synthetic: true
+    },
+    {
+      id: 'syn-governance-1',
+      timestamp: now - 2400000,
+      type: 'governance_alert',
+      severity: 'low',
+      score: 0.38,
+      message: 'Major governance proposal submitted for Uniswap: Fee switch activation vote scheduled',
+      token: 'UNI',
+      chain: 'ethereum',
+      riskType: 'governance',
+      source: 'synthetic',
+      intelligence: { proposal_type: 'fee_switch', protocol: 'uniswap' },
+      isNew: false,
+      synthetic: true
+    },
+    {
+      id: 'syn-darkpool-1',
+      timestamp: now - 3600000,
+      type: 'darkpool_activity',
+      severity: 'medium',
+      score: 0.52,
+      message: 'Institutional block trade executed: $8.5M BTC OTC transaction detected off-exchange',
+      token: 'BTC',
+      chain: 'bitcoin',
+      riskType: 'darkpool',
+      source: 'synthetic',
+      intelligence: { amount_usd: 8500000, trade_type: 'otc' },
+      isNew: false,
+      synthetic: true
+    },
+    {
+      id: 'syn-stablecoin-1',
+      timestamp: now - 5400000,
+      type: 'stablecoin_flow',
+      severity: 'low',
+      score: 0.42,
+      message: 'Large USDT mint detected: 500M USDT minted on Tron network by Tether Treasury',
+      token: 'USDT',
+      chain: 'tron',
+      riskType: 'stablecoin',
+      source: 'synthetic',
+      intelligence: { amount: 500000000, action: 'mint' },
+      isNew: false,
+      synthetic: true
+    },
+    {
+      id: 'syn-whale-2',
+      timestamp: now - 7200000,
+      type: 'whale_movement',
+      severity: 'high',
+      score: 0.79,
+      message: 'Whale wallet activated after 18 months dormancy: 15,000 ETH moved to unknown address',
+      token: 'ETH',
+      wallet: '0xabcdef1234567890abcdef1234567890abcdef12',
+      chain: 'ethereum',
+      riskType: 'whale',
+      source: 'synthetic',
+      intelligence: { dormancy_months: 18, amount: 15000 },
+      isNew: false,
+      synthetic: true
+    },
+    {
+      id: 'syn-derivatives-1',
+      timestamp: now - 10800000,
+      type: 'derivatives_alert',
+      severity: 'medium',
+      score: 0.68,
+      message: 'Elevated funding rates on BTC perpetuals: 0.15% per 8h indicating overleveraged longs',
+      token: 'BTC',
+      chain: 'ethereum',
+      riskType: 'derivatives',
+      source: 'synthetic',
+      intelligence: { funding_rate: 0.0015, direction: 'long' },
+      isNew: false,
+      synthetic: true
+    }
+  ];
 }
 
 interface AllEventsTabProps {
@@ -61,6 +249,7 @@ export default function AllEventsTab({ timeWindow }: AllEventsTabProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSyntheticMode, setIsSyntheticMode] = useState(false);
 
   const { latestAlert, alertHistory, connectionStatus } = useIntelFeed();
 
@@ -126,20 +315,21 @@ export default function AllEventsTab({ timeWindow }: AllEventsTabProps) {
       });
 
       allEvents.sort((a, b) => b.timestamp - a.timestamp);
-      setEvents(allEvents.slice(0, 500));
+      
+      // If no live events, inject synthetic events to maintain continuity
+      if (allEvents.length === 0) {
+        const syntheticEvents = generateSyntheticTimelineEvents();
+        setEvents(syntheticEvents);
+        setIsSyntheticMode(true);
+      } else {
+        setEvents(allEvents.slice(0, 500));
+        setIsSyntheticMode(false);
+      }
     } catch {
       // Use synthetic fallback data when API fails
-      const syntheticEvents: TimelineEvent[] = [
-        { id: 'syn-1', timestamp: Date.now() - 60000, type: 'whale_movement', severity: 'high', score: 0.85, message: 'Large BTC transfer detected from unknown wallet to Binance', token: 'BTC', wallet: '0x1234...5678', chain: 'ethereum', riskType: 'whale', source: 'synthetic', intelligence: {}, isNew: false },
-        { id: 'syn-2', timestamp: Date.now() - 120000, type: 'manipulation_alert', severity: 'high', score: 0.78, message: 'Potential wash trading detected on DOGE/USDT pair', token: 'DOGE', chain: 'ethereum', riskType: 'manipulation', source: 'synthetic', intelligence: {}, isNew: false },
-        { id: 'syn-3', timestamp: Date.now() - 180000, type: 'darkpool_activity', severity: 'medium', score: 0.62, message: 'Institutional block trade executed off-exchange', token: 'ETH', chain: 'ethereum', riskType: 'darkpool', source: 'synthetic', intelligence: {}, isNew: false },
-        { id: 'syn-4', timestamp: Date.now() - 240000, type: 'stablecoin_flow', severity: 'medium', score: 0.55, message: 'Large USDT mint detected on Tron network', token: 'USDT', chain: 'tron', riskType: 'stablecoin', source: 'synthetic', intelligence: {}, isNew: false },
-        { id: 'syn-5', timestamp: Date.now() - 300000, type: 'derivatives_alert', severity: 'low', score: 0.35, message: 'Elevated funding rates on BTC perpetuals', token: 'BTC', chain: 'ethereum', riskType: 'derivatives', source: 'synthetic', intelligence: {}, isNew: false },
-        { id: 'syn-6', timestamp: Date.now() - 3600000, type: 'ai_signal', severity: 'medium', score: 0.68, message: 'GhostMind detected unusual accumulation pattern', token: 'SOL', chain: 'solana', riskType: 'ai', source: 'synthetic', intelligence: {}, isNew: false },
-        { id: 'syn-7', timestamp: Date.now() - 7200000, type: 'whale_movement', severity: 'high', score: 0.82, message: 'Whale wallet activated after 2 years dormancy', wallet: '0xabcd...efgh', chain: 'ethereum', riskType: 'whale', source: 'synthetic', intelligence: {}, isNew: false },
-        { id: 'syn-8', timestamp: Date.now() - 86400000, type: 'institution_activity', severity: 'low', score: 0.42, message: 'Grayscale reported new BTC holdings', token: 'BTC', riskType: 'institution', source: 'synthetic', intelligence: {}, isNew: false },
-      ];
+      const syntheticEvents = generateSyntheticTimelineEvents();
       setEvents(syntheticEvents);
+      setIsSyntheticMode(true);
     } finally {
       setLoading(false);
     }
@@ -295,12 +485,35 @@ export default function AllEventsTab({ timeWindow }: AllEventsTabProps) {
 
   return (
     <div className="space-y-6">
+      {/* SYNTHETIC MODE Badge */}
+      {isSyntheticMode && (
+        <div className="mb-4 px-4 py-3 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+            <span className="text-sm font-semibold text-amber-400">SYNTHETIC MODE</span>
+          </div>
+          <div className="group relative">
+            <svg className="w-4 h-4 text-amber-400/70 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="absolute left-0 top-6 w-72 p-3 bg-slate-800 border border-amber-500/30 rounded-lg text-xs text-gray-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 shadow-lg">
+              Timeline is displaying synthesized intelligence to maintain continuity when live signals are unavailable. Events are representative of typical GhostQuant intelligence patterns.
+            </div>
+          </div>
+          <span className="text-xs text-amber-400/70">
+            Displaying synthesized intelligence events
+          </span>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex items-center gap-4">
           <div
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
               connectionStatus === "connected"
                 ? "bg-green-500/20 text-green-400"
+                : isSyntheticMode
+                ? "bg-amber-500/20 text-amber-400"
                 : "bg-red-500/20 text-red-400"
             }`}
           >
@@ -308,11 +521,13 @@ export default function AllEventsTab({ timeWindow }: AllEventsTabProps) {
               className={`w-2 h-2 rounded-full ${
                 connectionStatus === "connected"
                   ? "bg-green-400 animate-pulse"
+                  : isSyntheticMode
+                  ? "bg-amber-400 animate-pulse"
                   : "bg-red-400"
               }`}
             />
             <span className="text-xs font-medium">
-              {connectionStatus === "connected" ? "Live" : "Disconnected"}
+              {connectionStatus === "connected" ? "Live" : isSyntheticMode ? "Synthetic" : "Disconnected"}
             </span>
           </div>
           <span className="text-sm text-gray-400">
@@ -344,7 +559,7 @@ export default function AllEventsTab({ timeWindow }: AllEventsTabProps) {
         </div>
       </div>
 
-      {filteredEvents.length === 0 ? (
+      {filteredEvents.length === 0 && searchQuery.trim() ? (
         <div className="flex flex-col items-center justify-center h-64 text-center py-12">
           <svg
             className="w-16 h-16 text-gray-600 mb-4"
@@ -356,13 +571,19 @@ export default function AllEventsTab({ timeWindow }: AllEventsTabProps) {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
             />
           </svg>
-          <p className="text-gray-500 text-lg">No events found</p>
+          <p className="text-gray-500 text-lg">No matching events</p>
           <p className="text-gray-600 text-sm mt-2">
-            Try adjusting your filters or search query
+            Try adjusting your search query: &quot;{searchQuery}&quot;
           </p>
+          <button
+            onClick={() => setSearchQuery("")}
+            className="mt-4 px-4 py-2 bg-cyan-500/20 text-cyan-400 rounded-lg hover:bg-cyan-500/30 transition-colors text-sm"
+          >
+            Clear Search
+          </button>
         </div>
       ) : (
         <div className="space-y-8">
