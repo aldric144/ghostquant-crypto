@@ -1,6 +1,7 @@
 'use client'
 
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+import ModuleErrorBoundary, { safeArray, safeNumber } from '../../../components/terminal/ModuleErrorBoundary'
 import { useState, useEffect } from 'react'
 import { predictClient, PredictionResponse, BatchPredictionResponse, ChampionResponse } from '@/lib/predictClient'
 
@@ -12,7 +13,7 @@ interface PredictionHistoryItem {
   icon: string
 }
 
-export default function PredictionConsolePage() {
+function PredictionConsolePageContent() {
   const [eventForm, setEventForm] = useState({
     value: '',
     chain: '',
@@ -332,38 +333,41 @@ export default function PredictionConsolePage() {
 
   const generateSparkline = (): string => {
     const blocks = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
-    const recentPredictions = history.slice(0, 10).reverse()
+    const safeHistory = safeArray<PredictionHistoryItem>(history)
+    const recentPredictions = safeHistory.slice(0, 10).reverse()
     
     if (recentPredictions.length === 0) return '▁▁▁▁▁▁▁▁'
     
     const values = recentPredictions.map(item => {
-      if ('confidence' in item.result && typeof item.result.confidence === 'number') {
-        return item.result.confidence
+      if (item?.result && 'confidence' in item.result && typeof item.result.confidence === 'number') {
+        return safeNumber(item.result.confidence, 0.5)
       }
-      if ('risk_score' in item.result && typeof item.result.risk_score === 'number') {
-        return 1 - item.result.risk_score
+      if (item?.result && 'risk_score' in item.result && typeof item.result.risk_score === 'number') {
+        return 1 - safeNumber(item.result.risk_score, 0.5)
       }
       return 0.5
     })
     
-    return values.map(v => blocks[Math.min(7, Math.floor(v * 8))]).join('')
+    return values.map(v => blocks[Math.min(7, Math.max(0, Math.floor(safeNumber(v, 0.5) * 8)))]).join('')
   }
 
   const getRiskCounts = () => {
     const counts = { high: 0, medium: 0, low: 0 }
-    history.slice(0, 20).forEach(item => {
-      if ('classification' in item.result && item.result.classification) {
-        const cls = item.result.classification.toLowerCase()
+    const safeHistory = safeArray<PredictionHistoryItem>(history)
+    safeHistory.slice(0, 20).forEach(item => {
+      if (item?.result && 'classification' in item.result && item.result.classification) {
+        const cls = String(item.result.classification).toLowerCase()
         if (cls === 'high') counts.high++
         else if (cls === 'medium') counts.medium++
         else if (cls === 'low') counts.low++
       }
     })
-    const total = counts.high + counts.medium + counts.low || 1
+    const total = counts.high + counts.medium + counts.low
+    const safeDivisor = total > 0 ? total : 1
     return {
-      high: (counts.high / total) * 100,
-      medium: (counts.medium / total) * 100,
-      low: (counts.low / total) * 100
+      high: safeNumber((counts.high / safeDivisor) * 100),
+      medium: safeNumber((counts.medium / safeDivisor) * 100),
+      low: safeNumber((counts.low / safeDivisor) * 100)
     }
   }
 
@@ -651,5 +655,13 @@ export default function PredictionConsolePage() {
         .animate-fadeIn { animation: fadeIn 400ms ease-out; }
       `}</style>
     </div>
+  )
+}
+
+export default function PredictionConsolePage() {
+  return (
+    <ModuleErrorBoundary moduleName="Prediction Console">
+      <PredictionConsolePageContent />
+    </ModuleErrorBoundary>
   )
 }
