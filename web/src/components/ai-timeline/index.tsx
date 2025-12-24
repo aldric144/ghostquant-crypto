@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import AllEventsTab from "./AllEventsTab";
+import ModuleErrorBoundary from "../terminal/ModuleErrorBoundary";
 
 type TabId = "all" | "5m" | "1h" | "24h" | "7d";
 
@@ -53,7 +54,9 @@ export default function AITimeline() {
         </div>
 
         <div className="transition-all duration-300">
-          <AllEventsTab timeWindow={currentWindow} />
+          <ModuleErrorBoundary moduleName="AI Timeline">
+            <AllEventsTab timeWindow={currentWindow} />
+          </ModuleErrorBoundary>
         </div>
       </div>
     </div>
