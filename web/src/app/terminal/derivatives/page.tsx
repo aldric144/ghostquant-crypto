@@ -1,6 +1,7 @@
 'use client'
 
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+import ModuleErrorBoundary, { safeArray, safeNumber } from '../../../components/terminal/ModuleErrorBoundary'
 import { useState, useEffect } from 'react'
 
 interface DerivativeContract {
@@ -51,7 +52,7 @@ interface DerivativesMetrics {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
-export default function DerivativesWatchPage() {
+function DerivativesWatchPageContent() {
   const [contracts, setContracts] = useState<DerivativeContract[]>([])
   const [fundingRates, setFundingRates] = useState<FundingRateData[]>([])
   const [liquidations, setLiquidations] = useState<LiquidationEvent[]>([])
@@ -193,9 +194,13 @@ export default function DerivativesWatchPage() {
   const contractTypes = ['all', 'perpetual', 'futures', 'options']
   const exchanges = ['all', 'Binance', 'Bybit', 'OKX', 'Deribit', 'BitMEX']
 
-  const filteredContracts = contracts.filter(c => 
-    (selectedType === 'all' || c.type === selectedType) &&
-    (selectedExchange === 'all' || c.exchange === selectedExchange)
+  const safeContracts = safeArray<DerivativeContract>(contracts)
+  const safeFundingRates = safeArray<FundingRateData>(fundingRates)
+  const safeLiquidations = safeArray<LiquidationEvent>(liquidations)
+  
+  const filteredContracts = safeContracts.filter(c => 
+    (selectedType === 'all' || c?.type === selectedType) &&
+    (selectedExchange === 'all' || c?.exchange === selectedExchange)
   )
 
   if (loading) {
@@ -267,11 +272,11 @@ export default function DerivativesWatchPage() {
             <div className="relative h-8 bg-slate-700 rounded-full overflow-hidden">
               <div 
                 className="absolute left-0 h-full bg-green-500"
-                style={{ width: `${(metrics.longLiquidations / (metrics.longLiquidations + metrics.shortLiquidations)) * 100}%` }}
+                style={{ width: `${safeNumber(metrics.longLiquidations) + safeNumber(metrics.shortLiquidations) > 0 ? (safeNumber(metrics.longLiquidations) / (safeNumber(metrics.longLiquidations) + safeNumber(metrics.shortLiquidations))) * 100 : 50}%` }}
               />
               <div 
                 className="absolute right-0 h-full bg-red-500"
-                style={{ width: `${(metrics.shortLiquidations / (metrics.longLiquidations + metrics.shortLiquidations)) * 100}%` }}
+                style={{ width: `${safeNumber(metrics.longLiquidations) + safeNumber(metrics.shortLiquidations) > 0 ? (safeNumber(metrics.shortLiquidations) / (safeNumber(metrics.longLiquidations) + safeNumber(metrics.shortLiquidations))) * 100 : 50}%` }}
               />
             </div>
             <div className="flex justify-between text-sm mt-2">
@@ -368,7 +373,7 @@ export default function DerivativesWatchPage() {
               <h2 className="text-lg font-semibold text-white">Live Liquidations</h2>
             </div>
             <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-              {liquidations.map((liq) => (
+              {safeLiquidations.map((liq) => (
                 <div key={liq.id} className={`rounded-lg p-3 border ${
                   liq.side === 'long' ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'
                 }`}>
@@ -402,7 +407,7 @@ export default function DerivativesWatchPage() {
         <div className="mt-6 bg-slate-800/50 border border-cyan-500/20 rounded-lg p-6">
           <h2 className="text-lg font-semibold text-white mb-4">Funding Rates Overview</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-            {fundingRates.map((fr) => (
+            {safeFundingRates.map((fr) => (
               <div 
                 key={`${fr.symbol}-${fr.exchange}`}
                 className={`p-4 rounded-lg border transition-all hover:scale-105 cursor-pointer ${
@@ -441,5 +446,13 @@ export default function DerivativesWatchPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function DerivativesWatchPage() {
+  return (
+    <ModuleErrorBoundary moduleName="Derivatives Watch">
+      <DerivativesWatchPageContent />
+    </ModuleErrorBoundary>
   )
 }

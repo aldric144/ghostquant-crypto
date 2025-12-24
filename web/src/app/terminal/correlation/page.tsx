@@ -1,6 +1,7 @@
 'use client'
 
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+import ModuleErrorBoundary, { safeArray, safeNumber, safeMatrix } from '../../../components/terminal/ModuleErrorBoundary'
 import { useState, useEffect } from 'react'
 
 interface CorrelationPair {
@@ -32,7 +33,7 @@ interface CorrelationMetrics {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
-export default function CorrelationEnginePage() {
+function CorrelationEnginePageContent() {
   const [correlations, setCorrelations] = useState<CorrelationPair[]>([])
   const [clusters, setClusters] = useState<CorrelationCluster[]>([])
   const [metrics, setMetrics] = useState<CorrelationMetrics | null>(null)
@@ -158,6 +159,11 @@ export default function CorrelationEnginePage() {
   }
 
   const strengths = ['all', 'strong', 'moderate', 'weak', 'inverse']
+  
+  const safeCorrelations = safeArray<CorrelationPair>(correlations)
+  const safeClusters = safeArray<CorrelationCluster>(clusters)
+  const safeMatrixAssets = safeArray<string>(matrixAssets)
+  const safeCorrelationMatrix = safeMatrix(correlationMatrix, safeMatrixAssets.length, safeMatrixAssets.length)
 
   if (loading) {
     return (
@@ -254,24 +260,24 @@ export default function CorrelationEnginePage() {
               <thead>
                 <tr>
                   <th className="p-2"></th>
-                  {matrixAssets.map((asset) => (
+                  {safeMatrixAssets.map((asset) => (
                     <th key={asset} className="p-2 text-xs text-cyan-400 font-medium">{asset}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {matrixAssets.map((asset, i) => (
+                {safeMatrixAssets.map((asset, i) => (
                   <tr key={asset}>
                     <td className="p-2 text-xs text-cyan-400 font-medium">{asset}</td>
-                    {correlationMatrix[i]?.map((value, j) => (
+                    {(safeCorrelationMatrix[i] || []).map((value, j) => (
                       <td key={j} className="p-1">
                         <div 
-                          className={`w-10 h-10 rounded flex items-center justify-center text-xs font-medium ${getCorrelationColor(value)} ${
+                          className={`w-10 h-10 rounded flex items-center justify-center text-xs font-medium ${getCorrelationColor(safeNumber(value))} ${
                             i === j ? 'opacity-50' : ''
                           }`}
-                          title={`${matrixAssets[i]}/${matrixAssets[j]}: ${value.toFixed(2)}`}
+                          title={`${safeMatrixAssets[i] || ''}/${safeMatrixAssets[j] || ''}: ${safeNumber(value).toFixed(2)}`}
                         >
-                          {value.toFixed(2)}
+                          {safeNumber(value).toFixed(2)}
                         </div>
                       </td>
                     ))}
@@ -314,9 +320,9 @@ export default function CorrelationEnginePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {correlations
-                    .filter(p => selectedStrength === 'all' || p.strength === selectedStrength)
-                    .sort((a, b) => Math.abs(b.correlation) - Math.abs(a.correlation))
+                  {safeCorrelations
+                    .filter(p => selectedStrength === 'all' || p?.strength === selectedStrength)
+                    .sort((a, b) => Math.abs(safeNumber(b?.correlation)) - Math.abs(safeNumber(a?.correlation)))
                     .slice(0, 20)
                     .map((pair, i) => (
                     <tr key={i} className="border-t border-slate-700/50 hover:bg-slate-700/30 transition-colors">
@@ -348,16 +354,16 @@ export default function CorrelationEnginePage() {
               <h2 className="text-lg font-semibold text-white">Correlation Clusters</h2>
             </div>
             <div className="p-4 space-y-4">
-              {clusters.map((cluster) => (
-                <div key={cluster.id} className="bg-slate-900/50 rounded-lg p-4 border border-cyan-500/10">
+              {safeClusters.map((cluster) => (
+                <div key={cluster?.id || Math.random()} className="bg-slate-900/50 rounded-lg p-4 border border-cyan-500/10">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="font-medium text-white">{cluster.name}</span>
-                    <span className={`text-sm font-bold ${getCorrelationTextColor(cluster.avgCorrelation)}`}>
-                      {cluster.avgCorrelation.toFixed(2)}
+                    <span className="font-medium text-white">{cluster?.name || 'Unknown Cluster'}</span>
+                    <span className={`text-sm font-bold ${getCorrelationTextColor(safeNumber(cluster?.avgCorrelation))}`}>
+                      {safeNumber(cluster?.avgCorrelation).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {cluster.assets.map((asset) => (
+                    {safeArray<string>(cluster?.assets).map((asset) => (
                       <span key={asset} className="px-2 py-1 bg-cyan-500/20 text-cyan-400 rounded text-xs">
                         {asset}
                       </span>
@@ -369,10 +375,10 @@ export default function CorrelationEnginePage() {
                       <div className="w-20 h-2 bg-slate-700 rounded-full overflow-hidden">
                         <div 
                           className="h-full bg-cyan-500"
-                          style={{ width: `${cluster.stability * 100}%` }}
+                          style={{ width: `${safeNumber(cluster?.stability) * 100}%` }}
                         />
                       </div>
-                      <span>{(cluster.stability * 100).toFixed(0)}%</span>
+                      <span>{(safeNumber(cluster?.stability) * 100).toFixed(0)}%</span>
                     </div>
                   </div>
                 </div>
@@ -382,5 +388,13 @@ export default function CorrelationEnginePage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CorrelationEnginePage() {
+  return (
+    <ModuleErrorBoundary moduleName="Correlation Engine">
+      <CorrelationEnginePageContent />
+    </ModuleErrorBoundary>
   )
 }

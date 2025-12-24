@@ -1,11 +1,32 @@
 'use client'
 
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+import ModuleErrorBoundary, { safeArray, safeNumber } from '../../../components/terminal/ModuleErrorBoundary'
 import { useState, useEffect } from 'react'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
-export default function NetworkAnomalyEnginePage() {
+interface Anomaly {
+  id: string
+  type: string
+  severity: string
+  source: string
+  target: string
+  confidence: number
+  timestamp: Date
+  description: string
+}
+
+interface Metrics {
+  totalAnomalies: number
+  criticalCount: number
+  avgConfidence: number
+  networkHealth: number
+  activeAlerts: number
+  resolvedToday: number
+}
+
+function NetworkAnomalyEnginePageContent() {
   const [anomalies, setAnomalies] = useState<{id:string,type:string,severity:string,source:string,target:string,confidence:number,timestamp:Date,description:string}[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSeverity, setSelectedSeverity] = useState('all')
@@ -48,7 +69,8 @@ export default function NetworkAnomalyEnginePage() {
 
   const getSeverityColor = (sev: string) => ({ critical: 'bg-red-500/20 text-red-400 border-red-500', high: 'bg-orange-500/20 text-orange-400 border-orange-500', medium: 'bg-yellow-500/20 text-yellow-400 border-yellow-500', low: 'bg-green-500/20 text-green-400 border-green-500' }[sev] || 'bg-gray-500/20 text-gray-400 border-gray-500')
   const severities = ['all', 'critical', 'high', 'medium', 'low']
-  const filtered = anomalies.filter(a => selectedSeverity === 'all' || a.severity === selectedSeverity)
+  const safeAnomalies = safeArray<Anomaly>(anomalies)
+  const filtered = safeAnomalies.filter(a => selectedSeverity === 'all' || a?.severity === selectedSeverity)
 
   if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center"><div className="text-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div><p className="text-gray-400">Scanning Network...</p></div></div>
 
@@ -62,7 +84,7 @@ export default function NetworkAnomalyEnginePage() {
           <div className="bg-slate-800/50 border border-red-500/20 rounded-lg p-4"><div className="text-xs text-gray-400 mb-1">Critical</div><div className="text-2xl font-bold text-red-400">{metrics.criticalCount}</div></div>
           <div className="bg-slate-800/50 border border-yellow-500/20 rounded-lg p-4"><div className="text-xs text-gray-400 mb-1">Active Alerts</div><div className="text-2xl font-bold text-yellow-400">{metrics.activeAlerts}</div></div>
           <div className="bg-slate-800/50 border border-green-500/20 rounded-lg p-4"><div className="text-xs text-gray-400 mb-1">Resolved Today</div><div className="text-2xl font-bold text-green-400">{metrics.resolvedToday}</div></div>
-          <div className="bg-slate-800/50 border border-purple-500/20 rounded-lg p-4"><div className="text-xs text-gray-400 mb-1">Avg Confidence</div><div className="text-2xl font-bold text-purple-400">{metrics.avgConfidence.toFixed(1)}%</div></div>
+          <div className="bg-slate-800/50 border border-purple-500/20 rounded-lg p-4"><div className="text-xs text-gray-400 mb-1">Avg Confidence</div><div className="text-2xl font-bold text-purple-400">{safeNumber(metrics.avgConfidence).toFixed(1)}%</div></div>
           <div className="bg-slate-800/50 border border-cyan-500/20 rounded-lg p-4"><div className="text-xs text-gray-400 mb-1">Network Health</div><div className={`text-2xl font-bold ${metrics.networkHealth >= 80 ? 'text-green-400' : metrics.networkHealth >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>{metrics.networkHealth}%</div></div>
         </div>
         <div className="mb-6 bg-slate-800/50 border border-cyan-500/20 rounded-lg p-6">
@@ -96,8 +118,8 @@ export default function NetworkAnomalyEnginePage() {
               <h2 className="text-lg font-semibold text-white mb-4">Severity Distribution</h2>
               <div className="space-y-3">
                 {['critical', 'high', 'medium', 'low'].map(sev => {
-                  const count = anomalies.filter(a => a.severity === sev).length
-                  const pct = (count / anomalies.length) * 100 || 0
+                  const count = safeAnomalies.filter(a => a?.severity === sev).length
+                  const pct = safeAnomalies.length > 0 ? (count / safeAnomalies.length) * 100 : 0
                   const colors = { critical: 'bg-red-500', high: 'bg-orange-500', medium: 'bg-yellow-500', low: 'bg-green-500' }
                   return <div key={sev}><div className="flex justify-between text-sm mb-1"><span className="text-gray-400 capitalize">{sev}</span><span className="text-white">{count}</span></div><div className="h-2 bg-slate-700 rounded-full overflow-hidden"><div className={`h-full ${colors[sev as keyof typeof colors]} rounded-full`} style={{ width: `${pct}%` }} /></div></div>
                 })}
@@ -106,8 +128,8 @@ export default function NetworkAnomalyEnginePage() {
             <div className="bg-slate-800/50 border border-cyan-500/20 rounded-lg p-6">
               <h2 className="text-lg font-semibold text-white mb-4">Top Attack Vectors</h2>
               <div className="space-y-2">
-                {Array.from(new Set(anomalies.map(a => a.type))).slice(0, 5).map(type => {
-                  const count = anomalies.filter(a => a.type === type).length
+                {Array.from(new Set(safeAnomalies.map(a => a?.type || 'Unknown'))).slice(0, 5).map(type => {
+                  const count = safeAnomalies.filter(a => a?.type === type).length
                   return <div key={type} className="flex items-center justify-between text-sm"><span className="text-gray-400 truncate">{type}</span><span className="text-cyan-400 font-medium">{count}</span></div>
                 })}
               </div>
@@ -116,5 +138,13 @@ export default function NetworkAnomalyEnginePage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function NetworkAnomalyEnginePage() {
+  return (
+    <ModuleErrorBoundary moduleName="Network Anomaly Engine">
+      <NetworkAnomalyEnginePageContent />
+    </ModuleErrorBoundary>
   )
 }
