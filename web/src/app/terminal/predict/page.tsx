@@ -1,9 +1,10 @@
 'use client'
 
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
-import ModuleErrorBoundary, { safeArray, safeNumber } from '../../../components/terminal/ModuleErrorBoundary'
-import { useState, useEffect } from 'react'
+import ModuleErrorBoundary from '../../../components/terminal/ModuleErrorBoundary'
+import { useState, useEffect, useMemo } from 'react'
 import { predictClient, PredictionResponse, BatchPredictionResponse, ChampionResponse } from '@/lib/predictClient'
+import { normalizeTableRows, safeNumber, safeArray } from '../../../utils/visualizationNormalizer'
 
 interface PredictionHistoryItem {
   id: string
