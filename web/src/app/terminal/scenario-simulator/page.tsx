@@ -32,15 +32,22 @@ function ScenarioSimulatorPageContent() {
   }, [])
 
   async function fetchData() {
+    // Use AbortController with timeout to prevent hung requests
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+    
     try {
-      const r = await fetch(`${API_BASE}/gq-core/scenarios/list`)
+      const r = await fetch(`${API_BASE}/gq-core/scenarios/list`, { signal: controller.signal })
+      clearTimeout(timeoutId)
       if (r.ok) { 
         const d = await r.json()
-        if (d.scenarios) { 
+        // Validate API response before setting state
+        if (d && Array.isArray(d.scenarios)) { 
           setScenarios(d.scenarios)
         }
       }
     } catch {
+      clearTimeout(timeoutId)
       // Error handled by synthetic fallback
     } finally { 
       setLoading(false) 
@@ -84,25 +91,35 @@ function ScenarioSimulatorPageContent() {
   const getImpactColor = (i: string) => ({ critical: 'text-red-400', high: 'text-orange-400', medium: 'text-yellow-400', low: 'text-green-400' }[i] || 'text-gray-400')
   const getCaseColor = (v: number) => safeNumber(v) >= 0 ? 'text-green-400' : 'text-red-400'
   
-  if (loading) return <div className="min-h-screen bg-slate-900 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div></div>
-  
+  // NON-BLOCKING: Always render dashboard, never early-return for loading state
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className={`w-3 h-3 rounded-full animate-pulse ${isSyntheticMode ? 'bg-amber-400' : 'bg-cyan-400'}`} />
-            <span className={`text-sm font-medium ${isSyntheticMode ? 'text-amber-400' : 'text-cyan-400'}`}>
-              {isSyntheticMode ? 'Synthetic Mode' : 'Live Feed'}
-            </span>
+        {/* Non-blocking loading/synthetic banner */}
+        {(loading || isSyntheticMode) && (
+          <div className="mb-6 px-4 py-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+            <div className="flex items-center gap-3">
+              {loading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-400" />}
+              <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+              <span className="text-sm font-semibold text-amber-400">
+                {loading ? 'LOADING LIVE DATA' : 'SYNTHETIC MODE'}
+              </span>
+              <span className="text-xs text-amber-400/70">|</span>
+              <span className="text-xs text-gray-400">
+                {loading ? 'Fetching scenario data...' : 'Displaying synthesized scenario data'}
+              </span>
+            </div>
           </div>
+        )}
+
+        <div className="mb-8">
           <TerminalBackButton className="mb-4" />
           <h1 className="text-3xl font-bold text-cyan-400 mb-2">Scenario Simulator</h1>
           <p className="text-gray-400">Multi-scenario analysis for risk assessment and decision support</p>
         </div>
 
-        {/* SYNTHETIC MODE Badge */}
-        {isSyntheticMode && (
+        {/* SYNTHETIC MODE Badge - only show when not loading and in synthetic mode */}
+        {!loading && isSyntheticMode && (
           <div className="mb-6 px-4 py-3 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-3">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />

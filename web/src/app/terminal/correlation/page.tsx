@@ -50,16 +50,26 @@ function CorrelationEnginePageContent() {
   }, [selectedStrength, timeframe])
 
   async function fetchData() {
+    // Use AbortController with timeout to prevent hung requests
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+    
     try {
-      const response = await fetch(`${API_BASE}/gq-core/correlation/matrix?strength=${selectedStrength}&timeframe=${timeframe}`)
+      const response = await fetch(
+        `${API_BASE}/gq-core/correlation/matrix?strength=${selectedStrength}&timeframe=${timeframe}`,
+        { signal: controller.signal }
+      )
+      clearTimeout(timeoutId)
+      
       if (response.ok) {
         const data = await response.json()
-        if (data.pairs) {
+        // Validate API response before setting state
+        if (data && Array.isArray(data.pairs)) {
           setCorrelations(data.pairs)
-          setClusters(data.clusters || [])
-          setMetrics(data.metrics)
-          setMatrixAssets(data.assets || [])
-          setCorrelationMatrix(data.matrix || [])
+          setClusters(Array.isArray(data.clusters) ? data.clusters : [])
+          setMetrics(data.metrics || null)
+          setMatrixAssets(Array.isArray(data.assets) ? data.assets : [])
+          setCorrelationMatrix(Array.isArray(data.matrix) ? data.matrix : [])
         } else {
           generateMockData()
         }
@@ -67,6 +77,7 @@ function CorrelationEnginePageContent() {
         generateMockData()
       }
     } catch (error) {
+      clearTimeout(timeoutId)
       console.error('Error fetching correlation data:', error)
       generateMockData()
     } finally {
@@ -165,20 +176,30 @@ function CorrelationEnginePageContent() {
   const safeMatrixAssets = safeArray<string>(matrixAssets)
   const safeCorrelationMatrix = safeMatrix(correlationMatrix, safeMatrixAssets.length, safeMatrixAssets.length)
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Computing Correlations...</p>
-        </div>
-      </div>
-    )
-  }
+  // Determine if we're in synthetic mode (no real data loaded yet or using mock data)
+  const isSyntheticMode = safeCorrelations.length === 0 || !metrics
 
+  // NON-BLOCKING: Always render dashboard, never early-return for loading state
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Non-blocking loading/synthetic banner */}
+        {(loading || isSyntheticMode) && (
+          <div className="mb-6 px-4 py-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+            <div className="flex items-center gap-3">
+              {loading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-400" />}
+              <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+              <span className="text-sm font-semibold text-amber-400">
+                {loading ? 'LOADING LIVE DATA' : 'SYNTHETIC MODE'}
+              </span>
+              <span className="text-xs text-amber-400/70">|</span>
+              <span className="text-xs text-gray-400">
+                {loading ? 'Computing correlations...' : 'Displaying synthesized correlation data'}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <TerminalBackButton className="mb-4" />

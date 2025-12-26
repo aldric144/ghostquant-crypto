@@ -537,6 +537,15 @@ function PredictionConsolePageContent() {
             <div className={`w-full max-w-2xl bg-slate-900/50 border rounded-lg p-8 animate-fadeIn ${showAnimation && activeResult.result.success && activeResult.result.classification === 'high' ? 'ring-4 ring-red-500/50 animate-pulse border-red-500/50' : showAnimation ? 'ring-4 ring-cyan-500/50 animate-pulse border-cyan-500/50' : 'border-cyan-500/30'}`}>
               {activeResult.result.success ? (
                 <div className="space-y-6">
+                  {activeResult.result.synthetic && (
+                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span className="text-sm font-semibold text-amber-400">SYNTHETIC MODE</span>
+                      </div>
+                      <p className="text-xs text-amber-300/80">Live prediction engine unavailable. Displaying synthesized forecast.</p>
+                    </div>
+                  )}
                   <div className="text-center">
                     <h2 className="text-3xl font-bold text-cyan-400 mb-2">{activeResult.type}</h2>
                     <p className="text-sm text-gray-400">Predicted {formatTimestamp(Date.now())}</p>
@@ -579,9 +588,9 @@ function PredictionConsolePageContent() {
                 </div>
               ) : (
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4"><svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></div>
-                  <h3 className="text-xl font-bold text-red-400 mb-2">Prediction Failed</h3>
-                  <p className="text-sm text-gray-400">{activeResult.result.error}</p>
+                  <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4"><svg className="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></div>
+                  <h3 className="text-xl font-bold text-yellow-400 mb-2">Prediction Unavailable</h3>
+                  <p className="text-sm text-gray-400">Live prediction engine is temporarily unavailable. Please try again later.</p>
                 </div>
               )}
             </div>
