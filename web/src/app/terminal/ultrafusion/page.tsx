@@ -3,6 +3,8 @@
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState } from 'react'
 import { ultraFusion, AnalyzeResponse } from '@/lib/ultraFusionClient'
+import HydraResetControls from '@/components/hydra/HydraResetControls'
+import { generateSyntheticFusion, UltraFusionResult } from '@/engines/ultrafusionEngine'
 
 export default function UltraFusionConsolePage() {
   const [entity, setEntity] = useState('')
@@ -12,10 +14,27 @@ export default function UltraFusionConsolePage() {
   const [result, setResult] = useState<AnalyzeResponse | null>(null)
   const [syntheticMode, setSyntheticMode] = useState(false)
 
+  // Clear Input handler - clears all input fields only, preserves results
+  const handleClearInput = () => {
+    setEntity('')
+    setToken('')
+    setChain('')
+  }
+
+  // Reset Console handler - clears inputs + results + resets to initial state
+  const handleResetConsole = () => {
+    setEntity('')
+    setToken('')
+    setChain('')
+    setResult(null)
+    setSyntheticMode(false)
+    setLoading(false)
+  }
+
   const handleAnalyze = async () => {
+    // If no input provided, show guidance text (don't run analysis)
     if (!entity && !token && !chain) {
-      // Instead of showing error, show a helpful message as non-blocking banner
-      setSyntheticMode(true)
+      // Show guidance - don't set syntheticMode, just return
       return
     }
 
@@ -34,10 +53,30 @@ export default function UltraFusionConsolePage() {
       if (response.result && 'synthetic' in response.result && response.result.synthetic) {
         setSyntheticMode(true)
       }
-      setResult(response)
+      
+      // If response has no valid result, generate synthetic fallback
+      if (!response.result) {
+        const syntheticResult = generateSyntheticFusion(entity, token, chain)
+        const syntheticResponse: AnalyzeResponse = {
+          success: true,
+          result: syntheticResult as unknown as AnalyzeResponse['result'],
+          timestamp: new Date().toISOString()
+        }
+        setResult(syntheticResponse)
+        setSyntheticMode(true)
+      } else {
+        setResult(response)
+      }
     } catch {
       // This should never happen as UltraFusionClient never throws
-      // But if it does, we still don't show an error - just set synthetic mode
+      // But if it does, generate synthetic result instead of showing error
+      const syntheticResult = generateSyntheticFusion(entity, token, chain)
+      const syntheticResponse: AnalyzeResponse = {
+        success: true,
+        result: syntheticResult as unknown as AnalyzeResponse['result'],
+        timestamp: new Date().toISOString()
+      }
+      setResult(syntheticResponse)
       setSyntheticMode(true)
     } finally {
       setLoading(false)
@@ -110,7 +149,7 @@ export default function UltraFusionConsolePage() {
           </div>
         </div>
 
-        <div className="mb-8">
+        <div className="mb-4">
           <button
             onClick={handleAnalyze}
             disabled={loading}
@@ -125,6 +164,15 @@ export default function UltraFusionConsolePage() {
               'Run Meta-Analysis'
             )}
           </button>
+        </div>
+
+        {/* Reset Controls - Matching Hydra Console layout */}
+        <div className="mb-8">
+          <HydraResetControls
+            onClearInput={handleClearInput}
+            onResetConsole={handleResetConsole}
+            isLoading={loading}
+          />
         </div>
 
         {syntheticMode && (
