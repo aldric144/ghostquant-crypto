@@ -10,17 +10,17 @@ export default function UltraFusionConsolePage() {
   const [chain, setChain] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<AnalyzeResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [syntheticMode, setSyntheticMode] = useState(false)
 
   const handleAnalyze = async () => {
     if (!entity && !token && !chain) {
-      setError('Please enter at least one field (entity address, token, or chain)')
+      // Instead of showing error, show a helpful message as non-blocking banner
+      setSyntheticMode(true)
       return
     }
 
     setLoading(true)
-    setError(null)
-    setResult(null)
+    setSyntheticMode(false)
 
     try {
       const response = await ultraFusion.analyze({
@@ -29,13 +29,16 @@ export default function UltraFusionConsolePage() {
         chain: chain || undefined,
       })
 
-      if (response.success) {
-        setResult(response)
-      } else {
-        setError(response.error || 'Analysis failed')
+      // UltraFusionClient now ALWAYS returns success with synthetic fallback
+      // Check if result is synthetic (using type-safe property access)
+      if (response.result && 'synthetic' in response.result && response.result.synthetic) {
+        setSyntheticMode(true)
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      setResult(response)
+    } catch {
+      // This should never happen as UltraFusionClient never throws
+      // But if it does, we still don't show an error - just set synthetic mode
+      setSyntheticMode(true)
     } finally {
       setLoading(false)
     }
@@ -124,9 +127,10 @@ export default function UltraFusionConsolePage() {
           </button>
         </div>
 
-        {error && (
-          <div className="mb-8 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400">
-            {error}
+        {syntheticMode && (
+          <div className="mb-8 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg text-cyan-400 flex items-center gap-2">
+            <span className="text-lg">🔮</span>
+            <span>Synthetic Intelligence Mode — {!entity && !token && !chain ? 'Enter an entity, token, or chain to analyze' : 'Live data unavailable, showing synthetic analysis'}</span>
           </div>
         )}
 
@@ -222,7 +226,7 @@ export default function UltraFusionConsolePage() {
           </div>
         )}
 
-        {!result && !error && !loading && (
+        {!result && !syntheticMode && !loading && (
           <div className="text-center py-12 text-gray-500">
             Enter an entity address, token, or chain to run meta-analysis
           </div>

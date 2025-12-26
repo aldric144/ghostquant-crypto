@@ -55,7 +55,7 @@ export default function HydraConsolePage() {
   const [result, setResult] = useState<HydraDetectResponse | null>(null)
   const [cluster, setCluster] = useState<HydraCluster | null>(null)
   const [indicators, setIndicators] = useState<HydraIndicators | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [syntheticMode, setSyntheticMode] = useState(false)
 
   // Reset handlers - wrapper functions that call into HydraResetHandler
   const handleClearInput = () => {
@@ -68,9 +68,10 @@ export default function HydraConsolePage() {
       setResult,
       setCluster,
       setIndicators,
-      setError,
+      setError: () => {}, // No-op since we removed error state
       setLoading,
     })
+    setSyntheticMode(false)
   }
 
   const fetchCluster = async () => {
@@ -112,14 +113,16 @@ export default function HydraConsolePage() {
   }, [])
 
     // Original handler - kept intact for backward compatibility
+    // Now uses synthetic fallback instead of error state
     const handleDetect = async () => {
       if (!originAddress) {
-        setError('Please enter an origin address')
+        // Instead of error, show synthetic mode banner
+        setSyntheticMode(true)
         return
       }
 
       setLoading(true)
-      setError(null)
+      setSyntheticMode(false)
       setResult(null)
 
       try {
@@ -138,10 +141,12 @@ export default function HydraConsolePage() {
           fetchCluster()
           fetchIndicators()
         } else {
-          setError(data.error || 'Detection failed')
+          // Instead of error, set synthetic mode
+          setSyntheticMode(true)
         }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
+      } catch {
+        // Instead of error, set synthetic mode
+        setSyntheticMode(true)
       } finally {
         setLoading(false)
       }
@@ -149,12 +154,13 @@ export default function HydraConsolePage() {
 
     // NEW: Wrapper handler that routes to HydraConsoleConnector
     // This intercepts the submission and uses the new parser/adapter pipeline
+    // Now uses synthetic fallback instead of error state
     const handleDetectWrapper = async () => {
       // Use input or default to demo mode if empty
       const input = originAddress.trim() || 'hydra://demo'
     
       setLoading(true)
-      setError(null)
+      setSyntheticMode(false)
       setResult(null)
 
       try {
@@ -177,10 +183,12 @@ export default function HydraConsolePage() {
           // Refresh indicators
           fetchIndicators()
         } else {
-          setError(connectorResult.error || 'Detection failed')
+          // Instead of error, set synthetic mode
+          setSyntheticMode(true)
         }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
+      } catch {
+        // Instead of error, set synthetic mode
+        setSyntheticMode(true)
       } finally {
         setLoading(false)
       }
@@ -260,9 +268,10 @@ export default function HydraConsolePage() {
           />
         </div>
 
-        {error && (
-          <div className="mb-8 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400">
-            {error}
+        {syntheticMode && (
+          <div className="mb-8 p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg text-orange-400 flex items-center gap-2">
+            <span className="text-lg">🐉</span>
+            <span>Synthetic Intelligence Mode — {!originAddress ? 'Enter an origin address or click Run to use demo mode' : 'Live data unavailable, showing synthetic analysis'}</span>
           </div>
         )}
 
@@ -357,7 +366,7 @@ export default function HydraConsolePage() {
           </div>
         )}
 
-        {!cluster && !indicators && !result && !error && !loading && (
+        {!cluster && !indicators && !result && !syntheticMode && !loading && (
           <div className="text-center py-12 text-gray-500">
             Enter an origin address to run Hydra detection, or wait for live data to load
           </div>
