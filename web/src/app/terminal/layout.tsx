@@ -1,11 +1,38 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Sidebar from '@/components/terminal/Sidebar'
 import SidebarMobile from '@/components/terminal/SidebarMobile'
 import VoiceCopilotProvider from '@/providers/VoiceCopilotProvider'
+import ModuleErrorBoundary from '@/components/terminal/ModuleErrorBoundary'
+
+// Helper to get module name from pathname
+function getModuleNameFromPath(pathname: string): string {
+  const segments = pathname.split('/').filter(Boolean)
+  if (segments.length >= 2) {
+    // Convert path segment to readable name (e.g., "whale-intel" -> "Whale Intel")
+    const moduleName = segments[segments.length - 1]
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+    return moduleName
+  }
+  return 'Intelligence Module'
+}
+
+// Client wrapper to get pathname and wrap children in ModuleErrorBoundary
+function ModuleWrapper({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const moduleName = getModuleNameFromPath(pathname)
+  
+  return (
+    <ModuleErrorBoundary moduleName={moduleName}>
+      {children}
+    </ModuleErrorBoundary>
+  )
+}
 
 function SubscriptionGate({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -119,9 +146,11 @@ export default function TerminalLayout({
               <div className="w-10" />
             </div>
 
-            {/* Page Content */}
+            {/* Page Content - Wrapped in ModuleErrorBoundary for crash protection */}
             <main className="flex-1 overflow-y-auto p-6">
-              {children}
+              <ModuleWrapper>
+                {children}
+              </ModuleWrapper>
             </main>
           </div>
         </div>
