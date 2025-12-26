@@ -4,7 +4,8 @@ import uuid
 import json
 from datetime import datetime
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
 import redis
 from rq import Queue
@@ -15,6 +16,29 @@ from ..db import get_db_pool
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/backtests", tags=["backtests"])
+
+
+def is_browser_navigation(request: Request) -> bool:
+    """
+    Detect if this is a browser document navigation request.
+    Browser navigations typically have:
+    - Accept header containing text/html
+    - Sec-Fetch-Mode: navigate
+    - Sec-Fetch-Dest: document
+    """
+    accept = request.headers.get("accept", "")
+    sec_fetch_mode = request.headers.get("sec-fetch-mode", "")
+    sec_fetch_dest = request.headers.get("sec-fetch-dest", "")
+    
+    # If Accept header prefers HTML over JSON, it's likely a browser navigation
+    if "text/html" in accept and "application/json" not in accept:
+        return True
+    
+    # Modern browsers send Sec-Fetch headers for navigations
+    if sec_fetch_mode == "navigate" or sec_fetch_dest == "document":
+        return True
+    
+    return False
 
 
 class BacktestCreate(BaseModel):
@@ -162,6 +186,7 @@ async def create_backtest(request: BacktestCreate):
 
 @router.get("", response_model=BacktestListResponse)
 async def list_backtests(
+    request: Request,
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),
     status: Optional[str] = Query(None),
@@ -169,7 +194,14 @@ async def list_backtests(
 ):
     """
     List all backtests with pagination and filtering.
+    
+    Browser navigations are redirected to the frontend terminal route.
+    API clients receive JSON as expected.
     """
+    # Redirect browser navigations to the frontend terminal route
+    if is_browser_navigation(request):
+        return RedirectResponse(url="/terminal/backtests", status_code=302)
+    
     try:
         pool = await get_db_pool()
         
