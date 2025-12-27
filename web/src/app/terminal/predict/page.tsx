@@ -2,6 +2,8 @@
 
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import ModuleErrorBoundary from '../../../components/terminal/ModuleErrorBoundary'
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { predictionEngineGuideContent } from '../../../components/terminal/moduleGuideContent'
 import { useState, useEffect, useMemo } from 'react'
 import { predictClient, PredictionResponse, BatchPredictionResponse, ChampionResponse } from '@/lib/predictClient'
 import { normalizeTableRows, safeNumber, safeArray } from '../../../utils/visualizationNormalizer'
@@ -15,6 +17,7 @@ interface PredictionHistoryItem {
 }
 
 function PredictionConsolePageContent() {
+  const [showGuide, setShowGuide] = useState(false)
   const [eventForm, setEventForm] = useState({
     value: '',
     chain: '',
@@ -400,9 +403,21 @@ function PredictionConsolePageContent() {
       {/* Header */}
       <div className="mb-4">
         <TerminalBackButton className="mb-4" />
-          <h1 className="text-3xl font-bold text-cyan-400">Prediction Console</h1>
-        <p className="text-sm text-gray-400">AI-powered risk predictions and analysis</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-cyan-400">Prediction Console</h1>
+            <p className="text-sm text-gray-400">AI-powered risk predictions and analysis</p>
+          </div>
+          <ModuleGuideButton onClick={() => setShowGuide(true)} />
+        </div>
       </div>
+
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={predictionEngineGuideContent}
+      />
 
       {/* Main Content - 3 Column Layout */}
       <div className="flex-1 flex gap-4 overflow-hidden">

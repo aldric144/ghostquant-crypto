@@ -2,6 +2,8 @@
 
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import ModuleErrorBoundary from '../../../components/terminal/ModuleErrorBoundary'
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { strategyBacktesterGuideContent } from '../../../components/terminal/moduleGuideContent'
 import { useState, useEffect, useMemo } from 'react'
 import { normalizeTableRows, safeNumber } from '../../../utils/visualizationNormalizer'
 import { generateBacktestCurves, BacktestResult } from '../../../utils/syntheticVisualData'
@@ -25,6 +27,7 @@ interface Backtest {
 function StrategyBacktesterPageContent() {
   const [backtests, setBacktests] = useState<Backtest[]>([])
   const [loading, setLoading] = useState(true)
+  const [showGuide, setShowGuide] = useState(false)
 
   useEffect(() => { 
     fetchData()
@@ -114,9 +117,21 @@ function StrategyBacktesterPageContent() {
 
         <div className="mb-8">
           <TerminalBackButton className="mb-4" />
-          <h1 className="text-3xl font-bold text-cyan-400 mb-2">Strategy Backtester</h1>
-          <p className="text-gray-400">Historical strategy performance analysis and validation</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-cyan-400 mb-2">Strategy Backtester</h1>
+              <p className="text-gray-400">Historical strategy performance analysis and validation</p>
+            </div>
+            <ModuleGuideButton onClick={() => setShowGuide(true)} />
+          </div>
         </div>
+
+        {/* Module Guide Panel */}
+        <ModuleGuide
+          isOpen={showGuide}
+          onClose={() => setShowGuide(false)}
+          content={strategyBacktesterGuideContent}
+        />
 
         {/* SYNTHETIC MODE Badge - only show when not loading and in synthetic mode */}
         {!loading && isSyntheticMode && (

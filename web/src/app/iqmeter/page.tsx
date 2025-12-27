@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import ModuleGuide, { ModuleGuideButton } from '../../components/terminal/ModuleGuide'
+import { iqMeterGuideContent } from '../../components/terminal/moduleGuideContent'
 
 interface LearningMetrics {
   model_confidence_avg: number
@@ -25,6 +27,7 @@ export default function IQMeterPage() {
   const [metrics, setMetrics] = useState<LearningMetrics | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSynthetic, setIsSynthetic] = useState(false)
+  const [showGuide, setShowGuide] = useState(false)
 
   useEffect(() => {
     fetchMetrics()
@@ -86,9 +89,21 @@ export default function IQMeterPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-bold text-[#D4AF37] mb-2">IQ Meter Dashboard</h1>
-          <p className="text-gray-400">GhostQuant Learning Confidence & Performance Tracking</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold text-[#D4AF37] mb-2">IQ Meter Dashboard</h1>
+              <p className="text-gray-400">GhostQuant Learning Confidence & Performance Tracking</p>
+            </div>
+            <ModuleGuideButton onClick={() => setShowGuide(true)} />
+          </div>
         </motion.div>
+
+        {/* Module Guide Panel */}
+        <ModuleGuide
+          isOpen={showGuide}
+          onClose={() => setShowGuide(false)}
+          content={iqMeterGuideContent}
+        />
 
         {/* Main Confidence Gauge */}
         <motion.div

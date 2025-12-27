@@ -1,6 +1,8 @@
 'use client'
 
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { riskMapGuideContent } from '../../../components/terminal/moduleGuideContent'
 import { useEffect, useState } from 'react'
 
 interface RiskMetric {
@@ -31,6 +33,7 @@ export default function RiskMapPage() {
   const [data, setData] = useState<ApiResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showGuide, setShowGuide] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,9 +84,21 @@ export default function RiskMapPage() {
             <span className="text-cyan-400 text-sm font-medium">Live Feed</span>
           </div>
           <TerminalBackButton className="mb-4" />
-          <h1 className="text-3xl font-bold text-white mb-2">Unified Risk Map</h1>
-          <p className="text-gray-400">Comprehensive risk visualization across the crypto ecosystem</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Unified Risk Map</h1>
+              <p className="text-gray-400">Comprehensive risk visualization across the crypto ecosystem</p>
+            </div>
+            <ModuleGuideButton onClick={() => setShowGuide(true)} />
+          </div>
         </div>
+
+        {/* Module Guide Panel */}
+        <ModuleGuide
+          isOpen={showGuide}
+          onClose={() => setShowGuide(false)}
+          content={riskMapGuideContent}
+        />
 
         {loading ? (
           <div className="flex items-center justify-center py-20">

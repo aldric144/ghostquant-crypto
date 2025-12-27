@@ -1,6 +1,8 @@
 'use client'
 
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { whaleIntelligenceGuideContent } from '../../../components/terminal/moduleGuideContent'
 /**
  * Whale Intelligence Database Page
  * 
@@ -50,6 +52,7 @@ export default function WhaleIntelPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchedAddress, setSearchedAddress] = useState<string | null>(null);
+  const [showGuide, setShowGuide] = useState(false);
   
   // Profile data
   const [profile, setProfile] = useState<WalletProfile | null>(null);
@@ -206,13 +209,25 @@ export default function WhaleIntelPage() {
         {/* Header */}
         <div className="mb-8">
           <TerminalBackButton className="mb-4" />
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Whale Intelligence Database
-          </h1>
-          <p className="text-gray-400">
-            Track wallets, clusters, and entity metadata across the blockchain ecosystem
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">
+                Whale Intelligence Database
+              </h1>
+              <p className="text-gray-400">
+                Track wallets, clusters, and entity metadata across the blockchain ecosystem
+              </p>
+            </div>
+            <ModuleGuideButton onClick={() => setShowGuide(true)} />
+          </div>
         </div>
+
+        {/* Module Guide Panel */}
+        <ModuleGuide
+          isOpen={showGuide}
+          onClose={() => setShowGuide(false)}
+          content={whaleIntelligenceGuideContent}
+        />
 
         {/* Stats Panel */}
         <div className="mb-8">
