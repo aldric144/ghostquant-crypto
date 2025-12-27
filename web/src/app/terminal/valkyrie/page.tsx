@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 ;
 
@@ -12,6 +15,7 @@ import { useState, useEffect } from 'react';
 import { valkyrieClient, ValkyrieAlert, ValkyrieEscalation } from '@/lib/valkyrieClient';
 
 export default function ValkyriePage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [alerts, setAlerts] = useState<ValkyrieAlert[]>([]);
   const [escalation, setEscalation] = useState<ValkyrieEscalation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -353,6 +357,13 @@ export default function ValkyriePage() {
           </div>
         </div>
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Valkyrie')}
+      />
     </div>
   );
 }

@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
@@ -37,6 +40,7 @@ export default function WhaleProfilePage() {
   const params = useParams()
   const address = params.address as string
   
+  const [showGuide, setShowGuide] = useState(false)
   const [profile, setProfile] = useState<WhaleProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

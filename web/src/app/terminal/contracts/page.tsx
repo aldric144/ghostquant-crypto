@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 /**
  * GhostQuant Contracts Page
@@ -24,6 +27,7 @@ type ViewMode =
   | "export";
 
 export default function ContractsPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>("dashboard");
   const [selectedContractId, setSelectedContractId] = useState<string | null>(
     null
@@ -277,6 +281,13 @@ export default function ContractsPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {renderContent()}
       </main>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Contracts')}
+      />
     </div>
   );
 }

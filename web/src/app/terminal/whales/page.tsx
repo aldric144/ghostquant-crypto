@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -25,6 +28,7 @@ interface WhaleStats {
 }
 
 export default function WhaleIntelligenceDashboard() {
+  const [showGuide, setShowGuide] = useState(false)
   const [topWhales, setTopWhales] = useState<WhaleAddress[]>([])
   const [stats, setStats] = useState<WhaleStats | null>(null)
   const [searchQuery, setSearchQuery] = useState('')

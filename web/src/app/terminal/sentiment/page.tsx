@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
@@ -76,6 +79,7 @@ function normalizeResponse(data: unknown): { assets: SentimentData[]; events: Se
 }
 
 export default function MarketSentimentPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [sentimentData, setSentimentData] = useState<SentimentData[]>([])
   const [events, setEvents] = useState<SentimentEvent[]>([])
   const [metrics, setMetrics] = useState<SentimentMetrics | null>(null)

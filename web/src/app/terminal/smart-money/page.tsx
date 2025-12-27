@@ -1,11 +1,15 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
 export default function SmartMoneyTrackerPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [entities, setEntities] = useState<{id:string,label:string,type:string,profitability:number,winRate:number,recentActivity:string,followScore:number}[]>([])
   const [flows, setFlows] = useState<{id:string,from:string,to:string,asset:string,amount:number,usdValue:number,timestamp:Date,significance:string}[]>([])
   const [loading, setLoading] = useState(true)

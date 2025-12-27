@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import InfoTooltip from '../../../components/ui/InfoTooltip'
 import { useEffect, useState, useMemo, useRef } from 'react'
@@ -33,6 +36,7 @@ type TimeFilter = 'all' | '5min' | '1hr' | '24hr'
 
 export default function RingDetectorPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [showGuide, setShowGuide] = useState(false)
   const [rings, setRings] = useState<Ring[]>([])
   const [selectedRing, setSelectedRing] = useState<Ring | null>(null)
   const [severityFilter, setSeverityFilter] = useState<SeverityFilter>('all')

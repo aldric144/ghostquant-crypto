@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import ModuleErrorBoundary, { safeArray, safeNumber } from '../../../components/terminal/ModuleErrorBoundary'
 import { useState, useEffect } from 'react'
@@ -53,6 +56,7 @@ interface DerivativesMetrics {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
 function DerivativesWatchPageContent() {
+  const [showGuide, setShowGuide] = useState(false)
   const [contracts, setContracts] = useState<DerivativeContract[]>([])
   const [fundingRates, setFundingRates] = useState<FundingRateData[]>([])
   const [liquidations, setLiquidations] = useState<LiquidationEvent[]>([])

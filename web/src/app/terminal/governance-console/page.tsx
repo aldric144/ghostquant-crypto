@@ -1,9 +1,13 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 export default function GovernanceConsolePage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [decisions, setDecisions] = useState<{id:string,title:string,type:string,status:string,priority:string,requestedBy:string,approvedBy:string|null,createdAt:Date,resolvedAt:Date|null,impact:string}[]>([])
   const [loading, setLoading] = useState(true)
   const [metrics, setMetrics] = useState({ systemIntegrity: 0, pendingDecisions: 0, approvedToday: 0, rejectedToday: 0, avgResolutionTime: 0, auditScore: 0 })

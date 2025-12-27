@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 ;
 
@@ -12,6 +15,7 @@ import { useState, useEffect } from 'react';
 import { phantomClient, PhantomResult } from '@/lib/phantomClient';
 
 export default function PhantomPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [transcript, setTranscript] = useState('');
   const [metadata, setMetadata] = useState('');
   const [result, setResult] = useState<PhantomResult | null>(null);
@@ -410,6 +414,13 @@ export default function PhantomPage() {
           )}
         </div>
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Phantom')}
+      />
     </div>
   );
 }

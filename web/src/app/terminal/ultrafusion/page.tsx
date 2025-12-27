@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState } from 'react'
 import { ultraFusion, AnalyzeResponse } from '@/lib/ultraFusionClient'
@@ -7,6 +10,7 @@ import HydraResetControls from '@/components/hydra/HydraResetControls'
 import { generateSyntheticFusion, UltraFusionResult } from '@/engines/ultrafusionEngine'
 
 export default function UltraFusionConsolePage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [entity, setEntity] = useState('')
   const [token, setToken] = useState('')
   const [chain, setChain] = useState('')

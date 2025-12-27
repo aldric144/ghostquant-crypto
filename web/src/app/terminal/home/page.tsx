@@ -1,6 +1,15 @@
+'use client'
+
+import { useState } from 'react'
+
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 
 export default function TerminalHomePage() {
+  const [showGuide, setShowGuide] = useState(false)
+
   return (
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-cyan-900/20 to-cyan-800/20 border border-cyan-500/30 rounded-lg p-6">

@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState, useMemo } from 'react'
 import { useIntelFeed } from '@/hooks/useIntelFeed'
@@ -35,6 +38,7 @@ interface TokenActivity {
 }
 
 export default function TokenExplorerPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [tokens, setTokens] = useState<Map<string, Token>>(new Map())
   const [selectedToken, setSelectedToken] = useState<Token | null>(null)
   const [searchQuery, setSearchQuery] = useState('')

@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState, useRef } from 'react'
 import { useIntelFeed } from '@/hooks/useIntelFeed'
@@ -12,6 +15,7 @@ interface ConfirmationModal {
 }
 
 export default function SettingsPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [fps, setFps] = useState(0)
   const [memoryUsage, setMemoryUsage] = useState(0)
   const [uptime, setUptime] = useState(0)

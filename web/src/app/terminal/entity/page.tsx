@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { useIntelFeed } from '@/hooks/useIntelFeed'
@@ -31,6 +34,7 @@ interface Activity {
 }
 
 export default function EntityExplorerPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [entities, setEntities] = useState<Map<string, Entity>>(new Map())
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null)
   const [searchQuery, setSearchQuery] = useState('')

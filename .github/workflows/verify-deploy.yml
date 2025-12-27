@@ -1,0 +1,107 @@
+name: Post-Deploy Verification
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL to verify'
+        required: false
+        default: 'https://ghostquant-mewzi.ondigitalocean.app'
+
+jobs:
+  verify-endpoints:
+    name: Verify GQ-Core Endpoints
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install httpx
+      
+      - name: Wait for deployment to propagate
+        run: |
+          echo "Waiting 60 seconds for deployment to propagate..."
+          sleep 60
+      
+      - name: Run endpoint verification
+        id: verify
+        run: |
+          cd api
+          python tools/verify_deploy.py \
+            --base-url "${{ github.event.inputs.base_url || 'https://ghostquant-mewzi.ondigitalocean.app' }}" \
+            --output verification-report.json
+        continue-on-error: true
+      
+      - name: Upload verification report
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-report
+          path: api/verification-report.json
+          retention-days: 30
+      
+      - name: Post verification summary
+        if: always()
+        run: |
+          if [ -f api/verification-report.json ]; then
+            echo "## Verification Report" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            PASSED=$(jq '.summary.passed' api/verification-report.json)
+            FAILED=$(jq '.summary.failed' api/verification-report.json)
+            TOTAL=$(jq '.summary.total' api/verification-report.json)
+            AVG_TIME=$(jq '.summary.avg_response_time_ms | floor' api/verification-report.json)
+            
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Endpoints | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+            echo "| Failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
+            echo "| Avg Response Time | ${AVG_TIME}ms |" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "$FAILED" -gt 0 ]; then
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "### Failed Endpoints" >> $GITHUB_STEP_SUMMARY
+              jq -r '.endpoints[] | select(.success == false) | "- \(.path): \(.error // "Schema validation failed")"' api/verification-report.json >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+      
+      - name: Check verification result
+        if: steps.verify.outcome == 'failure'
+        run: |
+          echo "::error::Endpoint verification failed. Check the verification report for details."
+          exit 1
+
+  pre-deploy-check:
+    name: Pre-Deploy Endpoint Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install backend dependencies
+        run: |
+          cd api
+          pip install fastapi uvicorn httpx
+          pip install -r requirements.txt || true
+      
+      - name: Run pre-deploy endpoint check
+        run: |
+          cd api
+          python tools/check_endpoints.py

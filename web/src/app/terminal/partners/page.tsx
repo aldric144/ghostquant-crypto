@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 ;
 
@@ -7,6 +10,7 @@ import { useState } from 'react';
 import { partnerClient, PartnerProgram } from './PartnerClient';
 
 export default function PartnersPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [selectedProgram, setSelectedProgram] = useState<PartnerProgram | null>(null);
   const [programs, setPrograms] = useState<PartnerProgram[]>([]);
   const [loading, setLoading] = useState(false);
@@ -360,6 +364,13 @@ export default function PartnersPage() {
           </div>
         </div>
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Partners')}
+      />
     </div>
   );
 }

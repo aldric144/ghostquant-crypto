@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import ModuleErrorBoundary from '../../../components/terminal/ModuleErrorBoundary'
 import InfoTooltip from '../../../components/ui/InfoTooltip'
@@ -19,6 +22,7 @@ interface Prediction {
 }
 
 function PredictiveRiskEnginePageContent() {
+  const [showGuide, setShowGuide] = useState(false)
   const [predictions, setPredictions] = useState<Prediction[]>([])
   const [loading, setLoading] = useState(true)
 

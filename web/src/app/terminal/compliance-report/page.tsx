@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 ;
 
@@ -23,6 +26,7 @@ import {
 } from '@/lib/executiveReportClient';
 
 export default function ComplianceReportPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [report, setReport] = useState<ExecutiveReport | null>(null);
   const [summary, setSummary] = useState<ExecutiveSummary | null>(null);
   const [health, setHealth] = useState<HealthResponse | null>(null);
@@ -585,6 +589,13 @@ export default function ComplianceReportPage() {
           </div>
         </div>
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Compliance Report')}
+      />
     </div>
   );
 }

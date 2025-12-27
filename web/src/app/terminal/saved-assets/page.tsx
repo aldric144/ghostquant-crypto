@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
@@ -12,6 +15,7 @@ interface SavedAsset {
 }
 
 export default function SavedAssetsPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [assets, setAssets] = useState<SavedAsset[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')

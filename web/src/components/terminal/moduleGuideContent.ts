@@ -4,7 +4,7 @@ import { ModuleGuideContent, defaultModuleGuideContent } from './ModuleGuide'
 export const iqMeterGuideContent: ModuleGuideContent = {
   moduleName: 'IQ Meter',
   overview: {
-    description: 'The IQ Meter provides a real-time intelligence quotient score for market conditions, measuring the overall health and risk level of the crypto ecosystem. It aggregates multiple data streams to produce a single, actionable metric.',
+    description: 'The IQ Meter provides a real-time intelligence quotient score for market conditions, measuring the overall health and risk level of the crypto ecosystem. It aggregates multiple data streams to produce a single, actionable metric. This module is designed to support faster, better-informed decisions in complex environments.',
     intelligenceType: 'Composite market intelligence score combining sentiment, volatility, liquidity, and on-chain metrics into a unified assessment.',
     questionsAnswered: [
       'What is the current overall market risk level?',
@@ -50,7 +50,7 @@ export const iqMeterGuideContent: ModuleGuideContent = {
 export const predictionEngineGuideContent: ModuleGuideContent = {
   moduleName: 'Prediction Engine',
   overview: {
-    description: 'The Prediction Engine uses machine learning models to analyze events, entities, tokens, and chains to generate risk predictions and probability assessments. It provides forward-looking intelligence based on pattern recognition and historical data.',
+    description: 'The Prediction Engine uses machine learning models to analyze events, entities, tokens, and chains to generate risk predictions and probability assessments. It provides forward-looking intelligence based on pattern recognition and historical data. This module is designed to support faster, better-informed decisions in complex environments.',
     intelligenceType: 'AI-powered predictive analytics for risk assessment, price direction, and anomaly detection across multiple dimensions.',
     questionsAnswered: [
       'What is the risk level associated with a specific event or transaction?',
@@ -108,7 +108,7 @@ export const predictionEngineGuideContent: ModuleGuideContent = {
 export const riskMapGuideContent: ModuleGuideContent = {
   moduleName: 'Risk Map',
   overview: {
-    description: 'The Risk Map provides a visual representation of risk distribution across the crypto ecosystem. It identifies hotspots, emerging threats, and areas of concern through geographic and network-based visualizations.',
+    description: 'The Risk Map provides a visual representation of risk distribution across the crypto ecosystem. It identifies hotspots, emerging threats, and areas of concern through geographic and network-based visualizations. This module is designed to support faster, better-informed decisions in complex environments.',
     intelligenceType: 'Spatial and network risk intelligence showing threat distribution, concentration areas, and risk propagation patterns.',
     questionsAnswered: [
       'Where are the highest risk concentrations in the ecosystem?',
@@ -155,7 +155,7 @@ export const riskMapGuideContent: ModuleGuideContent = {
 export const whaleIntelligenceGuideContent: ModuleGuideContent = {
   moduleName: 'Whale Intelligence',
   overview: {
-    description: 'Whale Intelligence tracks and analyzes large wallet movements, accumulation patterns, and distribution events. It provides insights into the behavior of significant market participants and their potential impact on prices.',
+    description: 'Whale Intelligence tracks and analyzes large wallet movements, accumulation patterns, and distribution events. It provides insights into the behavior of significant market participants and their potential impact on prices. This module is designed to support faster, better-informed decisions in complex environments.',
     intelligenceType: 'Large holder behavioral analytics including movement tracking, pattern recognition, and impact assessment.',
     questionsAnswered: [
       'Which large wallets are currently active?',
@@ -214,7 +214,7 @@ export const whaleIntelligenceGuideContent: ModuleGuideContent = {
 export const strategyBacktesterGuideContent: ModuleGuideContent = {
   moduleName: 'Strategy Backtester',
   overview: {
-    description: 'The Strategy Backtester allows you to test trading strategies against historical data to evaluate their potential performance. It provides detailed metrics including returns, risk measures, and trade statistics.',
+    description: 'The Strategy Backtester allows you to test trading strategies against historical data to evaluate their potential performance. It provides detailed metrics including returns, risk measures, and trade statistics. This module is designed to support faster, better-informed decisions in complex environments.',
     intelligenceType: 'Historical strategy simulation and performance analytics for strategy validation and optimization.',
     questionsAnswered: [
       'How would this strategy have performed historically?',
@@ -286,7 +286,7 @@ export function getModuleGuideContent(moduleName: string): ModuleGuideContent {
   return contentMap[moduleName] || {
     moduleName,
     overview: {
-      description: `The ${moduleName} module provides specialized intelligence and analytics for the GhostQuant platform.`,
+      description: `The ${moduleName} module provides specialized intelligence and analytics for the GhostQuant platform. This module is designed to support faster, better-informed decisions in complex environments.`,
       intelligenceType: 'Specialized analytics and intelligence for crypto market analysis.',
       questionsAnswered: [
         'What insights does this module provide?',

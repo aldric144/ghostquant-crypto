@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import React, { useState, useEffect } from 'react';
 import { sentinel } from '@/lib/sentinelClient';
@@ -47,6 +50,7 @@ function generateSyntheticDashboard(): SentinelDashboard {
 }
 
 export default function SentinelPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [dashboard, setDashboard] = useState<SentinelDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSynthetic, setIsSynthetic] = useState(false);
@@ -365,6 +369,13 @@ export default function SentinelPage() {
           </div>
         )}
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Sentinel')}
+      />
     </div>
   );
 }

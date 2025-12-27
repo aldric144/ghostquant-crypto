@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 ;
 
@@ -9,6 +12,7 @@ import DeckPreview from './DeckPreview';
 import DeckEditor from './DeckEditor';
 
 export default function DeckBuilderPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [deckType, setDeckType] = useState<'investor' | 'government'>('investor');
   const [companyName, setCompanyName] = useState('GhostQuant');
   const [selectedTheme, setSelectedTheme] = useState('ghostquant_dark_fusion');
@@ -681,6 +685,13 @@ export default function DeckBuilderPage() {
           </div>
         </div>
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Deck')}
+      />
     </div>
   );
 }

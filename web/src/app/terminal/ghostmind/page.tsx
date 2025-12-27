@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import InfoTooltip from '../../../components/ui/InfoTooltip'
 import ConfidenceLegend from '../../../components/ui/ConfidenceLegend'
@@ -27,6 +30,7 @@ interface Insight {
 type ContextType = 'entity' | 'token' | 'chain' | 'ring' | 'global'
 
 export default function GhostMindPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [insights, setInsights] = useState<Insight[]>([])
   const [inputValue, setInputValue] = useState('')

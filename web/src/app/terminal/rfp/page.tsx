@@ -1,11 +1,15 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 import { FileText, Download, CheckCircle, AlertCircle, Loader2, Shield, Building2, FileCheck } from 'lucide-react'
 import { rfpClient, RFPGenerateResponse, RFPSection, RFPSummary } from '@/lib/rfpClient'
 
 export default function RFPBuilderPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rfpData, setRfpData] = useState<RFPGenerateResponse | null>(null)

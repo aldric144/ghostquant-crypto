@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
@@ -74,6 +77,7 @@ function normalizeResponse(data: unknown): { pools: LiquidityPool[]; flows: Liqu
 }
 
 export default function LiquidityFlowPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [pools, setPools] = useState<LiquidityPool[]>([])
   const [flows, setFlows] = useState<LiquidityFlow[]>([])
   const [metrics, setMetrics] = useState<LiquidityMetrics | null>(null)

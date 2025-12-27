@@ -1,11 +1,15 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
 export default function TimeSeriesRiskPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [riskData, setRiskData] = useState<{timestamp:Date,riskScore:number,volatility:number,drawdown:number,var95:number}[]>([])
   const [loading, setLoading] = useState(true)
   const [timeframe, setTimeframe] = useState('24h')

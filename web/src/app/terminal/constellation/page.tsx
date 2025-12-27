@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import React, { useState, useEffect, useRef } from 'react';
 import { globalConstellation } from '@/lib/globalConstellationClient';
@@ -8,6 +11,7 @@ import type { ConstellationMap, ConstellationSummary, ConstellationNode, Constel
 import type { ConstellationVisual } from '@/lib/ConstellationEngine';
 
 export default function ConstellationPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [map, setMap] = useState<ConstellationMap | null>(null);
   const [summary, setSummary] = useState<ConstellationSummary | null>(null);
   const [visual, setVisual] = useState<ConstellationVisual | null>(null);
@@ -438,6 +442,13 @@ export default function ConstellationPage() {
           </div>
         )}
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Constellation')}
+      />
     </div>
   );
 }

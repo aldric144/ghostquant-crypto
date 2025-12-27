@@ -1,9 +1,14 @@
 'use client'
 
-import { useEffect } from 'react'
+import ModuleGuide, { ModuleGuideButton } from '../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../components/terminal/moduleGuideContent'
+
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function TerminalIndexPage() {
+  const [showGuide, setShowGuide] = useState(false)
+
   const router = useRouter()
 
   useEffect(() => {

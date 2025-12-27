@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import InfoTooltip from '../../../components/ui/InfoTooltip'
 import { useEffect, useState } from 'react'
@@ -24,6 +27,7 @@ interface ApiResponse {
 }
 
 export default function BehavioralDNAEnginePage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [data, setData] = useState<ApiResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
