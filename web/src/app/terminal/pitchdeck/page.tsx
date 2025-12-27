@@ -1,11 +1,15 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 import { FileText, Download, ChevronLeft, ChevronRight, Loader2, CheckCircle, AlertCircle, Presentation } from 'lucide-react'
 import { pitchdeckClient, type Deck, type DeckSlide, type DeckExportPackage } from '@/lib/pitchdeckClient'
 
 export default function PitchDeckConsolePage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [deckType, setDeckType] = useState<'investor' | 'government' | 'custom'>('investor')

@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import ModuleErrorBoundary from '../../../components/terminal/ModuleErrorBoundary'
 import { useState, useEffect, useMemo } from 'react'
@@ -19,6 +22,7 @@ interface Forecast {
 }
 
 function AIForecastEnginePageContent() {
+  const [showGuide, setShowGuide] = useState(false)
   const [forecasts, setForecasts] = useState<Forecast[]>([])
   const [loading, setLoading] = useState(true)
 

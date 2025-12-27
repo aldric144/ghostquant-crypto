@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 ;
 
@@ -13,6 +16,7 @@ import ComplianceMatrix from './ComplianceMatrix';
 import CostTable from './CostTable';
 
 export default function ProposalsPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [proposals, setProposals] = useState<any[]>([]);
   const [selectedProposal, setSelectedProposal] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -328,6 +332,13 @@ export default function ProposalsPage() {
           </div>
         </div>
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Proposals')}
+      />
     </div>
   );
 }

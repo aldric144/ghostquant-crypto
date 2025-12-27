@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 ;
 
@@ -25,6 +28,7 @@ import {
 } from './binderClient';
 
 export default function BinderPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [binders, setBinders] = useState<BinderListItem[]>([]);
   const [selectedBinder, setSelectedBinder] = useState<BinderMetadata | null>(null);
   const [selectedSection, setSelectedSection] = useState<BinderSection | null>(null);
@@ -473,6 +477,13 @@ export default function BinderPage() {
           </div>
         </div>
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Binder')}
+      />
     </div>
   );
 }

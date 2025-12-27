@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
@@ -45,6 +48,7 @@ interface ExposureAlert {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
 export default function ExposureAnalyzerPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [exposures, setExposures] = useState<ExposureData[]>([])
   const [chainExposures, setChainExposures] = useState<ExposureByChain[]>([])
   const [alerts, setAlerts] = useState<ExposureAlert[]>([])

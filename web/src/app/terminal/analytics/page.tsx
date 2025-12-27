@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 ;
 
@@ -18,6 +21,7 @@ import {
 const REFRESH_INTERVAL = 12000; // 12 seconds
 
 export default function AnalyticsDashboardPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [refreshToken, setRefreshToken] = useState(0);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -107,6 +111,13 @@ export default function AnalyticsDashboardPage() {
           All data shown is synthetic demo data for demonstration purposes only.
         </p>
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Analytics Dashboard')}
+      />
     </div>
   );
 }

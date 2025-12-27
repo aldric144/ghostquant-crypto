@@ -1,11 +1,15 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 import { Key, Shield, CheckCircle, AlertCircle, Loader2, TrendingUp, Users, Activity } from 'lucide-react'
 import { licenseClient } from '@/lib/licenseClient'
 
 export default function LicenseManagementPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [licenses, setLicenses] = useState<any[]>([])

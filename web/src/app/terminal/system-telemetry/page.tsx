@@ -1,9 +1,13 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 export default function SystemTelemetryPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [components, setComponents] = useState<{id:string,name:string,type:string,status:string,uptime:number,latency:number,errorRate:number,lastCheck:Date,version:string}[]>([])
   const [loading, setLoading] = useState(true)
   const [metrics, setMetrics] = useState({ systemHealth: 0, avgUptime: 0, avgLatency: 0, avgErrorRate: 0, activeComponents: 0, degradedComponents: 0 })

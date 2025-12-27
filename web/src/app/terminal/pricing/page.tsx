@@ -1,11 +1,15 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 import { DollarSign, TrendingUp, Users, Building2, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import { pricingClient } from '@/lib/pricingClient'
 
 export default function PricingConsolePage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [tiers, setTiers] = useState<any[]>([])

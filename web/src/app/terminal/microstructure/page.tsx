@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import ModuleErrorBoundary from '../../../components/terminal/ModuleErrorBoundary'
 import { useEffect, useState, useMemo } from 'react'
@@ -24,6 +27,7 @@ interface ApiResponse {
 }
 
 function ExchangeMicrostructureScannerPageContent() {
+  const [showGuide, setShowGuide] = useState(false)
   const [data, setData] = useState<ApiResponse | null>(null)
   const [loading, setLoading] = useState(true)
 

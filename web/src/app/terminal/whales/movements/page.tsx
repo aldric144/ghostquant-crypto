@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../../components/terminal/TerminalBackButton'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
@@ -15,6 +18,7 @@ interface WhaleMovement {
 }
 
 export default function WhaleMovementsPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [movements, setMovements] = useState<WhaleMovement[]>([])
   const [loading, setLoading] = useState(true)
   const [autoRefresh, setAutoRefresh] = useState(true)
@@ -272,7 +276,14 @@ export default function WhaleMovementsPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Whale Movements')}
+      />
+    </div>
       )}
 
       {/* CSS Animation */}

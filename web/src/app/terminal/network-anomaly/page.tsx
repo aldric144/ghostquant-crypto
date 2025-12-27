@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import ModuleErrorBoundary, { safeArray, safeNumber } from '../../../components/terminal/ModuleErrorBoundary'
 import { useState, useEffect } from 'react'
@@ -27,6 +30,7 @@ interface Metrics {
 }
 
 function NetworkAnomalyEnginePageContent() {
+  const [showGuide, setShowGuide] = useState(false)
   const [anomalies, setAnomalies] = useState<{id:string,type:string,severity:string,source:string,target:string,confidence:number,timestamp:Date,description:string}[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSeverity, setSelectedSeverity] = useState('all')

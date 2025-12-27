@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import ModuleErrorBoundary from '../../../components/terminal/ModuleErrorBoundary'
 import { useState, useEffect, useMemo } from 'react'
@@ -23,6 +26,7 @@ interface Backtest {
 }
 
 function BacktestsPageContent() {
+  const [showGuide, setShowGuide] = useState(false)
   const [backtests, setBacktests] = useState<Backtest[]>([])
   const [loading, setLoading] = useState(true)
 

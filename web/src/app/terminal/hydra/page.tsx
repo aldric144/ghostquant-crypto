@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 import { runHydraDetection, HydraConnectorResult } from '../../../components/hydra/HydraConsoleConnector'
@@ -50,6 +53,7 @@ interface HydraIndicators {
 }
 
 export default function HydraConsolePage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [originAddress, setOriginAddress] = useState('')
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<HydraDetectResponse | null>(null)

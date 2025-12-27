@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 ;
 
@@ -18,6 +21,7 @@ import DataRoomViewer from './DataRoomViewer';
 import DataRoomTree from './DataRoomTree';
 
 export default function DataRoomPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [client] = useState(() => new DataRoomClient());
   const [summary, setSummary] = useState<DataRoomSummary | null>(null);
   const [selectedSection, setSelectedSection] = useState<DataRoomSection | null>(null);
@@ -320,6 +324,13 @@ export default function DataRoomPage() {
           </div>
         </div>
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Data Room')}
+      />
     </div>
   );
 }

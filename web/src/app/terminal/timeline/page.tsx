@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState, useMemo } from 'react'
 import { useIntelFeed } from '@/hooks/useIntelFeed'
@@ -21,6 +24,7 @@ interface TimelineEvent {
 type TimeFilter = 'all' | '5min' | '1hr' | '24hr' | '7days'
 
 export default function AITimelinePage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [events, setEvents] = useState<TimelineEvent[]>([])
   const [activeTimeFilter, setActiveTimeFilter] = useState<TimeFilter>('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -423,7 +427,14 @@ export default function AITimelinePage() {
             })}
           </div>
         )}
-      </div>
+      
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Timeline')}
+      />
+    </div>
 
       {/* Inline CSS for slide-in animation */}
       <style jsx>{`

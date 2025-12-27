@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 ;
 
@@ -34,6 +37,7 @@ import {
 } from './exporterClient';
 
 export default function ComplianceExporterPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
   const [selectedDocType, setSelectedDocType] = useState<string>('');
   const [generatedDocument, setGeneratedDocument] = useState<ComplianceDocument | null>(null);
@@ -511,6 +515,13 @@ export default function ComplianceExporterPage() {
           Automated compliance documentation for CJIS, NIST, SOC 2, FedRAMP, AML/KYC, and more
         </p>
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Exporter')}
+      />
     </div>
   );
 }

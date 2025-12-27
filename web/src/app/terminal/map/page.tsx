@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState, useRef, useMemo } from 'react'
 import dynamic from 'next/dynamic'
@@ -35,6 +38,7 @@ type FilterType = 'all' | 'whale' | 'manipulation' | 'ai' | 'darkpool' | 'stable
 
 export default function ThreatMapPage() {
   const globeRef = useRef<any>()
+  const [showGuide, setShowGuide] = useState(false)
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')
   const [threatPoints, setThreatPoints] = useState<ThreatPoint[]>([])
   const [threatArcs, setThreatArcs] = useState<ThreatArc[]>([])

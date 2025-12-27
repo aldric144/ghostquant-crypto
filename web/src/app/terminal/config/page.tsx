@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 ;
 
@@ -33,6 +36,7 @@ import {
 } from './configClient';
 
 export default function ConfigurationInspectorPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [configSummary, setConfigSummary] = useState<any>(null);
   const [environment, setEnvironment] = useState<any>(null);
   const [items, setItems] = useState<ConfigItem[]>([]);
@@ -551,6 +555,13 @@ export default function ConfigurationInspectorPage() {
           Compliant with NIST 800-53 CM-2/CM-6/CM-7/AC-3 • SOC 2 CC6/CC7 • FedRAMP
         </p>
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Configuration')}
+      />
     </div>
   );
 }

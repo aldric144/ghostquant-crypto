@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import ModuleErrorBoundary, { safeArray, safeNumber, safeMatrix } from '../../../components/terminal/ModuleErrorBoundary'
 import { useState, useEffect } from 'react'
@@ -34,6 +37,7 @@ interface CorrelationMetrics {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
 function CorrelationEnginePageContent() {
+  const [showGuide, setShowGuide] = useState(false)
   const [correlations, setCorrelations] = useState<CorrelationPair[]>([])
   const [clusters, setClusters] = useState<CorrelationCluster[]>([])
   const [metrics, setMetrics] = useState<CorrelationMetrics | null>(null)

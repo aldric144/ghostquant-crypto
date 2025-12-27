@@ -1,11 +1,15 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 
 export default function SignalConfidenceEnginePage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [signals, setSignals] = useState<{id:string,name:string,type:string,confidence:number,accuracy:number,strength:number,direction:string,asset:string,timeframe:string,timestamp:Date}[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedType, setSelectedType] = useState('all')

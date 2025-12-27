@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 ;
 
@@ -31,6 +34,7 @@ import {
 } from './secretsClient';
 
 export default function SecretsManagementPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [secrets, setSecrets] = useState<SecretMetadata[]>([]);
   const [violations, setViolations] = useState<PolicyViolation[]>([]);
   const [logs, setLogs] = useState<AccessLog[]>([]);
@@ -481,6 +485,13 @@ export default function SecretsManagementPage() {
           Compliant with NIST 800-53 SC-12/SC-13/AC-3/AU-2 • SOC 2 CC6/CC7 • FedRAMP
         </p>
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Secrets')}
+      />
     </div>
   );
 }

@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 import { DollarSign, CreditCard, Users, TrendingUp, AlertCircle, CheckCircle, Loader2, Activity } from 'lucide-react'
@@ -7,6 +10,7 @@ import { billingClient } from '@/lib/billingClient'
 import { BillingDashboardEngine } from '@/lib/BillingDashboardEngine'
 
 export default function BillingConsolePage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [health, setHealth] = useState<any>(null)

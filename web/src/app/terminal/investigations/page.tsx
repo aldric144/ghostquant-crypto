@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 
@@ -15,6 +18,7 @@ interface SavedInvestigation {
 }
 
 export default function SavedInvestigationsPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [investigations, setInvestigations] = useState<SavedInvestigation[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')

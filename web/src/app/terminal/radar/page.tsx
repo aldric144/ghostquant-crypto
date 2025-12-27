@@ -1,11 +1,15 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState } from 'react';
 import { getHeatmap, getSummary, getSpikes, type RadarHeatmap, type RadarSummary, type RadarSpikes } from '@/lib/radarClient';
 import { RadarEngine } from './RadarEngine';
 
 export default function RadarPage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [heatmap, setHeatmap] = useState<RadarHeatmap | null>(null);
   const [summary, setSummary] = useState<RadarSummary | null>(null);
   const [spikes, setSpikes] = useState<RadarSpikes | null>(null);
@@ -326,6 +330,13 @@ export default function RadarPage() {
           </div>
         </div>
       </div>
+    
+      {/* Module Guide Panel */}
+      <ModuleGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        content={getModuleGuideContent('Radar')}
+      />
     </div>
   );
 }

@@ -1,9 +1,13 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useState, useEffect } from 'react'
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://ghostquant-mewzi.ondigitalocean.app'
 export default function AlertRulesEnginePage() {
+  const [showGuide, setShowGuide] = useState(false)
   const [rules, setRules] = useState<{id:string,name:string,type:string,status:string,condition:string,severity:string,triggeredCount:number,lastTriggered:Date|null,createdAt:Date}[]>([])
   const [loading, setLoading] = useState(true)
   const [metrics, setMetrics] = useState({ totalRules: 0, activeRules: 0, triggeredToday: 0, criticalAlerts: 0, avgTriggerRate: 0, disabledRules: 0 })

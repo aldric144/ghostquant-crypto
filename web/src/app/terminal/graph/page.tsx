@@ -1,5 +1,8 @@
 'use client'
 
+import ModuleGuide, { ModuleGuideButton } from '../../../components/terminal/ModuleGuide'
+import { getModuleGuideContent } from '../../../components/terminal/moduleGuideContent'
+
 import TerminalBackButton from '../../../components/terminal/TerminalBackButton'
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react'
 import dynamic from 'next/dynamic'
@@ -40,6 +43,7 @@ type FilterType = 'all' | 'whale' | 'institution' | 'manipulation' | 'darkpool' 
 
 export default function InfluenceGraphPage() {
   const graphRef = useRef<any>()
+  const [showGuide, setShowGuide] = useState(false)
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')
   const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] })
   const [showAlertPanel, setShowAlertPanel] = useState(true)
