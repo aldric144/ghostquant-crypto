@@ -412,6 +412,14 @@ const GovernanceIcon = () => (
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
 
+  // Dashboard
+  const dashboard: MenuSection = {
+    title: 'Dashboard',
+    items: [
+      { href: '/terminal/home', label: 'Dashboard Home', icon: <HomeIcon /> },
+    ]
+  }
+
   // A. Core Market Intelligence
   const coreMarketIntelligence: MenuSection = {
     title: 'Core Market Intelligence',
@@ -432,35 +440,36 @@ export default function Sidebar() {
 
   // B. Autonomous Intelligence Engines
   const autonomousEngines: MenuSection = {
-    title: 'Autonomous Engines',
+    title: 'Autonomous Intelligence Engines',
     items: [
-      { href: '/terminal/constellation', label: 'Global Constellation 3D', icon: <MapIcon /> },
-      { href: '/terminal/hydra', label: 'Hydra Actor Detection', icon: <TargetIcon /> },
+      { href: '/threat-map', label: 'Threat Map', icon: <GlobeIcon /> },
+      { href: '/terminal/constellation', label: 'Global Constellation 3D Map', icon: <MapIcon /> },
+      { href: '/terminal/hydra', label: 'Hydra Coordinated Actor Detection', icon: <TargetIcon /> },
       { href: '/terminal/ultrafusion', label: 'UltraFusion Meta-AI', icon: <ZapIcon /> },
       { href: '/entity-explorer', label: 'Entity Explorer', icon: <SearchIcon /> },
       { href: '/terminal/actor', label: 'Threat Actor Profiler', icon: <UserIcon /> },
       { href: '/terminal/dna', label: 'Behavioral DNA Engine', icon: <DNAIcon /> },
-      { href: '/threat-map', label: 'Global Radar Heatmap', icon: <RadarIcon /> },
-      { href: '/terminal/sentinel', label: 'Sentinel Command', icon: <ShieldIcon /> },
+      { href: '/terminal/radar', label: 'Global Radar Heatmap', icon: <RadarIcon /> },
+      { href: '/terminal/sentinel', label: 'Sentinel Command Console', icon: <ShieldIcon /> },
       { href: '/terminal/genesis', label: 'Genesis Archive', icon: <ArchiveIcon /> },
-      { href: '/ai-timeline', label: 'AI Timeline V2', icon: <TimelineIcon /> },
-      { href: '/ring-detector', label: 'Ring Detector V2', icon: <RingIcon /> },
-      { href: '/influence-graph', label: 'Influence Graph V2', icon: <GraphIcon /> },
+      { href: '/ai-timeline', label: 'AI Timeline', icon: <TimelineIcon /> },
+      { href: '/ring-detector', label: 'Ring Detector', icon: <RingIcon /> },
+      { href: '/influence-graph', label: 'Influence Graph', icon: <GraphIcon /> },
     ]
   }
 
-  // C. Institutional-Grade Modules
+  // C. Institutional Intelligence
   const institutionalModules: MenuSection = {
-    title: 'Institutional Modules',
+    title: 'Institutional Intelligence',
     items: [
       { href: '/ghostmind', label: 'GhostMind AI', icon: <AIIcon /> },
-      { href: '/terminal/mempool', label: 'Mempool Radar', icon: <MempoolIcon /> },
-      { href: '/terminal/microstructure', label: 'Exchange Scanner', icon: <ExchangeIcon /> },
-      { href: '/terminal/cross-chain', label: 'Cross-Chain Graph', icon: <NetworkIcon /> },
+      { href: '/terminal/mempool', label: 'Mempool Manipulation Radar', icon: <MempoolIcon /> },
+      { href: '/terminal/microstructure', label: 'Exchange Microstructure Scanner', icon: <ExchangeIcon /> },
+      { href: '/terminal/cross-chain', label: 'Cross-Chain Entity Graph', icon: <NetworkIcon /> },
       { href: '/terminal/predict', label: 'Prediction Engine', icon: <PredictIcon /> },
       { href: '/terminal/entity-scanner', label: 'Entity Scanner', icon: <ScanIcon /> },
       { href: '/terminal/risk-map', label: 'Risk Map', icon: <RiskIcon /> },
-      { href: '/analytics-dashboard', label: 'Analytics Dashboard V2', icon: <DashboardIcon /> },
+      { href: '/analytics-dashboard', label: 'Analytics Dashboard', icon: <DashboardIcon /> },
       { href: '/terminal/correlation', label: 'Correlation Engine', icon: <CorrelationIcon /> },
       { href: '/terminal/exposure', label: 'Exposure Analyzer', icon: <ExposureIcon /> },
       { href: '/terminal/order-book', label: 'Order Book Depth', icon: <OrderBookIcon /> },
@@ -485,23 +494,22 @@ export default function Sidebar() {
     ]
   }
 
-  // D. User & Workspace
+  // D. Workspace
   const userWorkspace: MenuSection = {
-    title: 'User & Workspace',
+    title: 'Workspace',
     items: [
-      { href: '/terminal/home', label: 'Dashboard Home', icon: <HomeIcon /> },
       { href: '/terminal/saved-assets', label: 'Saved Assets', icon: <BookmarkIcon /> },
       { href: '/terminal/investigations', label: 'Saved Investigations', icon: <FolderIcon /> },
     ]
   }
 
-  // E. Account / System
+  // E. Account
   const accountSystem: MenuSection = {
-    title: 'Account / System',
+    title: 'Account',
     items: [
       { href: '/terminal/billing', label: 'Subscription & Billing', icon: <CreditCardIcon /> },
       { href: '/settings', label: 'Account Settings', icon: <SettingsIcon /> },
-      { href: '/settings-v2', label: 'System Intelligence', icon: <SettingsIcon /> },
+      { href: '/settings-v2', label: 'System Intelligence & Settings V2', icon: <SettingsIcon /> },
     ]
   }
 
@@ -552,13 +560,14 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 p-3 overflow-y-auto scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent">
+        <SidebarSection title={dashboard.title} items={dashboard.items} isCollapsed={isCollapsed} />
         <SidebarSection title={coreMarketIntelligence.title} items={coreMarketIntelligence.items} isCollapsed={isCollapsed} />
         <SidebarSection title={autonomousEngines.title} items={autonomousEngines.items} isCollapsed={isCollapsed} />
         <SidebarSection title={institutionalModules.title} items={institutionalModules.items} isCollapsed={isCollapsed} />
         <SidebarSection title={riskAIEngines.title} items={riskAIEngines.items} isCollapsed={isCollapsed} />
+        <SidebarSection title={governanceSystemControl.title} items={governanceSystemControl.items} isCollapsed={isCollapsed} />
         <SidebarSection title={userWorkspace.title} items={userWorkspace.items} isCollapsed={isCollapsed} />
         <SidebarSection title={accountSystem.title} items={accountSystem.items} isCollapsed={isCollapsed} />
-        <SidebarSection title={governanceSystemControl.title} items={governanceSystemControl.items} isCollapsed={isCollapsed} />
         
         {/* Logout Button */}
         <div className="mt-4 pt-4 border-t border-cyan-500/20">

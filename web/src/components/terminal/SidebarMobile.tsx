@@ -33,6 +33,14 @@ export default function SidebarMobile({ isOpen, onClose }: SidebarMobileProps) {
     }
   }, [isOpen])
 
+  // Dashboard
+  const dashboard: MenuSection = {
+    title: 'Dashboard',
+    items: [
+      { href: '/terminal/home', label: 'Dashboard Home' },
+    ]
+  }
+
   // A. Core Market Intelligence
   const coreMarketIntelligence: MenuSection = {
     title: 'Core Market Intelligence',
@@ -45,64 +53,101 @@ export default function SidebarMobile({ isOpen, onClose }: SidebarMobileProps) {
       { href: '/iqmeter', label: 'IQ Meter' },
       { href: '/backtests', label: 'Backtests' },
       { href: '/whale-intelligence', label: 'Whale Intelligence' },
+      { href: '/terminal/liquidity', label: 'Liquidity Flow' },
+      { href: '/terminal/sentiment', label: 'Market Sentiment' },
+      { href: '/terminal/volatility', label: 'Volatility Monitor' },
     ]
   }
 
   // B. Autonomous Intelligence Engines
   const autonomousEngines: MenuSection = {
-    title: 'Autonomous Engines',
+    title: 'Autonomous Intelligence Engines',
     items: [
-      { href: '/terminal/constellation', label: 'Global Constellation 3D' },
-      { href: '/terminal/hydra', label: 'Hydra Actor Detection' },
+      { href: '/threat-map', label: 'Threat Map' },
+      { href: '/terminal/constellation', label: 'Global Constellation 3D Map' },
+      { href: '/terminal/hydra', label: 'Hydra Coordinated Actor Detection' },
       { href: '/terminal/ultrafusion', label: 'UltraFusion Meta-AI' },
       { href: '/entity-explorer', label: 'Entity Explorer' },
       { href: '/terminal/actor', label: 'Threat Actor Profiler' },
       { href: '/terminal/dna', label: 'Behavioral DNA Engine' },
-      { href: '/threat-map', label: 'Global Radar Heatmap' },
-      { href: '/terminal/sentinel', label: 'Sentinel Command' },
+      { href: '/terminal/radar', label: 'Global Radar Heatmap' },
+      { href: '/terminal/sentinel', label: 'Sentinel Command Console' },
       { href: '/terminal/genesis', label: 'Genesis Archive' },
-      { href: '/ai-timeline', label: 'AI Timeline V2' },
-      { href: '/ring-detector', label: 'Ring Detector V2' },
-      { href: '/influence-graph', label: 'Influence Graph V2' },
+      { href: '/ai-timeline', label: 'AI Timeline' },
+      { href: '/ring-detector', label: 'Ring Detector' },
+      { href: '/influence-graph', label: 'Influence Graph' },
     ]
   }
 
-  // C. Institutional-Grade Modules
+  // C. Institutional Intelligence
   const institutionalModules: MenuSection = {
-    title: 'Institutional Modules',
+    title: 'Institutional Intelligence',
     items: [
       { href: '/ghostmind', label: 'GhostMind AI' },
-      { href: '/terminal/mempool', label: 'Mempool Radar' },
-      { href: '/terminal/microstructure', label: 'Exchange Scanner' },
-      { href: '/terminal/cross-chain', label: 'Cross-Chain Graph' },
+      { href: '/terminal/mempool', label: 'Mempool Manipulation Radar' },
+      { href: '/terminal/microstructure', label: 'Exchange Microstructure Scanner' },
+      { href: '/terminal/cross-chain', label: 'Cross-Chain Entity Graph' },
       { href: '/terminal/predict', label: 'Prediction Engine' },
       { href: '/terminal/entity-scanner', label: 'Entity Scanner' },
       { href: '/terminal/risk-map', label: 'Risk Map' },
-      { href: '/analytics-dashboard', label: 'Analytics Dashboard V2' },
+      { href: '/analytics-dashboard', label: 'Analytics Dashboard' },
+      { href: '/terminal/correlation', label: 'Correlation Engine' },
+      { href: '/terminal/exposure', label: 'Exposure Analyzer' },
+      { href: '/terminal/order-book', label: 'Order Book Depth' },
+      { href: '/terminal/derivatives', label: 'Derivatives Watch' },
     ]
   }
 
-  // D. User & Workspace
-  const userWorkspace: MenuSection = {
-    title: 'User & Workspace',
+  // Risk & AI Engines (Wave B)
+  const riskAIEngines: MenuSection = {
+    title: 'Risk & AI Engines',
     items: [
-      { href: '/terminal/home', label: 'Dashboard Home' },
+      { href: '/terminal/smart-money', label: 'Smart Money Tracker' },
+      { href: '/terminal/time-series-risk', label: 'Time-Series Risk' },
+      { href: '/terminal/network-anomaly', label: 'Network Anomaly Engine' },
+      { href: '/terminal/manipulation-detector', label: 'Price Manipulation Detector' },
+      { href: '/terminal/signal-confidence', label: 'Signal Confidence Engine' },
+      { href: '/terminal/threat-timeline', label: 'Threat Timeline' },
+      { href: '/terminal/event-fusion', label: 'Event Fusion Engine' },
+      { href: '/terminal/pattern-recognition', label: 'Pattern Recognition Core' },
+      { href: '/terminal/predictive-risk', label: 'Predictive Risk Engine' },
+      { href: '/terminal/ai-forecast', label: 'AI Forecast Engine' },
+    ]
+  }
+
+  // Governance & System Control (Wave C)
+  const governanceSystemControl: MenuSection = {
+    title: 'Governance & System',
+    items: [
+      { href: '/terminal/strategy-backtester', label: 'Strategy Backtester' },
+      { href: '/terminal/scenario-simulator', label: 'Scenario Simulator' },
+      { href: '/terminal/alert-rules', label: 'Alert Rules Engine' },
+      { href: '/terminal/compliance-report', label: 'Compliance / Audit Log' },
+      { href: '/terminal/system-telemetry', label: 'System Telemetry' },
+      { href: '/terminal/governance-console', label: 'Governance Console' },
+    ]
+  }
+
+  // D. Workspace
+  const userWorkspace: MenuSection = {
+    title: 'Workspace',
+    items: [
       { href: '/terminal/saved-assets', label: 'Saved Assets' },
       { href: '/terminal/investigations', label: 'Saved Investigations' },
     ]
   }
 
-  // E. Account / System
+  // E. Account
   const accountSystem: MenuSection = {
-    title: 'Account / System',
+    title: 'Account',
     items: [
       { href: '/terminal/billing', label: 'Subscription & Billing' },
       { href: '/settings', label: 'Account Settings' },
-      { href: '/settings-v2', label: 'System Intelligence' },
+      { href: '/settings-v2', label: 'System Intelligence & Settings V2' },
     ]
   }
 
-  const allSections = [coreMarketIntelligence, autonomousEngines, institutionalModules, userWorkspace, accountSystem]
+  const allSections = [dashboard, coreMarketIntelligence, autonomousEngines, institutionalModules, riskAIEngines, governanceSystemControl, userWorkspace, accountSystem]
 
   const handleLogout = () => {
     localStorage.removeItem('ghostquant_session')
