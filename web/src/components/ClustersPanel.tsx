@@ -14,6 +14,7 @@ interface Cluster {
 export default function ClustersPanel() {
   const [clusters, setClusters] = useState<Cluster[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchFailed, setFetchFailed] = useState(false);
 
   const apiBase = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
 
@@ -25,8 +26,10 @@ export default function ClustersPanel() {
 
       const data = await response.json();
       setClusters(data.clusters || []);
+      setFetchFailed(false);
     } catch (err) {
       console.error("Error fetching clusters:", err);
+      setFetchFailed(true);
     } finally {
       setLoading(false);
     }
@@ -59,13 +62,19 @@ export default function ClustersPanel() {
         </div>
       )}
 
-      {!loading && clusters.length === 0 && (
+      {!loading && fetchFailed && (
+        <div className="text-center py-8 text-red-400 text-sm">
+          Cluster data unavailable (request failed).
+        </div>
+      )}
+
+      {!loading && !fetchFailed && clusters.length === 0 && (
         <div className="text-center py-8 text-slate-400 text-sm">
           No clusters available
         </div>
       )}
 
-      {!loading && clusters.length > 0 && (
+      {!loading && !fetchFailed && clusters.length > 0 && (
         <div className="space-y-3">
           {clusters.map((cluster) => (
             <div

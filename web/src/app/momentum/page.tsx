@@ -38,10 +38,20 @@ interface MomentumCoin {
   cluster_label?: string;
 }
 
+type DataStatus =
+  | "loading"
+  | "live"
+  | "stale"
+  | "empty"
+  | "rate_limited"
+  | "error"
+  | "offline";
+
 export default function MomentumPage() {
   const [coins, setCoins] = useState<MomentumCoin[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dataStatus, setDataStatus] = useState<DataStatus>("loading");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,26 +67,76 @@ export default function MomentumPage() {
   const { isConnected, lastMessage } = useWebSocket(`${apiBase.replace('http', 'ws')}/ws/momentum`);
 
   const fetchMomentum = async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: page.toString(),
-        per_page: "50",
-        sort: sortBy,
-        whale_only: whaleOnly.toString(),
-      });
+    const params = new URLSearchParams({
+      page: page.toString(),
+      per_page: "50",
+      sort: sortBy,
+      whale_only: whaleOnly.toString(),
+    });
+    if (minMarketCap) {
+      params.append("min_marketcap", minMarketCap.toString());
+    }
 
-      if (minMarketCap) {
-        params.append("min_marketcap", minMarketCap.toString());
+    // Bounded, controlled retry so a transient upstream rate-limit does not
+    // surface as a hard failure — capped at 2 retries with linear backoff so
+    // the client never amplifies provider rate limiting.
+    const MAX_ATTEMPTS = 3;
+    setLoading(true);
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        const response = await fetch(`${apiBase}/market/momentum?${params}`);
+
+        if (!response.ok) {
+          const retriable = response.status === 429 || response.status >= 500;
+          if (retriable && attempt < MAX_ATTEMPTS) {
+            await new Promise((r) => setTimeout(r, attempt * 1500));
+            continue;
+          }
+          setCoins([]);
+          setError(
+            response.status === 429
+              ? "CoinGecko rate limit reached upstream"
+              : `Momentum service error (HTTP ${response.status})`
+          );
+          setDataStatus(response.status === 429 ? "rate_limited" : "error");
+          setLoading(false);
+          return;
+        }
+
+        const data = await response.json();
+        const results = data.results || [];
+        const transformedCoins = results.map(transformCoin);
+        setCoins(transformedCoins);
+        setTotalPages(data.total_pages || 1);
+        setError(null);
+        setDataStatus(
+          transformedCoins.length === 0
+            ? "empty"
+            : data.stale
+            ? "stale"
+            : "live"
+        );
+        setLoading(false);
+        return;
+      } catch (err) {
+        // Network-level failure (fetch threw): backend unreachable / CORS / offline.
+        if (attempt < MAX_ATTEMPTS) {
+          await new Promise((r) => setTimeout(r, attempt * 1500));
+          continue;
+        }
+        setCoins([]);
+        setError("Momentum service unreachable");
+        setDataStatus("offline");
+        setLoading(false);
+        return;
       }
+    }
+  };
 
-      const response = await fetch(`${apiBase}/market/momentum?${params}`);
-      if (!response.ok) throw new Error("Failed to fetch momentum data");
-
-      const data = await response.json();
-      // Handle new API response format
-      const results = data.results || [];
-      const transformedCoins = results.map((coin: any) => ({
+  const transformCoin = (coin: any): MomentumCoin => {
+    {
+      return {
         id: coin.id || coin.coin_id,
         symbol: coin.symbol?.toUpperCase() || '',
         name: coin.name || '',
@@ -104,14 +164,7 @@ export default function MomentumPage() {
         confidence: Math.min(Math.abs(coin.change_24h || 0) / 10, 1),
         cluster_id: coin.cluster_id,
         cluster_label: coin.cluster_label
-      }));
-      setCoins(transformedCoins);
-      setTotalPages(data.total_pages || 1);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setLoading(false);
+      };
     }
   };
 
@@ -145,6 +198,19 @@ export default function MomentumPage() {
     setShowBuyModal(true);
   };
 
+  // Data status reflects the actual momentum intelligence, independent of the
+  // WebSocket stream connection. "Live" is only shown when fresh data loaded.
+  const dataBadge: Record<DataStatus, { label: string; dot: string; text: string; border: string }> = {
+    loading: { label: "Loading", dot: "bg-slate-400", text: "text-slate-300", border: "border-slate-500/30 bg-slate-500/10" },
+    live: { label: "Live", dot: "bg-green-500 animate-pulse", text: "text-green-400", border: "border-green-500/30 bg-green-500/20" },
+    stale: { label: "Cached", dot: "bg-yellow-500", text: "text-yellow-400", border: "border-yellow-500/30 bg-yellow-500/10" },
+    empty: { label: "No Data", dot: "bg-slate-400", text: "text-slate-300", border: "border-slate-500/30 bg-slate-500/10" },
+    rate_limited: { label: "Degraded", dot: "bg-orange-500", text: "text-orange-400", border: "border-orange-500/30 bg-orange-500/10" },
+    error: { label: "Unavailable", dot: "bg-red-500", text: "text-red-400", border: "border-red-500/30 bg-red-500/10" },
+    offline: { label: "Offline", dot: "bg-red-500", text: "text-red-400", border: "border-red-500/30 bg-red-500/10" },
+  };
+  const db = dataBadge[dataStatus];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -160,12 +226,23 @@ export default function MomentumPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {isConnected && (
-                <div className="flex items-center gap-2 px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-lg">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-sm text-green-400">Live</span>
-                </div>
-              )}
+              {/* Data status: reflects the momentum dataset itself */}
+              <div className={`flex items-center gap-2 px-3 py-1 border rounded-lg ${db.border}`} title={`Data: ${db.label}`}>
+                <div className={`w-2 h-2 rounded-full ${db.dot}`} />
+                <span className={`text-sm ${db.text}`}>Data: {db.label}</span>
+              </div>
+              {/* Stream status: reflects only the WebSocket connection */}
+              <div
+                className={`flex items-center gap-2 px-3 py-1 border rounded-lg ${
+                  isConnected ? "border-green-500/30 bg-green-500/10" : "border-slate-600/40 bg-slate-600/10"
+                }`}
+                title={`Stream: ${isConnected ? "Connected" : "Disconnected"}`}
+              >
+                <div className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-500 animate-pulse" : "bg-slate-500"}`} />
+                <span className={`text-sm ${isConnected ? "text-green-400" : "text-slate-400"}`}>
+                  Stream: {isConnected ? "Connected" : "Off"}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -234,15 +311,38 @@ export default function MomentumPage() {
               </div>
             )}
 
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-red-400">
-                Error: {error}
+            {!loading && error && (
+              <div
+                className={`rounded-lg p-4 flex items-center justify-between gap-4 ${
+                  dataStatus === "rate_limited"
+                    ? "bg-orange-500/10 border border-orange-500/30 text-orange-300"
+                    : "bg-red-500/10 border border-red-500/30 text-red-400"
+                }`}
+              >
+                <div>
+                  <div className="font-semibold">
+                    {dataStatus === "rate_limited"
+                      ? "Momentum data degraded"
+                      : dataStatus === "offline"
+                      ? "Momentum service offline"
+                      : "Momentum data unavailable"}
+                  </div>
+                  <div className="text-sm opacity-80">{error}. This is a data-fetch failure, not an empty result set.</div>
+                </div>
+                <button
+                  onClick={() => fetchMomentum()}
+                  className="px-3 py-1.5 rounded-lg border border-white/20 hover:bg-white/5 transition-colors text-sm whitespace-nowrap"
+                >
+                  Retry
+                </button>
               </div>
             )}
 
             {!loading && !error && filteredCoins.length === 0 && (
               <div className="text-center py-12 text-slate-400">
-                No coins found matching your filters.
+                {dataStatus === "empty"
+                  ? "No momentum data returned by the service right now."
+                  : "No coins match your current search/filters."}
               </div>
             )}
 

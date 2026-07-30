@@ -17,6 +17,7 @@ interface RankChange {
 export default function RankChangeFeed() {
   const [changes, setChanges] = useState<RankChange[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchFailed, setFetchFailed] = useState(false);
   const [timeWindow, setTimeWindow] = useState("15m");
 
   const apiBase = process.env.NEXT_PUBLIC_API_BASE || "https://ghostquant-mewzi.ondigitalocean.app";
@@ -29,8 +30,10 @@ export default function RankChangeFeed() {
 
       const data = await response.json();
       setChanges(data.changes || []);
+      setFetchFailed(false);
     } catch (err) {
       console.error("Error fetching rank changes:", err);
+      setFetchFailed(true);
     } finally {
       setLoading(false);
     }
@@ -67,13 +70,19 @@ export default function RankChangeFeed() {
         </div>
       )}
 
-      {!loading && changes.length === 0 && (
+      {!loading && fetchFailed && (
+        <div className="text-center py-8 text-red-400 text-sm">
+          Rank change data unavailable (request failed).
+        </div>
+      )}
+
+      {!loading && !fetchFailed && changes.length === 0 && (
         <div className="text-center py-8 text-slate-400 text-sm">
           No rank changes in the last {timeWindow}
         </div>
       )}
 
-      {!loading && changes.length > 0 && (
+      {!loading && !fetchFailed && changes.length > 0 && (
         <div className="space-y-2">
           {changes.map((change) => (
             <div
