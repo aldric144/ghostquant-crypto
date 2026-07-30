@@ -15,17 +15,59 @@ class CoinGeckoClient:
     """
     Async CoinGecko API client with rate limiting, exponential backoff, and caching.
     """
-    
+
+    FREE_BASE_URL = "https://api.coingecko.com/api/v3"
+    PRO_BASE_URL = "https://pro-api.coingecko.com/api/v3"
+
     def __init__(self):
-        self.base_url = os.getenv("COINGECKO_API_BASE", "https://api.coingecko.com/api/v3")
-        self.api_key = os.getenv("COINGECKO_PRO_API_KEY", "")
+        # Canonical variable is COINGECKO_API_KEY (used across the rest of the
+        # codebase); COINGECKO_PRO_API_KEY is kept as a legacy fallback so an
+        # existing deployment does not break during migration.
+        self.api_key = os.getenv("COINGECKO_API_KEY", "") or os.getenv("COINGECKO_PRO_API_KEY", "")
+
+        # A paid key must be sent to the paid host. Derive the host from key
+        # presence so modules do not each decide independently and a paid key is
+        # never sent to the free endpoint. An explicit COINGECKO_API_BASE is only
+        # honored when it is consistent with the tier (avoids a footgun where a
+        # stale free-host override silently downgrades a paid key).
+        explicit_base = os.getenv("COINGECKO_API_BASE", "").strip().rstrip("/")
+        if self.api_key:
+            self.base_url = explicit_base if explicit_base and "pro-api" in explicit_base else self.PRO_BASE_URL
+        else:
+            self.base_url = explicit_base or self.FREE_BASE_URL
+
         self.rate_limit_per_minute = int(os.getenv("COINGECKO_RATE_LIMIT_PER_MINUTE", 50))
         self.retry_max_attempts = int(os.getenv("COINGECKO_RETRY_MAX_ATTEMPTS", 3))
         self.retry_backoff_seconds = int(os.getenv("COINGECKO_RETRY_BACKOFF_SECONDS", 5))
         self.use_mock = os.getenv("USE_MOCK_MARKET_DATA", "false").lower() == "true"
-        
+
         self.request_times = []
         self.lock = asyncio.Lock()
+
+        # Safe startup visibility: never logs the key itself.
+        logger.info(
+            "CoinGecko client initialized: config=%s endpoint=%s host=%s",
+            "CONFIGURED" if self.api_key else "NOT_CONFIGURED",
+            "PAID" if self.api_key else "FREE",
+            self.base_url,
+        )
+
+    @property
+    def is_paid(self) -> bool:
+        """Whether a CoinGecko credential is configured (paid endpoint in use)."""
+        return bool(self.api_key)
+
+    def get_config_status(self) -> Dict[str, str]:
+        """
+        Report CoinGecko configuration for internal diagnostics.
+        Never exposes the API key or authorization headers.
+        """
+        return {
+            "coingecko_configured": "CONFIGURED" if self.api_key else "NOT_CONFIGURED",
+            "coingecko_endpoint": "PAID" if self.api_key else "FREE",
+            "coingecko_host": self.base_url,
+            "coingecko_using_mock": str(self.use_mock).lower(),
+        }
     
     async def _wait_for_rate_limit(self):
         """Wait if we've hit the rate limit."""
@@ -52,7 +94,12 @@ class CoinGeckoClient:
         url = f"{self.base_url}/{endpoint}"
         headers = {}
         if self.api_key:
-            headers["x-cg-pro-api-key"] = self.api_key
+            # Paid (pro-api) host expects x-cg-pro-api-key; the free host with a
+            # key expects the demo header. Host was already selected from key.
+            if "pro-api" in self.base_url:
+                headers["x-cg-pro-api-key"] = self.api_key
+            else:
+                headers["x-cg-demo-api-key"] = self.api_key
         
         for attempt in range(self.retry_max_attempts):
             try:
